@@ -1,0 +1,104 @@
+> pnpm -C apps/api dev
+
+
+> api@0.1.0 dev /home/yuri/repos/tcc/apps/api
+> tsx watch src/index.ts
+
+{"level":30,"time":1770411018360,"pid":219499,"hostname":"yuri-A60-MUV","msg":"Server listening at http://0.0.0.0:3002"}
+{"level":30,"time":1770411026601,"pid":219499,"hostname":"yuri-A60-MUV","reqId":"req-1","req":{"method":"POST","url":"/interpret","hostname":"localhost:3002","remoteAddress":"127.0.0.1","remotePort":51938},"msg":"incoming request"}
+[ollama] request:start {
+  requestId: [32m'1770411026608-41z6l0'[39m,
+  baseURL: [32m'http://localhost:11434/v1'[39m,
+  model: [32m'qwen2.5:3b'[39m,
+  message: [32m'Quero visitas em Sao Paulo em 2024'[39m,
+  currentFilters: {
+    cidade: [32m'Rio de Janeiro'[39m,
+    ano: [ [33m2023[39m ],
+    mes: [ [33m1[39m, [33m2[39m ],
+    indicador: [32m'ocupacao'[39m
+  }
+}
+[ollama] request:done {
+  requestId: [32m'1770411026608-41z6l0'[39m,
+  durationMs: [33m24101[39m,
+  response: [32m'{"id":"chatcmpl-778","object":"chat.completion","created":1770411050,"model":"qwen2.5:3b","system_fingerprint":"fp_ollama","choices":[{"index":0,"message":{"role":"assistant","content":"{\\n  \\"type\\": \\"set_filters\\",\\n  \\"filters\\": {\\n    \\"cidade\\": \\"Sao Paulo\\",\\n    \\"ano\\": [2024],\\n    \\"mes\\": null,\\n    \\"indicador\\": \\"visitas\\"\\n  }\\n}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":343,"completion_tokens":52,"total_tokens":395}}'[39m
+}
+{"level":30,"time":1770411050717,"pid":219499,"hostname":"yuri-A60-MUV","reqId":"req-1","res":{"statusCode":200},"responseTime":24115.221424000338,"msg":"request completed"}
+{"level":30,"time":1770411072583,"pid":219499,"hostname":"yuri-A60-MUV","reqId":"req-2","req":{"method":"POST","url":"/interpret","hostname":"localhost:3002","remoteAddress":"127.0.0.1","remotePort":51938},"msg":"incoming request"}
+[ollama] request:start {
+  requestId: [32m'1770411072584-vrjuk3'[39m,
+  baseURL: [32m'http://localhost:11434/v1'[39m,
+  model: [32m'qwen2.5:3b'[39m,
+  message: [32m'Quero visitas em Sao Paulo em 2024'[39m,
+  currentFilters: {
+    cidade: [32m'Rio de Janeiro'[39m,
+    ano: [ [33m2023[39m ],
+    mes: [ [33m1[39m, [33m2[39m ],
+    indicador: [32m'ocupacao'[39m
+  }
+}
+[ollama] request:done {
+  requestId: [32m'1770411072584-vrjuk3'[39m,
+  durationMs: [33m7123[39m,
+  response: [32m'{"id":"chatcmpl-733","object":"chat.completion","created":1770411079,"model":"qwen2.5:3b","system_fingerprint":"fp_ollama","choices":[{"index":0,"message":{"role":"assistant","content":"{\\n  \\"type\\": \\"set_filters\\",\\n  \\"filters\\": {\\n    \\"cidade\\": \\"Sao Paulo\\",\\n    \\"ano\\": [2024],\\n    \\"mes\\": null,\\n    \\"indicador\\": \\"visitas\\"\\n  }\\n}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":343,"completion_tokens":52,"total_tokens":395}}'[39m
+}
+{"level":30,"time":1770411079708,"pid":219499,"hostname":"yuri-A60-MUV","reqId":"req-2","res":{"statusCode":200},"responseTime":7124.914620999247,"msg":"request completed"}
+[90m21:51:58[39m [96m[tsx][39m [95mchange[39m in [92m./src/llm.ts[39m [33mRestarting...[39m
+c{"level":30,"time":1770411119822,"pid":233453,"hostname":"yuri-A60-MUV","msg":"Server listening at http://0.0.0.0:3002"}
+{"level":30,"time":1770411135787,"pid":233453,"hostname":"yuri-A60-MUV","reqId":"req-1","req":{"method":"POST","url":"/interpret","hostname":"localhost:3002","remoteAddress":"127.0.0.1","remotePort":43710},"msg":"incoming request"}
+[ollama] request:start {
+  requestId: [32m'1770411135794-1ibk7j'[39m,
+  baseURL: [32m'http://localhost:11434/v1'[39m,
+  model: [32m'qwen2.5:3b'[39m,
+  message: [32m'Quero visitas em Sao Paulo em 2024'[39m,
+  currentFilters: {
+    cidade: [32m'Rio de Janeiro'[39m,
+    ano: [ [33m2023[39m ],
+    mes: [ [33m1[39m, [33m2[39m ],
+    indicador: [32m'ocupacao'[39m
+  }
+}
+[ollama] request:done {
+  requestId: [32m'1770411135794-1ibk7j'[39m,
+  durationMs: [33m8690[39m,
+  response: [32m'{"id":"chatcmpl-109","object":"chat.completion","created":1770411144,"model":"qwen2.5:3b","system_fingerprint":"fp_ollama","choices":[{"index":0,"message":{"role":"assistant","content":"{\\n  \\"type\\": \\"set_filters\\",\\n  \\"filters\\": {\\n    \\"cidade\\": \\"Sao Paulo\\",\\n    \\"ano\\": [2024],\\n    \\"mes\\": null,\\n    \\"indicador\\": \\"visitas\\"\\n  }\\n}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":343,"completion_tokens":52,"total_tokens":395}}'[39m
+}
+{"level":30,"time":1770411144489,"pid":233453,"hostname":"yuri-A60-MUV","reqId":"req-1","res":{"statusCode":200},"responseTime":8701.168298998848,"msg":"request completed"}
+{"level":30,"time":1770411155602,"pid":233453,"hostname":"yuri-A60-MUV","reqId":"req-2","req":{"method":"POST","url":"/interpret","hostname":"localhost:3002","remoteAddress":"127.0.0.1","remotePort":43710},"msg":"incoming request"}
+[ollama] request:start {
+  requestId: [32m'1770411155603-1q7y8i'[39m,
+  baseURL: [32m'http://localhost:11434/v1'[39m,
+  model: [32m'qwen2.5:3b'[39m,
+  message: [32m'Quero visitas em Sao Paulo em 2024'[39m,
+  currentFilters: {
+    cidade: [32m'Rio de Janeiro'[39m,
+    ano: [ [33m2023[39m ],
+    mes: [ [33m1[39m, [33m2[39m ],
+    indicador: [32m'ocupacao'[39m
+  }
+}
+[ollama] request:done {
+  requestId: [32m'1770411155603-1q7y8i'[39m,
+  durationMs: [33m8597[39m,
+  response: [32m'{"id":"chatcmpl-488","object":"chat.completion","created":1770411164,"model":"qwen2.5:3b","system_fingerprint":"fp_ollama","choices":[{"index":0,"message":{"role":"assistant","content":"{\\n  \\"type\\": \\"set_filters\\",\\n  \\"filters\\": {\\n    \\"cidade\\": \\"Sao Paulo\\",\\n    \\"ano\\": [2024],\\n    \\"mes\\": null,\\n    \\"indicador\\": \\"visitas\\"\\n  }\\n}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":343,"completion_tokens":52,"total_tokens":395}}'[39m
+}
+{"level":30,"time":1770411164201,"pid":233453,"hostname":"yuri-A60-MUV","reqId":"req-2","res":{"statusCode":200},"responseTime":8599.092842999846,"msg":"request completed"}
+{"level":30,"time":1770411175372,"pid":233453,"hostname":"yuri-A60-MUV","reqId":"req-3","req":{"method":"POST","url":"/interpret","hostname":"localhost:3002","remoteAddress":"127.0.0.1","remotePort":43710},"msg":"incoming request"}
+[ollama] request:start {
+  requestId: [32m'1770411175373-7fwynq'[39m,
+  baseURL: [32m'http://localhost:11434/v1'[39m,
+  model: [32m'qwen2.5:3b'[39m,
+  message: [32m'Quero visitas em Pernambuco em 2024'[39m,
+  currentFilters: {
+    cidade: [32m'Rio de Janeiro'[39m,
+    ano: [ [33m2023[39m ],
+    mes: [ [33m1[39m, [33m2[39m ],
+    indicador: [32m'ocupacao'[39m
+  }
+}
+[ollama] request:done {
+  requestId: [32m'1770411175373-7fwynq'[39m,
+  durationMs: [33m14492[39m,
+  response: [32m'{"id":"chatcmpl-597","object":"chat.completion","created":1770411189,"model":"qwen2.5:3b","system_fingerprint":"fp_ollama","choices":[{"index":0,"message":{"role":"assistant","content":"{ \\"type\\": \\"unknown\\", \\"reason\\": \\"Cidade não válida. Perdembuco não é uma cidade válida.\\", \\"suggestions\\": [\\"Sao Paulo\\", \\"Rio de Janeiro\\", \\"Belo Horizonte\\", \\"Curitiba\\", \\"Porto Alegre\\", \\"Salvador\\", \\"Brasilia\\"] }"},"finish_reason":"stop"}],"usage":{"prompt_tokens":345,"completion_tokens":73,"total_tokens":418}}'[39m
+}
+{"level":30,"time":1770411189867,"pid":233453,"hostname":"yuri-A60-MUV","reqId":"req-3","res":{"statusCode":200},"responseTime":14494.385477999225,"msg":"request completed"}

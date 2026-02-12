@@ -1,0 +1,311 @@
+{
+  "version": "6.0",
+  "nxVersion": "22.4.5",
+  "pathMappings": {
+    "@conversational/contracts": [
+      "libs/contracts/src/index.ts"
+    ],
+    "@conversational/url-builder": [
+      "libs/url-builder/src/index.ts"
+    ],
+    "@conversational/ui": [
+      "libs/ui/src/index.ts"
+    ]
+  },
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "nonProjectFiles": [
+      {
+        "file": "pnpm-lock.yaml",
+        "hash": "2350929728087851144"
+      },
+      {
+        "file": ".env",
+        "hash": "13264848645380653682"
+      },
+      {
+        "file": "nx.json",
+        "hash": "3574401151289872353"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "7663861978715868291"
+      },
+      {
+        "file": ".prettierrc.cjs",
+        "hash": "5383160358597592858"
+      },
+      {
+        "file": "pnpm-workspace.yaml",
+        "hash": "2811845925925127796"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "9896110418255578412"
+      },
+      {
+        "file": "README.md",
+        "hash": "3473989894890794095"
+      },
+      {
+        "file": "docs/motivacao.md",
+        "hash": "12999106090027286990"
+      },
+      {
+        "file": "package.json",
+        "hash": "10884165237121775548"
+      },
+      {
+        "file": ".eslintrc.cjs",
+        "hash": "11996158402694226358"
+      }
+    ],
+    "projectFileMap": {
+      "api": [
+        {
+          "file": "apps/api/.env",
+          "hash": "1399164176863546928"
+        },
+        {
+          "file": "apps/api/.env.example",
+          "hash": "18253251342914177273"
+        },
+        {
+          "file": "apps/api/package.json",
+          "hash": "2300284427238114318",
+          "deps": [
+            "npm:@types/node",
+            "npm:tsx",
+            "npm:typescript",
+            "npm:vitest",
+            "contracts",
+            "npm:@fastify/cors",
+            "npm:@instructor-ai/instructor",
+            "npm:dotenv@16.6.1",
+            "npm:fastify",
+            "npm:openai",
+            "npm:zod"
+          ]
+        },
+        {
+          "file": "apps/api/project.json",
+          "hash": "11837465788944557742"
+        },
+        {
+          "file": "apps/api/src/index.ts",
+          "hash": "3313337742877275443",
+          "deps": [
+            "npm:dotenv@16.6.1",
+            "npm:fastify",
+            "npm:@fastify/cors",
+            "npm:zod",
+            "contracts"
+          ]
+        },
+        {
+          "file": "apps/api/src/llm.ts",
+          "hash": "12043730401834072019",
+          "deps": [
+            "npm:openai",
+            "npm:@instructor-ai/instructor",
+            "contracts"
+          ]
+        },
+        {
+          "file": "apps/api/tsconfig.json",
+          "hash": "13803970130109111142"
+        }
+      ],
+      "web": [
+        {
+          "file": "apps/web/.env",
+          "hash": "2871871182933164464"
+        },
+        {
+          "file": "apps/web/.env.example",
+          "hash": "2871871182933164464"
+        },
+        {
+          "file": "apps/web/index.html",
+          "hash": "16027485888845650418"
+        },
+        {
+          "file": "apps/web/package.json",
+          "hash": "1425000826287159485",
+          "deps": [
+            "npm:@types/react",
+            "npm:@types/react-dom",
+            "npm:@vitejs/plugin-react",
+            "npm:typescript",
+            "npm:vite",
+            "npm:vite-tsconfig-paths",
+            "npm:vitest",
+            "contracts",
+            "ui",
+            "url-builder",
+            "npm:react",
+            "npm:react-dom"
+          ]
+        },
+        {
+          "file": "apps/web/project.json",
+          "hash": "17921634358324787494"
+        },
+        {
+          "file": "apps/web/src/App.tsx",
+          "hash": "18293085872776425748",
+          "deps": [
+            "npm:react",
+            "contracts",
+            "url-builder",
+            "ui"
+          ]
+        },
+        {
+          "file": "apps/web/src/main.tsx",
+          "hash": "1302363740457081036",
+          "deps": [
+            "npm:react",
+            "npm:react-dom"
+          ]
+        },
+        {
+          "file": "apps/web/src/styles.css",
+          "hash": "18101733883439342809"
+        },
+        {
+          "file": "apps/web/tsconfig.json",
+          "hash": "15708003701689672421"
+        },
+        {
+          "file": "apps/web/vite.config.ts",
+          "hash": "11492930763289194565",
+          "deps": [
+            "npm:vite",
+            "npm:@vitejs/plugin-react",
+            "npm:vite-tsconfig-paths"
+          ]
+        }
+      ],
+      "contracts": [
+        {
+          "file": "libs/contracts/package.json",
+          "hash": "15216066389948673251",
+          "deps": [
+            "npm:zod"
+          ]
+        },
+        {
+          "file": "libs/contracts/project.json",
+          "hash": "15212493971071298772"
+        },
+        {
+          "file": "libs/contracts/src/index.ts",
+          "hash": "2064208785731993084",
+          "deps": [
+            "npm:zod"
+          ]
+        },
+        {
+          "file": "libs/contracts/tsconfig.json",
+          "hash": "7578059606725697582"
+        },
+        {
+          "file": "libs/contracts/vitest.config.ts",
+          "hash": "15083199400204207401",
+          "deps": [
+            "npm:vitest"
+          ]
+        }
+      ],
+      "url-builder": [
+        {
+          "file": "libs/url-builder/package.json",
+          "hash": "15383851689256059386",
+          "deps": [
+            "contracts"
+          ]
+        },
+        {
+          "file": "libs/url-builder/project.json",
+          "hash": "2722180938668501237"
+        },
+        {
+          "file": "libs/url-builder/src/index.ts",
+          "hash": "12558533120899887007",
+          "deps": [
+            "contracts"
+          ]
+        },
+        {
+          "file": "libs/url-builder/tests/url-builder.spec.ts",
+          "hash": "6908875261675597729",
+          "deps": [
+            "npm:vitest"
+          ]
+        },
+        {
+          "file": "libs/url-builder/tsconfig.json",
+          "hash": "16977284730584411121"
+        },
+        {
+          "file": "libs/url-builder/vitest.config.ts",
+          "hash": "15083199400204207401",
+          "deps": [
+            "npm:vitest"
+          ]
+        }
+      ],
+      "ui": [
+        {
+          "file": "libs/ui/package.json",
+          "hash": "13134815654974924629",
+          "deps": [
+            "npm:react",
+            "npm:react-dom",
+            "contracts"
+          ]
+        },
+        {
+          "file": "libs/ui/project.json",
+          "hash": "4022861799788771471"
+        },
+        {
+          "file": "libs/ui/src/index.ts",
+          "hash": "5754668203754245844"
+        },
+        {
+          "file": "libs/ui/src/panels/AppliedFiltersPanel.tsx",
+          "hash": "16860008316482205065",
+          "deps": [
+            "contracts"
+          ]
+        },
+        {
+          "file": "libs/ui/src/panels/ChatHistory.tsx",
+          "hash": "6234290756863563482"
+        },
+        {
+          "file": "libs/ui/src/panels/SuggestionChips.tsx",
+          "hash": "14971574618831189452"
+        },
+        {
+          "file": "libs/ui/src/types.ts",
+          "hash": "4898447699772840428"
+        },
+        {
+          "file": "libs/ui/tsconfig.json",
+          "hash": "13067547153264561931"
+        },
+        {
+          "file": "libs/ui/vitest.config.ts",
+          "hash": "4052058526481553769",
+          "deps": [
+            "npm:vitest"
+          ]
+        }
+      ]
+    }
+  },
+  "externalNodesHash": "11229977072090296605"
+}
