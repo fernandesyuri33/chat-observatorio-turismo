@@ -76,6 +76,7 @@ libs/
   domain/                      # Pure domain types — zero infra deps
     src/
       dashboard-action.schema.ts   # DashboardAction discriminated union (4 variants)
+      dashboard-resolve-contract.schema.ts # Shared HTTP contract for POST /dashboard/resolve
       intent.v1.schema.ts          # IntentV1 — versioned LLM structured output schema
       index.ts                     # Barrel export
 
@@ -149,6 +150,12 @@ Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
 ```
 
 Schema: `IntentV1Schema`. Selected at runtime via the schema registry.
+
+### Shared endpoint contracts
+
+`ResolveDashboardRequestSchema` and `ResolveDashboardResponseSchema` live in
+`libs/domain/src/dashboard-resolve-contract.schema.ts` and must be reused by
+API routes and frontend clients to avoid contract drift.
 
 ---
 
@@ -228,7 +235,8 @@ programmatic override.
 }
 ```
 
-Both request and response are validated with Zod schemas in the route handler.
+Both request and response are validated with Zod schemas imported from
+`@conversational/domain` in the route handler.
 Invalid requests return `400` with `{ error, details }`.
 
 > **Frontend guarantee:** The web app always receives a valid `DashboardAction`.

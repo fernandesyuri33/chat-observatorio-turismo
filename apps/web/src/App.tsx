@@ -1,5 +1,11 @@
 import { useState } from "react";
-import type { DashboardAction } from "@conversational/domain";
+import {
+  ResolveDashboardRequestSchema,
+  ResolveDashboardResponseSchema,
+  type DashboardAction,
+  type ResolveDashboardRequest,
+  type ResolveDashboardResponse,
+} from "@conversational/domain";
 
 // ── Inline simple UI components (previously from @conversational/ui) ──
 
@@ -51,10 +57,6 @@ const baseEmbedUrl =
   import.meta.env["VITE_LOOKER_EMBED_URL"] ??
   "https://lookerstudio.google.com/embed/reporting/placeholder/page/p_1";
 
-type ApiResponse = {
-  action: DashboardAction;
-};
-
 type ChatMessage = {
   id: string;
   role: "assistant" | "user";
@@ -82,10 +84,13 @@ export function App() {
     ]);
     setInput("");
 
+    const payload: ResolveDashboardRequest =
+      ResolveDashboardRequestSchema.parse({ message: trimmed });
+
     const response = await fetch(`${apiUrl}/dashboard/resolve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: trimmed })
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
@@ -100,7 +105,8 @@ export function App() {
       return;
     }
 
-    const data = (await response.json()) as ApiResponse;
+    const raw = await response.json();
+    const data: ResolveDashboardResponse = ResolveDashboardResponseSchema.parse(raw);
     setLastAction(data.action);
 
     // Build assistant text based on the new DashboardAction types
