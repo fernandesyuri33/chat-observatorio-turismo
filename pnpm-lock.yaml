@@ -44,9 +44,21 @@ importers:
 
   apps/api:
     dependencies:
-      '@conversational/contracts':
+      '@conversational/application':
         specifier: workspace:*
-        version: link:../../libs/contracts
+        version: link:../../libs/application
+      '@conversational/domain':
+        specifier: workspace:*
+        version: link:../../libs/domain
+      '@conversational/llm':
+        specifier: workspace:*
+        version: link:../../libs/llm
+      '@conversational/policy':
+        specifier: workspace:*
+        version: link:../../libs/policy
+      '@conversational/providers':
+        specifier: workspace:*
+        version: link:../../libs/providers
       '@fastify/cors':
         specifier: ^9.0.1
         version: 9.0.1
@@ -81,15 +93,9 @@ importers:
 
   apps/web:
     dependencies:
-      '@conversational/contracts':
+      '@conversational/domain':
         specifier: workspace:*
-        version: link:../../libs/contracts
-      '@conversational/ui':
-        specifier: workspace:*
-        version: link:../../libs/ui
-      '@conversational/url-builder':
-        specifier: workspace:*
-        version: link:../../libs/url-builder
+        version: link:../../libs/domain
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -119,29 +125,59 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.19.9)
 
-  libs/contracts:
+  libs/application:
+    dependencies:
+      '@conversational/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@conversational/llm':
+        specifier: workspace:*
+        version: link:../llm
+      '@conversational/policy':
+        specifier: workspace:*
+        version: link:../policy
+      '@conversational/providers':
+        specifier: workspace:*
+        version: link:../providers
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+
+  libs/domain:
     dependencies:
       zod:
         specifier: ^3.23.8
         version: 3.25.76
 
-  libs/ui:
+  libs/llm:
     dependencies:
-      '@conversational/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      react:
-        specifier: ^18.3.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.0
-        version: 18.3.1(react@18.3.1)
+      '@instructor-ai/instructor':
+        specifier: ^1.5.3
+        version: 1.7.0(openai@4.104.0(zod@3.25.76))(zod@3.25.76)
+      openai:
+        specifier: ^4.77.0
+        version: 4.104.0(zod@3.25.76)
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
 
-  libs/url-builder:
+  libs/policy:
     dependencies:
-      '@conversational/contracts':
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+
+  libs/providers:
+    dependencies:
+      '@conversational/domain':
         specifier: workspace:*
-        version: link:../contracts
+        version: link:../domain
+      '@conversational/policy':
+        specifier: workspace:*
+        version: link:../policy
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
 
 packages:
 

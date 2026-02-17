@@ -1,0 +1,38 @@
+{
+  "mode": "guided",
+  "minConfidence": 0.5,
+  "allowAmbiguity": true,
+  "knownMetrics": ["visitas", "ocupacao", "eventos"],
+  "knownDimensions": ["cidade", "ano", "mes", "indicador"],
+  "synonyms": {
+    "occupancy": "ocupacao",
+    "visits": "visitas",
+    "events": "eventos",
+    "city": "cidade",
+    "year": "ano",
+    "month": "mes",
+    "indicator": "indicador",
+    "ocupação": "ocupacao"
+  },
+  "routing": {
+    "filter": "looker",
+    "compare": "looker",
+    "trend": "looker",
+    "topN": "custom",
+    "help": "custom"
+  },
+  "fallback": {
+    "onSchemaInvalid": "retry_llm",
+    "onLowConfidence": "explain_only",
+    "retryCount": 1
+  },
+  "looker": {
+    "baseUrl": "https://lookerstudio.google.com/embed/reporting/abc123/page/p_1",
+    "paramMap": {
+      "cidade": "city",
+      "ano": "year",
+      "mes": "month",
+      "indicador": "indicator"
+    }
+  }
+}

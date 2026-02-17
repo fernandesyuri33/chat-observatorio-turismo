@@ -4,14 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/main.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "lint": "eslint src --max-warnings=0",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@conversational/contracts": "workspace:*",
+    "@conversational/domain": "workspace:*",
+    "@conversational/application": "workspace:*",
+    "@conversational/policy": "workspace:*",
+    "@conversational/llm": "workspace:*",
+    "@conversational/providers": "workspace:*",
     "@fastify/cors": "^9.0.1",
     "@instructor-ai/instructor": "^1.5.3",
     "dotenv": "^16.4.7",

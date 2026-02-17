@@ -1,2 +1,10 @@
 node_modules
 .nx
+dist
+*.tsbuildinfo
+apps/**/src/**/*.js
+apps/**/src/**/*.js.map
+apps/**/src/**/*.d.ts
+libs/**/src/**/*.js
+libs/**/src/**/*.js.map
+libs/**/src/**/*.d.ts

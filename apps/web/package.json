@@ -11,9 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@conversational/contracts": "workspace:*",
-    "@conversational/ui": "workspace:*",
-    "@conversational/url-builder": "workspace:*",
+    "@conversational/domain": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

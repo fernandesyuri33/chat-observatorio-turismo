@@ -1,34 +1,76 @@
-import { useMemo, useState } from "react";
-import type { Action, Filters } from "@conversational/contracts";
-import { buildLookerStudioUrl } from "@conversational/url-builder";
-import { AppliedFiltersPanel, ChatHistory, SuggestionChips } from "@conversational/ui";
+import { useState } from "react";
+import type { DashboardAction } from "@conversational/domain";
+
+// ── Inline simple UI components (previously from @conversational/ui) ──
+
+function ChatHistory({ messages }: { messages: { id: string; role: "user" | "assistant"; content: string }[] }) {
+  return (
+    <div className="chat-history">
+      {messages.map((m) => (
+        <div key={m.id} className={`chat-bubble chat-bubble--${m.role}`}>
+          {m.content}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SuggestionChips({ suggestions, onSelect }: { suggestions: string[]; onSelect: (s: string) => void }) {
+  return (
+    <div className="suggestion-chips">
+      {suggestions.map((s) => (
+        <button key={s} type="button" className="chip" onClick={() => onSelect(s)}>
+          {s}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ActionPanel({ lastAction }: { lastAction?: DashboardAction }) {
+  if (!lastAction) return <p className="muted">Nenhuma acao aplicada ainda.</p>;
+  return (
+    <div className="action-panel">
+      <strong>Ultima acao:</strong> <code>{lastAction.type}</code>
+      <pre>{JSON.stringify(lastAction, null, 2)}</pre>
+    </div>
+  );
+}
+
+// ── Constants ───────────────────────────────────────────────────
 
 const DEFAULT_SUGGESTIONS = [
   "Quero visitas em Sao Paulo em 2024",
   "Mostre ocupacao em Salvador em 2023",
-  "Resetar filtros",
+  "Me ajude",
   "O que significa indicador eventos?"
 ];
 
-const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+const apiUrl = import.meta.env["VITE_API_URL"] ?? "http://localhost:3001";
 const baseEmbedUrl =
-  import.meta.env.VITE_LOOKER_EMBED_URL ??
+  import.meta.env["VITE_LOOKER_EMBED_URL"] ??
   "https://lookerstudio.google.com/embed/reporting/placeholder/page/p_1";
 
 type ApiResponse = {
-  action: Action;
-  assistantText?: string;
+  action: DashboardAction;
+};
+
+type ChatMessage = {
+  id: string;
+  role: "assistant" | "user";
+  content: string;
 };
 
 export function App() {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     { id: "welcome", role: "assistant" as const, content: "Como posso ajudar?" }
   ]);
   const [input, setInput] = useState("");
-  const [filters, setFilters] = useState<Filters>({});
-  const [lastAction, setLastAction] = useState<Action | undefined>(undefined);
+  const [lastAction, setLastAction] = useState<DashboardAction | undefined>(undefined);
 
-  const iframeUrl = useMemo(() => buildLookerStudioUrl(baseEmbedUrl, filters), [filters]);
+  // Derive iframe URL from the last open_url action, or use the base embed URL
+  const iframeUrl =
+    lastAction?.type === "open_url" ? lastAction.url : baseEmbedUrl;
 
   async function handleSubmit(message: string) {
     const trimmed = message.trim();
@@ -40,10 +82,10 @@ export function App() {
     ]);
     setInput("");
 
-    const response = await fetch(`${apiUrl}/interpret`, {
+    const response = await fetch(`${apiUrl}/dashboard/resolve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: trimmed, currentFilters: filters })
+      body: JSON.stringify({ message: trimmed })
     });
 
     if (!response.ok) {
@@ -61,21 +103,22 @@ export function App() {
     const data = (await response.json()) as ApiResponse;
     setLastAction(data.action);
 
-    if (data.action.type === "set_filters") {
-      setFilters((prev) => ({ ...prev, ...data.action.filters }));
+    // Build assistant text based on the new DashboardAction types
+    let assistantText: string;
+    switch (data.action.type) {
+      case "open_url":
+        assistantText = data.action.title ?? `Abrindo: ${data.action.url}`;
+        break;
+      case "apply_filters":
+        assistantText = `Filtros aplicados: ${JSON.stringify(data.action.filters)}`;
+        break;
+      case "run_query":
+        assistantText = `Executando: ${data.action.function}`;
+        break;
+      case "explain_only":
+        assistantText = data.action.message;
+        break;
     }
-
-    if (data.action.type === "reset_filters") {
-      setFilters({});
-    }
-
-    const assistantText =
-      data.assistantText ??
-      (data.action.type === "describe_metric"
-        ? `Indicador selecionado: ${data.action.indicador}`
-        : data.action.type === "unknown"
-        ? data.action.reason
-        : "Filtros atualizados.");
 
     setMessages((prev) => [
       ...prev,
@@ -117,7 +160,7 @@ export function App() {
         </section>
 
         <section className="dashboard-panel">
-          <AppliedFiltersPanel filters={filters} lastAction={lastAction} />
+          <ActionPanel lastAction={lastAction} />
           <div className="iframe-wrapper">
             <iframe title="Looker Studio" src={iframeUrl} />
           </div>
