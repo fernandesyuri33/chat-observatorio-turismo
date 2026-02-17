@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const CITY_LIST = [
+  "Poços de Caldas",
   "Sao Paulo",
   "Rio de Janeiro",
   "Belo Horizonte",
