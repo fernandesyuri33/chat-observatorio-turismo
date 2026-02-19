@@ -7,7 +7,7 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tsc -p libs/domain/tsconfig.json"
+        "command": "tsc -b libs/domain/tsconfig.json"
       }
     },
     "test": {

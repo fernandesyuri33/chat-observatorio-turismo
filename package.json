@@ -7,6 +7,7 @@
     "dev": "nx run-many -t serve -p web api",
     "build": "nx run-many -t build -p web api",
     "typecheck": "nx run-many -t build -p web api domain application policy llm providers",
+    "clean:artifacts": "node tools/clean-artifacts.mjs",
     "lint": "nx run-many -t lint -p web api domain application policy llm providers",
     "test": "nx run-many -t test -p web api domain application policy llm providers"
   },
