@@ -25,7 +25,6 @@ export const IntentV1FiltersSchema = z.object({
 
 const IntentV1BaseSchema = z.object({
   proposedFilters: IntentV1FiltersSchema,
-  entities: z.record(z.any()),
   confidence: z.number().min(0).max(1),
   rationale: z.string().optional(),
 });

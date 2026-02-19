@@ -161,7 +161,6 @@ Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
     classificacao?: "alimentação" | "transportes" | "comércios e serviços" | "hospedagem" | "entretenimento" | "agencias e operadores",
     municipio?: string
   },
-  entities: Record<string, any>,
   confidence: number,       // 0–1
   rationale?: string
 }

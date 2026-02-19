@@ -75,7 +75,6 @@ describe("IntentV1Schema", () => {
       intent: "show",
       informationType: "funcionarios_por_municipio",
       proposedFilters: { municipio: "Pouso Alegre", classificacao: "hospedagem" },
-      entities: {},
       confidence: 0.8,
     });
     expect(result.success).toBe(true);
@@ -85,7 +84,6 @@ describe("IntentV1Schema", () => {
     const result = IntentV1Schema.safeParse({
       intent: "show",
       proposedFilters: {},
-      entities: {},
       confidence: 1.5,
     });
     expect(result.success).toBe(false);
@@ -96,7 +94,6 @@ describe("IntentV1Schema", () => {
       intent: "fly",
       informationType: "funcionarios_por_municipio",
       proposedFilters: {},
-      entities: {},
       confidence: 0.5,
     });
     expect(result.success).toBe(false);
@@ -106,7 +103,6 @@ describe("IntentV1Schema", () => {
     const result = IntentV1Schema.safeParse({
       intent: "show",
       proposedFilters: {},
-      entities: {},
       confidence: 0.7,
     });
     expect(result.success).toBe(false);
@@ -116,7 +112,6 @@ describe("IntentV1Schema", () => {
     const result = IntentV1Schema.safeParse({
       intent: "help",
       proposedFilters: {},
-      entities: {},
       confidence: 0.7,
     });
     expect(result.success).toBe(true);

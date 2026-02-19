@@ -30,7 +30,6 @@ Responda **somente** com JSON válido no seguinte formato:
     "classificacao"?: "alimentação" | "transportes" | "comércios e serviços" | "hospedagem" | "entretenimento" | "agencias e operadores",
     "municipio"?: string
   },
-  "entities": { <entidades extraídas da mensagem> },
   "confidence": <número de 0 a 1>,
   "rationale": "<breve justificativa da interpretação>"
 }
@@ -42,7 +41,7 @@ Regras:
 - "confidence" deve refletir quão claro e específico foi o pedido.
 - Se o usuário não mencionou nenhum filtro, retorne proposedFilters vazio ({}).
 - Se a mensagem é vaga, use confidence baixa (< 0.5) e rationale explicando a dúvida.
-- Se for pedido de ajuda, intent = "help", proposedFilters = {}, entities = {}.
+- Se for pedido de ajuda, intent = "help" e proposedFilters = {}.
 - Sempre responda em português.`;
 
 // ── Config ──────────────────────────────────────────────────────

@@ -34,7 +34,6 @@ export class StubLlmAdapter implements LlmPort {
         intent: "show",
         informationType: "saldo_funcionarios_ao_longo_do_tempo",
         proposedFilters,
-        entities: {},
         confidence: 0.8,
         rationale: "Usuário pediu saldo de funcionários ao longo do tempo",
       };
@@ -46,7 +45,6 @@ export class StubLlmAdapter implements LlmPort {
         intent: "show",
         informationType: "funcionarios_ao_longo_do_tempo",
         proposedFilters,
-        entities: {},
         confidence: 0.8,
         rationale: "Usuário pediu evolução de funcionários ao longo do tempo",
       };
@@ -55,7 +53,6 @@ export class StubLlmAdapter implements LlmPort {
         intent: "show",
         informationType: "estabelecimentos_por_municipio",
         proposedFilters,
-        entities: {},
         confidence: 0.8,
         rationale: "Usuário pediu estabelecimentos por município",
       };
@@ -64,7 +61,6 @@ export class StubLlmAdapter implements LlmPort {
         intent: "show",
         informationType: "funcionarios_por_municipio",
         proposedFilters,
-        entities: {},
         confidence: 0.8,
         rationale: "Usuário pediu funcionários por município",
       };
@@ -72,7 +68,6 @@ export class StubLlmAdapter implements LlmPort {
       raw = {
         intent: "help",
         proposedFilters,
-        entities: {},
         confidence: 0.9,
         rationale: "Usuário pediu ajuda",
       };
@@ -81,7 +76,6 @@ export class StubLlmAdapter implements LlmPort {
         intent: "show",
         informationType: "funcionarios_por_municipio",
         proposedFilters,
-        entities: {},
         confidence: 0.6,
         rationale: "Intenção genérica de filtro",
       };

@@ -24,7 +24,6 @@ export type NormalizedIntent =
       intent: "show";
       informationType: InformationType;
       proposedFilters: IntentFilters;
-      entities: Record<string, unknown>;
       confidence: number;
       rationale?: string;
     }
@@ -32,7 +31,6 @@ export type NormalizedIntent =
       intent: "help";
       informationType?: never;
       proposedFilters: IntentFilters;
-      entities: Record<string, unknown>;
       confidence: number;
       rationale?: string;
     };
