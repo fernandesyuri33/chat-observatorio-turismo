@@ -6,24 +6,23 @@
 
 ```mermaid
 flowchart TD
+  FE[Frontend] -->|POST /dashboard/resolve| API[apps/api Fastify route]
 
-A[Frontend] -->|POST /dashboard/resolve| B[apps/api - Fastify Route]
+  API -->|Validate request with Zod| UC[ResolveDashboardActionUseCase]
 
-B -->|Valida Request (Zod)| C[ResolveDashboardActionUseCase]
+  UC --> REG[Schema registry]
+  UC --> LLM[LLM adapter]
+  UC --> POL[Policy engine]
+  UC --> PROV[Active provider]
 
-C --> D[Schema Registry]
-C --> E[LLM Adapter]
-C --> F[Policy Engine]
-C --> G[Active Provider]
+  LLM -->|Raw intent| UC
+  REG -->|Intent schema v1| UC
+  POL -->|Normalized intent| UC
+  PROV -->|DashboardAction| UC
 
-E -->|Raw Intent| C
-D -->|Intent Schema v1| C
-F -->|Normalized Intent| C
-G -->|DashboardAction| C
+  UC -->|Validate action with Zod| RES[HTTP response 200]
+  RES --> FE
 
-C -->|Valida DashboardAction (Zod)| H[HTTP Response 200]
-
-H --> A
 ```
 
 ---
@@ -174,30 +173,54 @@ ValidAction --> Response
 # 🧭 Mapa Mental Resumido
 
 ```mermaid
-mindmap
-  root((Conversational Dashboard Resolver))
-    HTTP Layer
-      Fastify Route
-      Request Validation
-      Response Validation
-    Application
-      Use Case
-      Fallback Chain
-      Confidence Gate
-    Domain
-      Intent Schema
-      DashboardAction Schema
-    Policy
-      free/guided/strict
-      minConfidence
-      Synonyms
-    LLM
-      Structured Output
-      Versioned Schema
-    Provider
-      Looker
-      Custom
-      Future Providers
+flowchart LR
+  ROOT[Conversational Dashboard Resolver]
+
+  ROOT --> API[apps/api]
+  ROOT --> APP[libs/application]
+  ROOT --> DOM[libs/domain]
+  ROOT --> POL[libs/policy]
+  ROOT --> LLM[libs/llm]
+  ROOT --> PROV[libs/providers]
+
+  API --> API1[Fastify routes]
+  API --> API2[Auth and rate limit]
+  API --> API3[Logging and DI wiring]
+
+  APP --> APP1[Use case orchestration]
+  APP --> APP2[Fallback chain]
+  APP --> APP3[Confidence gate]
+
+  DOM --> DOM1[Intent types]
+  DOM --> DOM2[DashboardAction contract]
+  DOM --> DOM3[Zod schemas]
+
+  POL --> POL1[Config JSON]
+  POL --> POL2[Synonyms]
+  POL --> POL3[Mode free guided strict]
+
+  LLM --> LLM1[Structured output]
+  LLM --> LLM2[Schema versioning]
+
+  PROV --> PR1[Looker provider]
+  PROV --> PR2[Future provider]
+
+  classDef root fill:#111827,stroke:#111827,color:#ffffff;
+  classDef api fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e;
+  classDef app fill:#ecfccb,stroke:#65a30d,color:#365314;
+  classDef dom fill:#fae8ff,stroke:#a21caf,color:#701a75;
+  classDef pol fill:#ffedd5,stroke:#ea580c,color:#7c2d12;
+  classDef llm fill:#fee2e2,stroke:#dc2626,color:#7f1d1d;
+  classDef prov fill:#ede9fe,stroke:#7c3aed,color:#4c1d95;
+
+  class ROOT root;
+  class API,API1,API2,API3 api;
+  class APP,APP1,APP2,APP3 app;
+  class DOM,DOM1,DOM2,DOM3 dom;
+  class POL,POL1,POL2,POL3 pol;
+  class LLM,LLM1,LLM2 llm;
+  class PROV,PR1,PR2 prov;
+
 ```
 
 ---
