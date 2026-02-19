@@ -12,7 +12,14 @@ export {
 } from "./dashboard-action.schema.js";
 
 export {
+  InformationTypeSchema,
+  ClassificacaoSchema,
+  IntentV1FiltersSchema,
+  ShowIntentV1Schema,
+  HelpIntentV1Schema,
   IntentV1Schema,
+  type InformationType,
+  type Classificacao,
   type IntentV1,
 } from "./intent.v1.schema.js";
 

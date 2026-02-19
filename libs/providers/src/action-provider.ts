@@ -1,4 +1,4 @@
-import type { DashboardAction } from "@conversational/domain";
+import type { DashboardAction, IntentV1 } from "@conversational/domain";
 
 export interface ResolveContext {
   dashboardId?: string;
@@ -15,13 +15,7 @@ export interface ResolveContext {
 export interface ActionProvider {
   readonly id: string;
   generate(
-    intent: {
-      intent: string;
-      proposedFilters: Record<string, unknown>;
-      entities: Record<string, unknown>;
-      confidence: number;
-      rationale?: string;
-    },
+    intent: IntentV1,
     ctx: ResolveContext
   ): Promise<DashboardAction>;
 }

@@ -10,30 +10,77 @@ export class StubLlmAdapter implements LlmPort {
     const lower = input.toLowerCase();
 
     let raw: unknown;
+    const proposedFilters: Record<string, unknown> = {};
+
+    if (lower.includes("alimenta")) {
+      proposedFilters["classificacao"] = "alimentação";
+    } else if (lower.includes("transporte")) {
+      proposedFilters["classificacao"] = "transportes";
+    } else if (lower.includes("hosped")) {
+      proposedFilters["classificacao"] = "hospedagem";
+    }
+
+    if (lower.includes("pouso alegre")) {
+      proposedFilters["municipio"] = "Pouso Alegre";
+    } else if (lower.includes("poços de caldas") || lower.includes("pocos de caldas")) {
+      proposedFilters["municipio"] = "Poços de Caldas";
+    }
 
     if (lower.includes("invalid")) {
       // Return an intentionally invalid shape to test fallback
       raw = { bad: "data" };
-    } else if (lower.includes("occupancy") || lower.includes("ocupação")) {
+    } else if (lower.includes("saldo")) {
       raw = {
-        intent: "trend",
-        proposedFilters: { indicador: "ocupacao" },
-        entities: { metric: "occupancy" },
+        intent: "show",
+        informationType: "saldo_funcionarios_ao_longo_do_tempo",
+        proposedFilters,
+        entities: {},
         confidence: 0.8,
-        rationale: "Usuário pediu tendência de ocupação",
+        rationale: "Usuário pediu saldo de funcionários ao longo do tempo",
+      };
+    } else if (
+      lower.includes("ao longo do tempo") ||
+      lower.includes("tend")
+    ) {
+      raw = {
+        intent: "show",
+        informationType: "funcionarios_ao_longo_do_tempo",
+        proposedFilters,
+        entities: {},
+        confidence: 0.8,
+        rationale: "Usuário pediu evolução de funcionários ao longo do tempo",
+      };
+    } else if (lower.includes("estabelecimento")) {
+      raw = {
+        intent: "show",
+        informationType: "estabelecimentos_por_municipio",
+        proposedFilters,
+        entities: {},
+        confidence: 0.8,
+        rationale: "Usuário pediu estabelecimentos por município",
+      };
+    } else if (lower.includes("funcion")) {
+      raw = {
+        intent: "show",
+        informationType: "funcionarios_por_municipio",
+        proposedFilters,
+        entities: {},
+        confidence: 0.8,
+        rationale: "Usuário pediu funcionários por município",
       };
     } else if (lower.includes("help")) {
       raw = {
         intent: "help",
-        proposedFilters: {},
+        proposedFilters,
         entities: {},
         confidence: 0.9,
         rationale: "Usuário pediu ajuda",
       };
     } else {
       raw = {
-        intent: "filter",
-        proposedFilters: {},
+        intent: "show",
+        informationType: "funcionarios_por_municipio",
+        proposedFilters,
         entities: {},
         confidence: 0.6,
         rationale: "Intenção genérica de filtro",

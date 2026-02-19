@@ -1,12 +1,57 @@
 import type { PolicyConfig } from "./policy-config.schema.js";
 
-export interface NormalizedIntent {
-  intent: string;
-  proposedFilters: Record<string, unknown>;
-  entities: Record<string, unknown>;
-  confidence: number;
-  rationale?: string;
-}
+type InformationType =
+  | "estabelecimentos_por_municipio"
+  | "funcionarios_por_municipio"
+  | "funcionarios_ao_longo_do_tempo"
+  | "saldo_funcionarios_ao_longo_do_tempo";
+
+type Classificacao =
+  | "alimentação"
+  | "transportes"
+  | "comércios e serviços"
+  | "hospedagem"
+  | "entretenimento"
+  | "agencias e operadores";
+
+type IntentFilters = {
+  classificacao?: Classificacao;
+  municipio?: string;
+};
+
+export type NormalizedIntent =
+  | {
+      intent: "show";
+      informationType: InformationType;
+      proposedFilters: IntentFilters;
+      entities: Record<string, unknown>;
+      confidence: number;
+      rationale?: string;
+    }
+  | {
+      intent: "help";
+      informationType?: never;
+      proposedFilters: IntentFilters;
+      entities: Record<string, unknown>;
+      confidence: number;
+      rationale?: string;
+    };
+
+const INFORMATION_TYPES = new Set<InformationType>([
+  "estabelecimentos_por_municipio",
+  "funcionarios_por_municipio",
+  "funcionarios_ao_longo_do_tempo",
+  "saldo_funcionarios_ao_longo_do_tempo",
+]);
+
+const CLASSIFICACOES = new Set<Classificacao>([
+  "alimentação",
+  "transportes",
+  "comércios e serviços",
+  "hospedagem",
+  "entretenimento",
+  "agencias e operadores",
+]);
 
 /**
  * PolicyEngine wraps a validated PolicyConfig and provides
@@ -26,9 +71,6 @@ export class PolicyEngine {
    */
   normalizeIntent(raw: NormalizedIntent): NormalizedIntent {
     const synonyms = this.config.synonyms;
-
-    // Resolve intent synonym
-    const resolvedIntent = synonyms[raw.intent] ?? raw.intent;
 
     // Resolve proposed filter keys and values through synonyms
     const resolvedFilters: Record<string, unknown> = {};
@@ -53,10 +95,33 @@ export class PolicyEngine {
       }
     }
 
+    const normalizedFilters: IntentFilters = {};
+    if (
+      typeof resolvedFilters["classificacao"] === "string" &&
+      CLASSIFICACOES.has(resolvedFilters["classificacao"] as Classificacao)
+    ) {
+      normalizedFilters.classificacao = resolvedFilters["classificacao"] as Classificacao;
+    }
+    if (typeof resolvedFilters["municipio"] === "string" && resolvedFilters["municipio"].length > 0) {
+      normalizedFilters.municipio = resolvedFilters["municipio"];
+    }
+
+    if (raw.intent === "help") {
+      return {
+        ...raw,
+        proposedFilters: normalizedFilters,
+      };
+    }
+
+    const mappedInformationType = synonyms[raw.informationType] ?? raw.informationType;
+    const normalizedInformationType = INFORMATION_TYPES.has(mappedInformationType as InformationType)
+      ? (mappedInformationType as InformationType)
+      : raw.informationType;
+
     return {
       ...raw,
-      intent: resolvedIntent,
-      proposedFilters: resolvedFilters,
+      informationType: normalizedInformationType,
+      proposedFilters: normalizedFilters,
     };
   }
 }

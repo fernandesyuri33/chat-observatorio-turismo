@@ -11,10 +11,11 @@ const testPolicyConfig: PolicyConfig = {
   minConfidence: 0.5,
   allowAmbiguity: true,
   knownMetrics: ["visitas", "ocupacao", "eventos"],
-  knownDimensions: ["cidade", "ano", "mes", "indicador"],
+  knownDimensions: ["cidade", "ano", "mes", "indicador", "classificacao", "municipio"],
   synonyms: {
     occupancy: "ocupacao",
     visits: "visitas",
+    "funcionários por município": "funcionarios_por_municipio",
   },
   activeProvider: "looker",
   fallback: {
@@ -25,10 +26,14 @@ const testPolicyConfig: PolicyConfig = {
   looker: {
     baseUrl: "https://lookerstudio.google.com/embed/reporting/abc123/page/p_1",
     paramMap: {
-      cidade: "city",
-      ano: "year",
-      mes: "month",
-      indicador: "indicator",
+      classificacao: "classification",
+      municipio: "city",
+    },
+    informationTypeMap: {
+      estabelecimentos_por_municipio: "p_estabelecimentos",
+      funcionarios_por_municipio: "p_funcionarios_municipio",
+      funcionarios_ao_longo_do_tempo: "p_funcionarios_tempo",
+      saldo_funcionarios_ao_longo_do_tempo: "p_saldo_funcionarios_tempo",
     },
   },
 };
@@ -62,18 +67,22 @@ describe("resolveDashboardAction", () => {
     return { llm, policyEngine, provider };
   }
 
-  it("returns open_url for occupancy request (looker provider)", async () => {
+  it("returns open_url with informationType page mapping and params", async () => {
     const deps = buildDeps();
     const result = await resolveDashboardAction(deps, {
-      message: "Show me occupancy trends",
+      message: "Mostre funcionários por município em Pouso Alegre",
     });
     expect(result.type).toBe("open_url");
+    if (result.type === "open_url") {
+      expect(result.url).toContain("/page/p_funcionarios_municipio");
+      expect(result.url).toContain("params=");
+    }
   });
 
   it("returns run_query when activeProvider is custom", async () => {
     const deps = buildDeps({ activeProvider: "custom" });
     const result = await resolveDashboardAction(deps, {
-      message: "Show me occupancy trends",
+      message: "Mostre funcionários por município",
     });
     expect(result.type).toBe("run_query");
   });

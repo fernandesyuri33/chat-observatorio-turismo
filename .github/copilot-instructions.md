@@ -115,7 +115,7 @@ libs/
     src/
       action-provider.ts       # ActionProvider interface + ResolveContext type
       looker/
-        looker-provider.ts     # Builds open_url using Looker baseUrl + paramMap
+        looker-provider.ts     # Builds open_url using informationType -> page mapping and params JSON
       custom/
         custom-provider.ts     # Returns run_query delegating to "tourism.resolve"
       index.ts
@@ -151,13 +151,23 @@ Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
 
 ```ts
 {
-  intent: "filter" | "compare" | "trend" | "topN" | "help",
-  proposedFilters: Record<string, any>,
+  intent: "show" | "help",
+  informationType?:
+    | "estabelecimentos_por_municipio"
+    | "funcionarios_por_municipio"
+    | "funcionarios_ao_longo_do_tempo"
+    | "saldo_funcionarios_ao_longo_do_tempo",
+  proposedFilters: {
+    classificacao?: "alimentação" | "transportes" | "comércios e serviços" | "hospedagem" | "entretenimento" | "agencias e operadores",
+    municipio?: string
+  },
   entities: Record<string, any>,
   confidence: number,       // 0–1
   rationale?: string
 }
 ```
+
+`informationType` is required when `intent = "show"`. <!-- Updated: intent simplified to show/help -->
 
 Schema: `IntentV1Schema`. Selected at runtime via the schema registry.
 
@@ -201,7 +211,8 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 | `fallback.onLowConfidence` | `"explain_only"`, `"heuristic"`, or `"ask_clarifying"` |
 | `fallback.retryCount` | Number of LLM retries on schema parse failure |
 | `looker.baseUrl` | Looker Studio embed URL (with report/page path) |
-| `looker.paramMap` | Maps canonical filter keys → Looker URL query param names |
+| `looker.paramMap` | Maps canonical filter keys → keys used inside the `params` JSON payload |
+| `looker.informationTypeMap` | Maps `informationType` values → Looker page path/id (or full URL) <!-- Updated: page mapping by information type --> |
 
 ---
 

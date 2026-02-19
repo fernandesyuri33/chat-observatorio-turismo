@@ -30,7 +30,7 @@ describe("DashboardActionSchema", () => {
     const result = DashboardActionSchema.safeParse({
       type: "run_query",
       function: "tourism.resolve",
-      args: { intent: "filter" },
+      args: { intent: "show" },
     });
     expect(result.success).toBe(true);
   });
@@ -72,8 +72,9 @@ describe("DashboardActionSchema", () => {
 describe("IntentV1Schema", () => {
   it("accepts a valid intent", () => {
     const result = IntentV1Schema.safeParse({
-      intent: "filter",
-      proposedFilters: { cidade: "Sao Paulo" },
+      intent: "show",
+      informationType: "funcionarios_por_municipio",
+      proposedFilters: { municipio: "Pouso Alegre", classificacao: "hospedagem" },
       entities: {},
       confidence: 0.8,
     });
@@ -82,7 +83,7 @@ describe("IntentV1Schema", () => {
 
   it("rejects confidence > 1", () => {
     const result = IntentV1Schema.safeParse({
-      intent: "filter",
+      intent: "show",
       proposedFilters: {},
       entities: {},
       confidence: 1.5,
@@ -93,10 +94,31 @@ describe("IntentV1Schema", () => {
   it("rejects unknown intent type", () => {
     const result = IntentV1Schema.safeParse({
       intent: "fly",
+      informationType: "funcionarios_por_municipio",
       proposedFilters: {},
       entities: {},
       confidence: 0.5,
     });
     expect(result.success).toBe(false);
+  });
+
+  it("rejects non-help intent without informationType", () => {
+    const result = IntentV1Schema.safeParse({
+      intent: "show",
+      proposedFilters: {},
+      entities: {},
+      confidence: 0.7,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts help intent without informationType", () => {
+    const result = IntentV1Schema.safeParse({
+      intent: "help",
+      proposedFilters: {},
+      entities: {},
+      confidence: 0.7,
+    });
+    expect(result.success).toBe(true);
   });
 });

@@ -18,6 +18,7 @@ export const PolicyConfigSchema = z.object({
   looker: z.object({
     baseUrl: z.string().url(),
     paramMap: z.record(z.string()),
+    informationTypeMap: z.record(z.string()),
   }),
 });
 

@@ -1,4 +1,4 @@
-import type { DashboardAction } from "@conversational/domain";
+import type { DashboardAction, IntentV1 } from "@conversational/domain";
 import type { ActionProvider, ResolveContext } from "../action-provider.js";
 
 /**
@@ -9,13 +9,7 @@ export class CustomProvider implements ActionProvider {
   readonly id = "custom";
 
   async generate(
-    intent: {
-      intent: string;
-      proposedFilters: Record<string, unknown>;
-      entities: Record<string, unknown>;
-      confidence: number;
-      rationale?: string;
-    },
+    intent: IntentV1,
     _ctx: ResolveContext
   ): Promise<DashboardAction> {
     return {

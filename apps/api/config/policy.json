@@ -3,7 +3,7 @@
   "minConfidence": 0.5,
   "allowAmbiguity": true,
   "knownMetrics": ["visitas", "ocupacao", "eventos"],
-  "knownDimensions": ["cidade", "ano", "mes", "indicador"],
+  "knownDimensions": ["cidade", "ano", "mes", "indicador", "classificacao", "municipio"],
   "synonyms": {
     "occupancy": "ocupacao",
     "visits": "visitas",
@@ -12,7 +12,16 @@
     "year": "ano",
     "month": "mes",
     "indicator": "indicador",
-    "ocupação": "ocupacao"
+    "ocupação": "ocupacao",
+    "classificação": "classificacao",
+    "classificacao": "classificacao",
+    "estabelecimentos por municipio": "estabelecimentos_por_municipio",
+    "funcionarios por municipio": "funcionarios_por_municipio",
+    "funcionários por município": "funcionarios_por_municipio",
+    "funcionarios ao longo do tempo": "funcionarios_ao_longo_do_tempo",
+    "funcionários ao longo do tempo": "funcionarios_ao_longo_do_tempo",
+    "saldo de funcionarios ao longo do tempo": "saldo_funcionarios_ao_longo_do_tempo",
+    "saldo de funcionários ao longo do tempo": "saldo_funcionarios_ao_longo_do_tempo"
   },
   "activeProvider": "looker",
   "fallback": {
@@ -23,10 +32,14 @@
   "looker": {
     "baseUrl": "https://lookerstudio.google.com/embed/reporting/abc123/page/p_1",
     "paramMap": {
-      "cidade": "city",
-      "ano": "year",
-      "mes": "month",
-      "indicador": "indicator"
+      "classificacao": "classification",
+      "municipio": "city"
+    },
+    "informationTypeMap": {
+      "estabelecimentos_por_municipio": "p_estabelecimentos",
+      "funcionarios_por_municipio": "p_funcionarios_municipio",
+      "funcionarios_ao_longo_do_tempo": "p_funcionarios_tempo",
+      "saldo_funcionarios_ao_longo_do_tempo": "p_saldo_funcionarios_tempo"
     }
   }
 }
