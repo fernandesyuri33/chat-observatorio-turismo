@@ -1,15 +1,14 @@
 import { DashboardActionSchema, type DashboardAction } from "@conversational/domain";
 import type { LlmPort } from "@conversational/llm";
 import { PolicyEngine, type NormalizedIntent } from "@conversational/policy";
-import type { ResolveContext } from "@conversational/providers";
-import { ProviderRouter } from "./provider-router.js";
+import type { ActionProvider, ResolveContext } from "@conversational/providers";
 import { getSchemaEntry, getActiveVersion } from "./schema-registry.js";
 import { explainOnlyFallback } from "./fallback.js";
 
 export interface ResolveDashboardActionDeps {
   llm: LlmPort;
   policyEngine: PolicyEngine;
-  router: ProviderRouter;
+  provider: ActionProvider;
 }
 
 export interface ResolveRequest {
@@ -32,7 +31,7 @@ export async function resolveDashboardAction(
   deps: ResolveDashboardActionDeps,
   request: ResolveRequest
 ): Promise<DashboardAction> {
-  const { llm, policyEngine, router } = deps;
+  const { llm, policyEngine, provider } = deps;
   const config = policyEngine.getConfig();
   const ctx: ResolveContext = request.ctx ?? {};
 
@@ -85,16 +84,7 @@ export async function resolveDashboardAction(
     // "heuristic" → proceed anyway
   }
 
-  // ── Step 4: Route to provider ─────────────────────────────────
-  const provider = router.resolve(normalized.intent, ctx);
-  if (!provider) {
-    return explainOnlyFallback(
-      `Nenhum provedor disponível para a intenção "${normalized.intent}".`,
-      ["Tente uma pergunta diferente", "Peça ajuda"]
-    );
-  }
-
-  // ── Step 5: Generate action from provider ─────────────────────
+  // ── Step 4: Generate action from provider ──────────────────────
   let action: DashboardAction;
   try {
     action = await provider.generate(normalized, ctx);
@@ -105,7 +95,7 @@ export async function resolveDashboardAction(
     );
   }
 
-  // ── Step 6: Validate output against DashboardActionSchema ─────
+  // ── Step 5: Validate output against DashboardActionSchema ─────
   const validated = DashboardActionSchema.safeParse(action);
   if (!validated.success) {
     return explainOnlyFallback(

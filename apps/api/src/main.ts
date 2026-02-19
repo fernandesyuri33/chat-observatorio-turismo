@@ -9,7 +9,7 @@ import { PolicyEngine, loadPolicyConfig } from "@conversational/policy";
 import { OllamaLlmAdapter, StubLlmAdapter } from "@conversational/llm";
 import type { LlmPort } from "@conversational/llm";
 import { LookerProvider, CustomProvider } from "@conversational/providers";
-import { ProviderRouter } from "@conversational/application";
+import type { ActionProvider } from "@conversational/providers";
 import type { ResolveDashboardActionDeps } from "@conversational/application";
 
 import { dashboardRoutes } from "./routes/dashboard.js";
@@ -36,21 +36,28 @@ const llm: LlmPort =
     ? new StubLlmAdapter()
     : new OllamaLlmAdapter();
 
-// ── Create providers ────────────────────────────────────────────
-const lookerProvider = new LookerProvider(policyConfig.looker);
-const customProvider = new CustomProvider();
+// ── Create providers registry ───────────────────────────────────
+// All known providers are registered here. Only the one identified
+// by `activeProvider` in policy.json is used at runtime.
+const providerRegistry = new Map<string, ActionProvider>([
+  ["looker", new LookerProvider(policyConfig.looker)],
+  ["custom", new CustomProvider()],
+]);
 
-// ── Create router ───────────────────────────────────────────────
-const router = new ProviderRouter(
-  [lookerProvider, customProvider],
-  policyConfig.routing
-);
+// ── Select active provider from config ──────────────────────────
+const activeProvider = providerRegistry.get(policyConfig.activeProvider);
+if (!activeProvider) {
+  throw new Error(
+    `Unknown activeProvider "${policyConfig.activeProvider}". ` +
+    `Available: ${[...providerRegistry.keys()].join(", ")}`
+  );
+}
 
 // ── Wire DI container ───────────────────────────────────────────
 const di: ResolveDashboardActionDeps = {
   llm,
   policyEngine,
-  router,
+  provider: activeProvider,
 };
 
 app.decorate("di", di);

@@ -8,10 +8,6 @@ import type { ActionProvider, ResolveContext } from "../action-provider.js";
 export class CustomProvider implements ActionProvider {
   readonly id = "custom";
 
-  supports(_ctx: ResolveContext): boolean {
-    return true;
-  }
-
   async generate(
     intent: {
       intent: string;

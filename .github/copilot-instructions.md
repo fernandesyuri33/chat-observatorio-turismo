@@ -10,20 +10,26 @@
 
 **Conversational Looker Dashboard** is an Nx monorepo that turns natural-language
 user messages into validated, structured dashboard actions. A local LLM (Ollama)
-interprets the user's intent and a policy-driven pipeline routes it through the
-correct action provider (Looker, custom, etc.), returning a typed
-`DashboardAction` to the React frontend.
+interprets the user's intent and the pipeline delegates to a single, configured
+action provider (e.g. Looker, custom) that translates the intent into a typed
+`DashboardAction` returned to the React frontend.
+
+> **Single-provider model:** only one provider is active at a time, selected via
+> `activeProvider` in `policy.json`. Every provider implementation must handle
+> **all** intent types. The system supports multiple provider implementations so
+> the active one can be swapped without code changes — but it never routes
+> different intents to different providers simultaneously.
 
 ### Key Design Principles
 
 | Principle | How it's applied |
 |---|---|
 | Clean / Hexagonal architecture | Domain models have zero infrastructure deps; ports define contracts; adapters live at the edge |
-| Strategy pattern | `ActionProvider` interface — swap or add providers without touching the use case |
+| Strategy pattern | `ActionProvider` interface — swap the active provider without touching the use case |
 | Port / Adapter pattern | `LlmPort` interface — `StubLlmAdapter` for tests, `OllamaLlmAdapter` for production |
 | Zod schema validation | Every boundary (HTTP request, LLM output, provider output, HTTP response) is validated with Zod |
 | Schema registry | Versioned LLM output schemas selected at runtime via `INTENT_SCHEMA_VERSION` env var |
-| Policy-driven routing | `policy.json` controls which provider handles each intent, confidence thresholds, synonym resolution, and fallback behavior |
+| Single-provider config | `activeProvider` in `policy.json` selects which provider handles **all** intents; every provider must support every intent type |
 | Configurable fallback chain | `retry_llm`, `explain_only`, `ask_clarifying`, `heuristic` — all driven by policy config |
 
 ---
@@ -82,8 +88,7 @@ libs/
 
   application/                 # Use case orchestration
     src/
-      resolve-dashboard-action.usecase.ts  # Core pipeline: LLM → normalize → confidence → route → validate
-      provider-router.ts                   # Policy-driven provider selection
+      resolve-dashboard-action.usecase.ts  # Core pipeline: LLM → normalize → confidence → provider → validate
       schema-registry.ts                   # Version → { schema, parse } registry
       fallback.ts                          # explainOnlyFallback() factory
       index.ts
@@ -166,11 +171,13 @@ User message
   → LLM.generateStructured(IntentSchema, message)
   → PolicyEngine.normalizeIntent(rawIntent)
   → Confidence check (minConfidence from policy)
-  → ProviderRouter.resolve(intent, ctx)
-  → provider.generate(normalizedIntent, ctx)
+  → activeProvider.generate(normalizedIntent, ctx)
   → DashboardActionSchema.parse(action)     ← output validation
   → Return to HTTP layer
 ```
+
+There is no intent-to-provider routing step — the single active provider
+(injected at startup based on `activeProvider` config) handles every intent.
 
 At **every** failure point the pipeline returns an `explain_only` fallback
 (never throws to the HTTP layer).
@@ -184,7 +191,7 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 | `mode` | `"free"` / `"guided"` / `"strict"` — progressive hardening of allowed inputs |
 | `minConfidence` | Minimum confidence to proceed (below → fallback) |
 | `synonyms` | `Record<string, string>` — maps user/LLM terms to canonical filter keys |
-| `routing` | `Record<string, string>` — maps intent type to provider id |
+| `activeProvider` | `string` — id of the single active `ActionProvider` (e.g. `"looker"`, `"custom"`) <!-- Updated: replaced routing map with single activeProvider --> |
 | `fallback.onSchemaInvalid` | `"retry_llm"` or `"explain_only"` |
 | `fallback.onLowConfidence` | `"explain_only"`, `"heuristic"`, or `"ask_clarifying"` |
 | `fallback.retryCount` | Number of LLM retries on schema parse failure |
@@ -276,8 +283,9 @@ setup). The `LLM_ADAPTER` env var only affects the API server bootstrap.
    `libs/policy`, `libs/llm` (port only), `libs/providers` (interface only).
 
 3. **New providers:** Implement `ActionProvider` in `libs/providers/src/<name>/`,
-   export from `libs/providers/src/index.ts`, register in `apps/api/src/main.ts`,
-   add routing rule in `policy.json`.
+   export from `libs/providers/src/index.ts`, register in the provider registry
+   map in `apps/api/src/main.ts`. The provider must handle **all** intent types.
+   To make it active, set `activeProvider` in `policy.json` to the new id.
 
 4. **New LLM adapters:** Implement `LlmPort` in `libs/llm/src/`, export from
    barrel, add selection logic in `apps/api/src/main.ts`.

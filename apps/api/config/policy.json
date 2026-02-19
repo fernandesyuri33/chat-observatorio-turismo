@@ -14,13 +14,7 @@
     "indicator": "indicador",
     "ocupação": "ocupacao"
   },
-  "routing": {
-    "filter": "looker",
-    "compare": "looker",
-    "trend": "looker",
-    "topN": "custom",
-    "help": "custom"
-  },
+  "activeProvider": "looker",
   "fallback": {
     "onSchemaInvalid": "retry_llm",
     "onLowConfidence": "explain_only",

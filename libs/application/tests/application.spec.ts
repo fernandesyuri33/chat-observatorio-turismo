@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { getSchemaEntry, getActiveVersion } from "../src/schema-registry";
-import { ProviderRouter } from "../src/provider-router";
 import { resolveDashboardAction } from "../src/resolve-dashboard-action.usecase";
 import { PolicyEngine } from "@conversational/policy";
 import { StubLlmAdapter } from "@conversational/llm";
@@ -17,13 +16,7 @@ const testPolicyConfig: PolicyConfig = {
     occupancy: "ocupacao",
     visits: "visitas",
   },
-  routing: {
-    filter: "looker",
-    trend: "looker",
-    help: "custom",
-    topN: "custom",
-    compare: "looker",
-  },
+  activeProvider: "looker",
   fallback: {
     onSchemaInvalid: "retry_llm",
     onLowConfidence: "explain_only",
@@ -58,46 +51,18 @@ describe("SchemaRegistry", () => {
   });
 });
 
-describe("ProviderRouter", () => {
-  it("routes filter intent to looker provider", () => {
-    const looker = new LookerProvider(testPolicyConfig.looker);
-    const custom = new CustomProvider();
-    const router = new ProviderRouter([looker, custom], testPolicyConfig.routing);
-
-    const provider = router.resolve("filter", {});
-    expect(provider?.id).toBe("looker");
-  });
-
-  it("routes help intent to custom provider", () => {
-    const looker = new LookerProvider(testPolicyConfig.looker);
-    const custom = new CustomProvider();
-    const router = new ProviderRouter([looker, custom], testPolicyConfig.routing);
-
-    const provider = router.resolve("help", {});
-    expect(provider?.id).toBe("custom");
-  });
-
-  it("falls back to first supporting provider for unknown intent", () => {
-    const looker = new LookerProvider(testPolicyConfig.looker);
-    const custom = new CustomProvider();
-    const router = new ProviderRouter([looker, custom], testPolicyConfig.routing);
-
-    const provider = router.resolve("nonexistent_intent", {});
-    expect(provider).toBeDefined();
-  });
-});
-
 describe("resolveDashboardAction", () => {
-  function buildDeps() {
-    const policyEngine = new PolicyEngine(testPolicyConfig);
+  function buildDeps(overrideConfig?: Partial<PolicyConfig>) {
+    const config = { ...testPolicyConfig, ...overrideConfig };
+    const policyEngine = new PolicyEngine(config);
     const llm = new StubLlmAdapter();
-    const looker = new LookerProvider(testPolicyConfig.looker);
-    const custom = new CustomProvider();
-    const router = new ProviderRouter([looker, custom], testPolicyConfig.routing);
-    return { llm, policyEngine, router };
+    const provider = config.activeProvider === "custom"
+      ? new CustomProvider()
+      : new LookerProvider(config.looker);
+    return { llm, policyEngine, provider };
   }
 
-  it("returns open_url for occupancy request", async () => {
+  it("returns open_url for occupancy request (looker provider)", async () => {
     const deps = buildDeps();
     const result = await resolveDashboardAction(deps, {
       message: "Show me occupancy trends",
@@ -105,10 +70,10 @@ describe("resolveDashboardAction", () => {
     expect(result.type).toBe("open_url");
   });
 
-  it("returns run_query for help request", async () => {
-    const deps = buildDeps();
+  it("returns run_query when activeProvider is custom", async () => {
+    const deps = buildDeps({ activeProvider: "custom" });
     const result = await resolveDashboardAction(deps, {
-      message: "I need help",
+      message: "Show me occupancy trends",
     });
     expect(result.type).toBe("run_query");
   });
@@ -125,20 +90,10 @@ describe("resolveDashboardAction", () => {
   });
 
   it("returns explain_only on low confidence", async () => {
-    // Default stub returns confidence 0.6 for generic messages.
-    // Set minConfidence to 0.9 to trigger low-confidence fallback.
-    const highMinConfig: PolicyConfig = {
-      ...testPolicyConfig,
-      minConfidence: 0.9,
-    };
-    const policyEngine = new PolicyEngine(highMinConfig);
-    const llm = new StubLlmAdapter();
-    const looker = new LookerProvider(testPolicyConfig.looker);
-    const custom = new CustomProvider();
-    const router = new ProviderRouter([looker, custom], highMinConfig.routing);
+    const deps = buildDeps({ minConfidence: 0.9 });
 
     const result = await resolveDashboardAction(
-      { llm, policyEngine, router },
+      deps,
       { message: "something generic" }
     );
     expect(result.type).toBe("explain_only");

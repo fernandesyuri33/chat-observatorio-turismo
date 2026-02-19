@@ -3,7 +3,6 @@ export {
   type ResolveDashboardActionDeps,
   type ResolveRequest,
 } from "./resolve-dashboard-action.usecase.js";
-export { ProviderRouter } from "./provider-router.js";
 export {
   getSchemaEntry,
   getActiveVersion,

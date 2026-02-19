@@ -11,10 +11,6 @@ export class LookerProvider implements ActionProvider {
 
   constructor(private readonly lookerConfig: PolicyConfig["looker"]) {}
 
-  supports(_ctx: ResolveContext): boolean {
-    return true;
-  }
-
   async generate(
     intent: {
       intent: string;
