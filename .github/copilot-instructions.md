@@ -82,9 +82,13 @@ libs/
   domain/                      # Pure domain types — zero infra deps
     src/
       dashboard-action.schema.ts   # DashboardAction discriminated union (4 variants)
-      dashboard-resolve-contract.schema.ts # Shared HTTP contract for POST /dashboard/resolve
       intent.v1.schema.ts          # IntentV1 — versioned LLM structured output schema
       index.ts                     # Barrel export
+
+  contracts/                   # Shared HTTP API contracts (publishable package)
+    src/
+      dashboard-resolve-contract.schema.ts # Shared HTTP contract for POST /dashboard/resolve
+      index.ts
 
   application/                 # Use case orchestration
     src/
@@ -122,6 +126,7 @@ libs/
 | Alias | Path |
 |---|---|
 | `@conversational/domain` | `libs/domain/src/index.ts` |
+| `@conversational/contracts` | `libs/contracts/src/index.ts` |
 | `@conversational/application` | `libs/application/src/index.ts` |
 | `@conversational/policy` | `libs/policy/src/index.ts` |
 | `@conversational/llm` | `libs/llm/src/index.ts` |
@@ -159,7 +164,7 @@ Schema: `IntentV1Schema`. Selected at runtime via the schema registry.
 ### Shared endpoint contracts
 
 `ResolveDashboardRequestSchema` and `ResolveDashboardResponseSchema` live in
-`libs/domain/src/dashboard-resolve-contract.schema.ts` and must be reused by
+`libs/contracts/src/dashboard-resolve-contract.schema.ts` and must be reused by
 API routes and frontend clients to avoid contract drift.
 
 ---
@@ -281,6 +286,9 @@ setup). The `LLM_ADAPTER` env var only affects the API server bootstrap.
 
 2. **Dependency direction:** `apps/api` → `libs/application` → `libs/domain`,
    `libs/policy`, `libs/llm` (port only), `libs/providers` (interface only).
+
+   `apps/*` and external clients should import HTTP request/response contracts
+   from `libs/contracts` instead of `libs/domain`. <!-- Updated: endpoint contract ownership moved to contracts lib -->
 
 3. **New providers:** Implement `ActionProvider` in `libs/providers/src/<name>/`,
    export from `libs/providers/src/index.ts`, register in the provider registry

@@ -11,7 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@conversational/domain": "workspace:*",
+    "@conversational/contracts": "workspace:*",
     "@conversational/application": "workspace:*",
     "@conversational/policy": "workspace:*",
     "@conversational/llm": "workspace:*",

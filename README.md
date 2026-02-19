@@ -5,9 +5,9 @@ Monorepo Nx + pnpm para uma webapp conversacional que controla filtros de um rel
 ## Stack
 - `apps/web`: React + Vite + TypeScript
 - `apps/api`: Fastify + TypeScript
-- `libs/contracts`: schemas Zod compartilhados
-- `libs/url-builder`: geracao deterministica da URL do Looker Studio
-- `libs/ui`: componentes reaproveitaveis
+- `libs/domain`: modelos de dominio (acoes e intents)
+- `libs/contracts`: contratos HTTP compartilhados (request/response)
+- `libs/application`, `libs/policy`, `libs/llm`, `libs/providers`: orquestracao e adaptadores
 
 ## Requisitos locais
 - Node.js 20+
@@ -94,11 +94,16 @@ Response body (fallback):
 ## Scripts
 - `pnpm dev`: `nx run-many -t serve -p web api`
 - `pnpm build`: `nx run-many -t build -p web api`
-- `pnpm lint`: `nx run-many -t lint -p web api contracts url-builder ui`
-- `pnpm test`: `nx run-many -t test -p web api contracts url-builder ui`
+- `pnpm typecheck`: `nx run-many -t build -p web api domain contracts application policy llm providers`
+- `pnpm lint`: `nx run-many -t lint -p web api domain contracts application policy llm providers`
+- `pnpm test`: `nx run-many -t test -p web api domain contracts application policy llm providers`
 
 ## Testes
-- `libs/url-builder` possui testes Vitest garantindo montagem deterministica da URL.
+- `libs/domain`, `libs/contracts` e `libs/application` possuem testes Vitest para schemas e pipeline.
+
+## Pacote de contratos
+- O contrato HTTP de `POST /dashboard/resolve` fica em `libs/contracts` e é exportado por `@conversational/contracts`.
+- Objetivo: permitir publicar e reutilizar os tipos/schemas de integração da API em outros projetos.
 
 ## Notas
 - O builder atual monta `?filters=cidade:...;ano:...;mes:...;indicador:...`. Ajuste o formato para o padrao real do Looker Studio do seu relatorio se necessario.

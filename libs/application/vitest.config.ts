@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@conversational/domain": resolve(__dirname, "../domain/src/index.ts"),
+      "@conversational/contracts": resolve(__dirname, "../contracts/src/index.ts"),
       "@conversational/application": resolve(__dirname, "src/index.ts"),
       "@conversational/policy": resolve(__dirname, "../policy/src/index.ts"),
       "@conversational/llm": resolve(__dirname, "../llm/src/index.ts"),

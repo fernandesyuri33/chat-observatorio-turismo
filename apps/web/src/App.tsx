@@ -2,10 +2,9 @@ import { useState } from "react";
 import {
   ResolveDashboardRequestSchema,
   ResolveDashboardResponseSchema,
-  type DashboardAction,
   type ResolveDashboardRequest,
   type ResolveDashboardResponse,
-} from "@conversational/domain";
+} from "@conversational/contracts";
 
 // ── Inline simple UI components (previously from @conversational/ui) ──
 
@@ -33,7 +32,7 @@ function SuggestionChips({ suggestions, onSelect }: { suggestions: string[]; onS
   );
 }
 
-function ActionPanel({ lastAction }: { lastAction?: DashboardAction }) {
+function ActionPanel({ lastAction }: { lastAction?: ResolveDashboardResponse["action"] }) {
   if (!lastAction) return <p className="muted">Nenhuma acao aplicada ainda.</p>;
   return (
     <div className="action-panel">
@@ -68,7 +67,7 @@ export function App() {
     { id: "welcome", role: "assistant" as const, content: "Como posso ajudar?" }
   ]);
   const [input, setInput] = useState("");
-  const [lastAction, setLastAction] = useState<DashboardAction | undefined>(undefined);
+  const [lastAction, setLastAction] = useState<ResolveDashboardResponse["action"] | undefined>(undefined);
 
   // Derive iframe URL from the last open_url action, or use the base embed URL
   const iframeUrl =

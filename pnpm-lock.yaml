@@ -47,9 +47,9 @@ importers:
       '@conversational/application':
         specifier: workspace:*
         version: link:../../libs/application
-      '@conversational/domain':
+      '@conversational/contracts':
         specifier: workspace:*
-        version: link:../../libs/domain
+        version: link:../../libs/contracts
       '@conversational/llm':
         specifier: workspace:*
         version: link:../../libs/llm
@@ -93,9 +93,9 @@ importers:
 
   apps/web:
     dependencies:
-      '@conversational/domain':
+      '@conversational/contracts':
         specifier: workspace:*
-        version: link:../../libs/domain
+        version: link:../../libs/contracts
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -139,6 +139,15 @@ importers:
       '@conversational/providers':
         specifier: workspace:*
         version: link:../providers
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
+
+  libs/contracts:
+    dependencies:
+      '@conversational/domain':
+        specifier: workspace:*
+        version: link:../domain
       zod:
         specifier: ^3.23.8
         version: 3.25.76

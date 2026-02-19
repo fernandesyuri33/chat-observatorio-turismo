@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DashboardActionSchema } from "./dashboard-action.schema.js";
+import { DashboardActionSchema } from "@conversational/domain";
 
 export const ResolveDashboardRequestSchema = z.object({
   message: z.string().min(1),

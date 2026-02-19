@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import {
   ResolveDashboardRequestSchema,
   ResolveDashboardResponseSchema,
-} from "@conversational/domain";
+} from "@conversational/contracts";
 import { resolveDashboardAction } from "@conversational/application";
 import type { ResolveDashboardActionDeps } from "@conversational/application";
 

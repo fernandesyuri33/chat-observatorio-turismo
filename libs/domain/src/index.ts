@@ -16,9 +16,3 @@ export {
   type IntentV1,
 } from "./intent.v1.schema.js";
 
-export {
-  ResolveDashboardRequestSchema,
-  ResolveDashboardResponseSchema,
-  type ResolveDashboardRequest,
-  type ResolveDashboardResponse,
-} from "./dashboard-resolve-contract.schema.js";
