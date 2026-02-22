@@ -84,7 +84,7 @@ export class LookerProvider implements ActionProvider {
       return url;
     }
 
-    const basePathWithoutPage = url.pathname.replace(/\/page\/[^/]+$/, "");
+    const basePathWithoutPage = url.pathname.replace(/\/page(?:\/[^/]+)?\/?$/, "");
     url.pathname = `${basePathWithoutPage}/page/${mappedPage}`;
     return url;
   }
