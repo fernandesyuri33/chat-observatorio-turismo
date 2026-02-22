@@ -29,6 +29,11 @@ const IntentV1BaseSchema = z.object({
   rationale: z.string().optional(),
 });
 
+const OmittedInformationTypeSchema = z
+  .null()
+  .optional()
+  .transform(() => undefined);
+
 export const ShowIntentV1Schema = IntentV1BaseSchema.extend({
   intent: z.literal("show"),
   informationType: InformationTypeSchema,
@@ -36,12 +41,18 @@ export const ShowIntentV1Schema = IntentV1BaseSchema.extend({
 
 export const HelpIntentV1Schema = IntentV1BaseSchema.extend({
   intent: z.literal("help"),
-  informationType: z.never().optional(),
+  informationType: OmittedInformationTypeSchema,
+});
+
+export const InitialOrientationIntentV1Schema = IntentV1BaseSchema.extend({
+  intent: z.literal("initial_orientation"),
+  informationType: OmittedInformationTypeSchema,
 });
 
 export const IntentV1Schema = z.discriminatedUnion("intent", [
   ShowIntentV1Schema,
   HelpIntentV1Schema,
+  InitialOrientationIntentV1Schema,
 ]);
 
 export type InformationType = z.infer<typeof InformationTypeSchema>;

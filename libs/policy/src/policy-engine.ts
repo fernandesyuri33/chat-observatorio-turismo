@@ -33,6 +33,13 @@ export type NormalizedIntent =
       proposedFilters: IntentFilters;
       confidence: number;
       rationale?: string;
+    }
+  | {
+      intent: "initial_orientation";
+      informationType?: never;
+      proposedFilters: IntentFilters;
+      confidence: number;
+      rationale?: string;
     };
 
 const INFORMATION_TYPES = new Set<InformationType>([
@@ -104,7 +111,7 @@ export class PolicyEngine {
       normalizedFilters.municipio = resolvedFilters["municipio"];
     }
 
-    if (raw.intent === "help") {
+    if (raw.intent === "help" || raw.intent === "initial_orientation") {
       return {
         ...raw,
         proposedFilters: normalizedFilters,

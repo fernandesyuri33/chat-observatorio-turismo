@@ -17,6 +17,7 @@ export {
   IntentV1FiltersSchema,
   ShowIntentV1Schema,
   HelpIntentV1Schema,
+  InitialOrientationIntentV1Schema,
   IntentV1Schema,
   type InformationType,
   type Classificacao,

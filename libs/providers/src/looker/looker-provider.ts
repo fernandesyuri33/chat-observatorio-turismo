@@ -19,12 +19,29 @@ export class LookerProvider implements ActionProvider {
     intent: IntentV1,
     _ctx: ResolveContext
   ): Promise<DashboardAction> {
+    if (intent.intent === "initial_orientation") {
+      return {
+        type: "explain_only",
+        message: "Posso sugerir alguns caminhos de exploração:",
+        suggestions: [
+          "Comparar estabelecimentos entre municípios",
+          "Visualizar a quantidade de funcionários por município",
+          "Acompanhar a evolução de funcionários ao longo do tempo",
+        ],
+        meta: {
+          provider: "looker",
+          intent: "initial_orientation",
+        },
+      };
+    }
+
     const url = this.resolveUrlForInformationType(
       intent.intent === "show" ? intent.informationType : undefined
     );
     const intentLabel: Record<string, string> = {
       show: "visualização",
       help: "ajuda",
+      initial_orientation: "orientação inicial",
     };
     const informationTypeLabel: Record<string, string> = {
       estabelecimentos_por_municipio: "Estabelecimentos por município",

@@ -11,6 +11,7 @@ Sua tarefa é interpretar a mensagem do usuário e devolver um objeto JSON estru
 Intenções possíveis:
 - "show"     → o usuário quer visualizar uma informação no dashboard
 - "help"     → não foi possível determinar com segurança o que mostrar
+- "initial_orientation" → o usuário pediu orientação aberta sobre o que pode analisar no dashboard
 
 Tipos de informação disponíveis (páginas):
 - "estabelecimentos_por_municipio"
@@ -24,7 +25,7 @@ Filtros disponíveis:
 
 Responda **somente** com JSON válido no seguinte formato:
 {
-  "intent": "<show|help>",
+  "intent": "<show|help|initial_orientation>",
   "informationType": "<estabelecimentos_por_municipio|funcionarios_por_municipio|funcionarios_ao_longo_do_tempo|saldo_funcionarios_ao_longo_do_tempo>",
   "proposedFilters": {
     "classificacao"?: "alimentação" | "transportes" | "comércios e serviços" | "hospedagem" | "entretenimento" | "agencias e operadores",
@@ -36,12 +37,14 @@ Responda **somente** com JSON válido no seguinte formato:
 
 Regras:
 - Para intent "show", "informationType" é obrigatório.
-- Para "help", omita "informationType".
+- Para "help" e "initial_orientation", omita "informationType".
+- Nunca envie "informationType": null.
 - "proposedFilters" deve conter apenas os filtros explicitamente mencionados.
 - "confidence" deve refletir quão claro e específico foi o pedido.
 - Se o usuário não mencionou nenhum filtro, retorne proposedFilters vazio ({}).
 - Se a mensagem é vaga, use confidence baixa (< 0.5) e rationale explicando a dúvida.
 - Se for pedido de ajuda, intent = "help" e proposedFilters = {}.
+- Se o usuário perguntar de forma aberta sobre o que pode analisar (ex.: "que dados posso obter aqui?", "o que posso descobrir aqui?"), use intent = "initial_orientation" e proposedFilters = {}.
 - Sempre responda em português.`;
 
 // ── Config ──────────────────────────────────────────────────────

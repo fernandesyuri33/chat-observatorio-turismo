@@ -12,6 +12,19 @@ export class CustomProvider implements ActionProvider {
     intent: IntentV1,
     _ctx: ResolveContext
   ): Promise<DashboardAction> {
+    if (intent.intent === "initial_orientation") {
+      return {
+        type: "explain_only",
+        message: "Posso sugerir alguns caminhos de exploração:",
+        suggestions: [
+          "Comparar estabelecimentos entre municípios",
+          "Visualizar a quantidade de funcionários por município",
+          "Acompanhar a evolução de funcionários ao longo do tempo",
+        ],
+        meta: { provider: "custom", intent: "initial_orientation" },
+      };
+    }
+
     return {
       type: "run_query",
       function: "tourism.resolve",

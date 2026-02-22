@@ -110,4 +110,18 @@ describe("resolveDashboardAction", () => {
       expect(result.message).toContain("Baixa confiança");
     }
   });
+
+  it("returns initial orientation suggestions for open onboarding questions", async () => {
+    const deps = buildDeps();
+    const result = await resolveDashboardAction(deps, {
+      message: "O que posso analisar ou descobrir aqui?",
+    });
+
+    expect(result.type).toBe("explain_only");
+    if (result.type === "explain_only") {
+      expect(result.message).toContain("caminhos de exploração");
+      expect(result.suggestions.length).toBeGreaterThanOrEqual(3);
+      expect(result.suggestions.join(" ")).toContain("funcionários");
+    }
+  });
 });

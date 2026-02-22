@@ -26,9 +26,25 @@ export class StubLlmAdapter implements LlmPort {
       proposedFilters["municipio"] = "Poços de Caldas";
     }
 
+    const isInitialOrientationQuestion =
+      lower.includes("o que posso analisar") ||
+      lower.includes("que dados posso obter") ||
+      lower.includes("o que posso descobrir") ||
+      lower.includes("o que posso ver aqui") ||
+      lower.includes("por onde comec") ||
+      lower.includes("por onde começ") ||
+      lower.includes("como posso começar");
+
     if (lower.includes("invalid")) {
       // Return an intentionally invalid shape to test fallback
       raw = { bad: "data" };
+    } else if (isInitialOrientationQuestion) {
+      raw = {
+        intent: "initial_orientation",
+        proposedFilters: {},
+        confidence: 0.9,
+        rationale: "Usuário pediu orientação inicial sobre o que pode analisar",
+      };
     } else if (lower.includes("saldo")) {
       raw = {
         intent: "show",

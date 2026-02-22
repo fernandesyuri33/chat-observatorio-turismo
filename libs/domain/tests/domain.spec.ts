@@ -116,4 +116,39 @@ describe("IntentV1Schema", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it("accepts help intent with informationType null", () => {
+    const result = IntentV1Schema.safeParse({
+      intent: "help",
+      informationType: null,
+      proposedFilters: {},
+      confidence: 0.7,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.informationType).toBeUndefined();
+    }
+  });
+
+  it("accepts initial_orientation intent without informationType", () => {
+    const result = IntentV1Schema.safeParse({
+      intent: "initial_orientation",
+      proposedFilters: {},
+      confidence: 0.9,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts initial_orientation intent with informationType null", () => {
+    const result = IntentV1Schema.safeParse({
+      intent: "initial_orientation",
+      informationType: null,
+      proposedFilters: {},
+      confidence: 0.9,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.informationType).toBeUndefined();
+    }
+  });
 });
