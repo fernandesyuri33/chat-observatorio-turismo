@@ -22,6 +22,7 @@ const testPolicyConfig: PolicyConfig = {
     onSchemaInvalid: "retry_llm",
     onLowConfidence: "explain_only",
     retryCount: 1,
+    contextualOrientationOptionCount: 3,
   },
   looker: {
     baseUrl: "https://lookerstudio.google.com/embed/reporting/abc123/page/p_1",
@@ -90,5 +91,26 @@ describe("POST /dashboard/resolve", () => {
 
     const body = response.json();
     expect(body.error).toBe("Requisição inválida");
+  });
+
+  it("retorna orientação contextual para perguntas semi formuladas", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/dashboard/resolve",
+      payload: {
+        message: "Quero ver dados de Poços de Caldas",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const body = response.json();
+    expect(body.action.type).toBe("explain_only");
+    expect(body.action.message).toContain("A partir desse recorte, você pode explorar");
+    expect(body.action.suggestions).toEqual([
+      "Quantidade de funcionários ao longo do tempo",
+      "Saldo de funcionários ao longo do tempo",
+      "Quantidade de funcionários por município",
+    ]);
   });
 });

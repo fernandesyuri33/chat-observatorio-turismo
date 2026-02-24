@@ -22,6 +22,7 @@ const testPolicyConfig: PolicyConfig = {
     onSchemaInvalid: "retry_llm",
     onLowConfidence: "explain_only",
     retryCount: 1,
+    contextualOrientationOptionCount: 3,
   },
   looker: {
     baseUrl: "https://lookerstudio.google.com/embed/reporting/abc123/page/p_1",
@@ -122,6 +123,44 @@ describe("resolveDashboardAction", () => {
       expect(result.message).toContain("caminhos de exploração");
       expect(result.suggestions.length).toBeGreaterThanOrEqual(3);
       expect(result.suggestions.join(" ")).toContain("funcionários");
+    }
+  });
+
+  it("returns contextual orientation when user provides only filter context", async () => {
+    const deps = buildDeps();
+    const result = await resolveDashboardAction(deps, {
+      message: "Quero ver dados de Poços de Caldas",
+    });
+
+    expect(result.type).toBe("explain_only");
+    if (result.type === "explain_only") {
+      expect(result.message).toContain("A partir desse recorte, você pode explorar");
+      expect(result.suggestions).toEqual([
+        "Quantidade de funcionários ao longo do tempo",
+        "Saldo de funcionários ao longo do tempo",
+        "Quantidade de funcionários por município",
+      ]);
+    }
+  });
+
+  it("limits contextual orientation suggestions using policy config", async () => {
+    const deps = buildDeps({
+      fallback: {
+        ...testPolicyConfig.fallback,
+        contextualOrientationOptionCount: 2,
+      },
+    });
+
+    const result = await resolveDashboardAction(deps, {
+      message: "Quero ver dados de Poços de Caldas",
+    });
+
+    expect(result.type).toBe("explain_only");
+    if (result.type === "explain_only") {
+      expect(result.suggestions).toEqual([
+        "Quantidade de funcionários ao longo do tempo",
+        "Saldo de funcionários ao longo do tempo",
+      ]);
     }
   });
 });

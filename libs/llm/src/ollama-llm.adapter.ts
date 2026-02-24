@@ -5,6 +5,149 @@ import type { LlmPort } from "./llm.port.js";
 
 // ── Default system prompt — tourism dashboard domain ────────────
 
+const INFORMATION_TYPE_BULLETS_TOKEN = "__INFORMATION_TYPE_BULLETS__";
+const INFORMATION_TYPE_PLACEHOLDER_TOKEN = "__INFORMATION_TYPE_OPTIONS__";
+const CLASSIFICACAO_BULLETS_TOKEN = "__CLASSIFICACAO_BULLETS__";
+const CLASSIFICACAO_PLACEHOLDER_TOKEN = "__CLASSIFICACAO_OPTIONS__";
+
+function extractEnumValues(schema: z.ZodTypeAny): string[] {
+  const enumValues = (schema as z.ZodTypeAny & { _def?: { values?: readonly string[] } })._def?.values;
+  if (enumValues && Array.isArray(enumValues)) {
+    return [...enumValues];
+  }
+
+  const options = (schema as z.ZodTypeAny & { options?: readonly string[] }).options;
+  if (options && Array.isArray(options)) {
+    return [...options];
+  }
+
+  const innerType = (schema as z.ZodTypeAny & { _def?: { innerType?: z.ZodTypeAny; schema?: z.ZodTypeAny } })._def?.innerType
+    ?? (schema as z.ZodTypeAny & { _def?: { innerType?: z.ZodTypeAny; schema?: z.ZodTypeAny } })._def?.schema;
+
+  if (innerType) {
+    return extractEnumValues(innerType);
+  }
+
+  return [];
+}
+
+function extractInformationTypeValues(schema: z.ZodTypeAny): string[] {
+  const schemaDef = (schema as z.ZodTypeAny & { _def?: { options?: z.ZodTypeAny[] } })._def;
+  const options = schemaDef?.options;
+
+  if (!options || !Array.isArray(options)) {
+    return [];
+  }
+
+  for (const option of options) {
+    const optionDef = option as z.ZodTypeAny & {
+      _def?: {
+        shape?: Record<string, z.ZodTypeAny> | (() => Record<string, z.ZodTypeAny>);
+      };
+    };
+
+    const rawShape = optionDef._def?.shape;
+    const shape = typeof rawShape === "function" ? rawShape() : rawShape;
+    if (!shape) {
+      continue;
+    }
+
+    const intentDef = shape["intent"] as z.ZodTypeAny & { _def?: { value?: unknown } };
+    if (intentDef?._def?.value !== "show") {
+      continue;
+    }
+
+    const informationTypeSchema = shape["informationType"] as z.ZodTypeAny & {
+      options?: readonly string[];
+      _def?: { values?: readonly string[] };
+    };
+
+    if (informationTypeSchema?._def?.values && Array.isArray(informationTypeSchema._def.values)) {
+      return [...informationTypeSchema._def.values];
+    }
+
+    if (informationTypeSchema?.options && Array.isArray(informationTypeSchema.options)) {
+      return [...informationTypeSchema.options];
+    }
+  }
+
+  return [];
+}
+
+function extractClassificacaoValues(schema: z.ZodTypeAny): string[] {
+  const schemaDef = (schema as z.ZodTypeAny & { _def?: { options?: z.ZodTypeAny[] } })._def;
+  const options = schemaDef?.options;
+
+  if (!options || !Array.isArray(options)) {
+    return [];
+  }
+
+  for (const option of options) {
+    const optionDef = option as z.ZodTypeAny & {
+      _def?: {
+        shape?: Record<string, z.ZodTypeAny> | (() => Record<string, z.ZodTypeAny>);
+      };
+    };
+
+    const rawShape = optionDef._def?.shape;
+    const shape = typeof rawShape === "function" ? rawShape() : rawShape;
+    if (!shape) {
+      continue;
+    }
+
+    const filtersSchema = shape["proposedFilters"] as z.ZodTypeAny & {
+      _def?: {
+        shape?: Record<string, z.ZodTypeAny> | (() => Record<string, z.ZodTypeAny>);
+      };
+    };
+
+    const rawFiltersShape = filtersSchema?._def?.shape;
+    const filtersShape = typeof rawFiltersShape === "function" ? rawFiltersShape() : rawFiltersShape;
+    if (!filtersShape) {
+      continue;
+    }
+
+    const classificacaoSchema = filtersShape["classificacao"] as z.ZodTypeAny;
+    if (!classificacaoSchema) {
+      continue;
+    }
+
+    const values = extractEnumValues(classificacaoSchema);
+    if (values.length > 0) {
+      return values;
+    }
+  }
+
+  return [];
+}
+
+function buildPromptFromSchema(template: string, schema: z.ZodTypeAny): string {
+  const informationTypes = extractInformationTypeValues(schema);
+  const classificacoes = extractClassificacaoValues(schema);
+
+  const informationTypeBullets = (informationTypes.length > 0 ? informationTypes : ["definido_no_schema"])
+    .map((informationType) => `- "${informationType}"`)
+    .join("\n");
+
+  const classificacaoBullets = (classificacoes.length > 0 ? classificacoes : ["definido_no_schema"])
+    .map((classificacao) => `- "${classificacao}"`)
+    .join("\n");
+
+  const informationTypeOptions = informationTypes.length > 0
+    ? informationTypes.join("|")
+    : "definido_no_schema";
+
+  const classificacaoOptions = classificacoes.length > 0
+    ? classificacoes.join("|")
+    : "definido_no_schema";
+
+  return template
+    .replace(INFORMATION_TYPE_BULLETS_TOKEN, informationTypeBullets)
+    .replace(INFORMATION_TYPE_PLACEHOLDER_TOKEN, informationTypeOptions)
+    .replace(CLASSIFICACAO_BULLETS_TOKEN, classificacaoBullets)
+    .replace(CLASSIFICACAO_PLACEHOLDER_TOKEN, classificacaoOptions);
+}
+
 const DEFAULT_SYSTEM_PROMPT = `Você é um assistente de um dashboard de turismo.
 Sua tarefa é interpretar a mensagem do usuário e devolver um objeto JSON estruturado que represente a intenção dele.
 
@@ -14,21 +157,19 @@ Intenções possíveis:
 - "initial_orientation" → o usuário pediu orientação aberta sobre o que pode analisar no dashboard
 
 Tipos de informação disponíveis (páginas):
-- "estabelecimentos_por_municipio"
-- "funcionarios_por_municipio"
-- "funcionarios_ao_longo_do_tempo"
-- "saldo_funcionarios_ao_longo_do_tempo"
+${INFORMATION_TYPE_BULLETS_TOKEN}
 
 Filtros disponíveis:
-- classificacao: "alimentação" | "transportes" | "comércios e serviços" | "hospedagem" | "entretenimento" | "agencias e operadores"
+- classificacao (valores permitidos):
+${CLASSIFICACAO_BULLETS_TOKEN}
 - municipio: string
 
 Responda **somente** com JSON válido no seguinte formato:
 {
   "intent": "<show|help|initial_orientation>",
-  "informationType": "<estabelecimentos_por_municipio|funcionarios_por_municipio|funcionarios_ao_longo_do_tempo|saldo_funcionarios_ao_longo_do_tempo>",
+  "informationType": "<${INFORMATION_TYPE_PLACEHOLDER_TOKEN}>",
   "proposedFilters": {
-    "classificacao"?: "alimentação" | "transportes" | "comércios e serviços" | "hospedagem" | "entretenimento" | "agencias e operadores",
+    "classificacao"?: "<${CLASSIFICACAO_PLACEHOLDER_TOKEN}>",
     "municipio"?: string
   },
   "confidence": <número de 0 a 1>,
@@ -118,7 +259,7 @@ export class OllamaLlmAdapter implements LlmPort {
         temperature: this.temperature,
         max_retries: this.maxRetries,
         messages: [
-          { role: "system", content: this.systemPrompt },
+          { role: "system", content: buildPromptFromSchema(this.systemPrompt, schema) },
           { role: "user", content: input },
         ],
         response_model: {

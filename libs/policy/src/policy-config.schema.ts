@@ -14,6 +14,7 @@ export const PolicyConfigSchema = z.object({
     onSchemaInvalid: z.enum(["retry_llm", "explain_only"]),
     onLowConfidence: z.enum(["explain_only", "heuristic", "ask_clarifying"]),
     retryCount: z.number().int().min(0),
+    contextualOrientationOptionCount: z.number().int().min(1),
   }),
   looker: z.object({
     baseUrl: z.string().url(),

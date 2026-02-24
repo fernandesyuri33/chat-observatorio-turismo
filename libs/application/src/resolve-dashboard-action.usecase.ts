@@ -1,4 +1,9 @@
-import { DashboardActionSchema, type DashboardAction } from "@conversational/domain";
+import {
+  INFORMATION_TYPE_VALUES,
+  DashboardActionSchema,
+  type DashboardAction,
+  type InformationType,
+} from "@conversational/domain";
 import type { LlmPort } from "@conversational/llm";
 import { PolicyEngine, type NormalizedIntent } from "@conversational/policy";
 import type { ActionProvider, ResolveContext } from "@conversational/providers";
@@ -14,6 +19,75 @@ export interface ResolveDashboardActionDeps {
 export interface ResolveRequest {
   message: string;
   ctx?: ResolveContext;
+}
+
+const INFORMATION_TYPE_LABEL: Record<InformationType, string> = {
+  estabelecimentos_por_municipio: "Quantidade de estabelecimentos por município",
+  funcionarios_por_municipio: "Quantidade de funcionários por município",
+  funcionarios_ao_longo_do_tempo: "Quantidade de funcionários ao longo do tempo",
+  saldo_funcionarios_ao_longo_do_tempo: "Saldo de funcionários ao longo do tempo",
+};
+
+const INFORMATION_TYPES = new Set<InformationType>(INFORMATION_TYPE_VALUES);
+
+function normalizeText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function hasInformationTypeMention(message: string, synonyms: Record<string, string>): boolean {
+  const normalizedMessage = normalizeText(message);
+  const terms = new Set<string>([
+    "estabelecimentos por municipio",
+    "funcionarios por municipio",
+    "funcionarios ao longo do tempo",
+    "saldo de funcionarios ao longo do tempo",
+    "saldo funcionarios ao longo do tempo",
+  ]);
+
+  for (const [synonym, canonical] of Object.entries(synonyms)) {
+    if (INFORMATION_TYPES.has(canonical as InformationType)) {
+      terms.add(normalizeText(synonym));
+    }
+  }
+
+  for (const term of terms) {
+    if (normalizedMessage.includes(term)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasOnlyFilterContext(intent: NormalizedIntent): boolean {
+  if (intent.intent !== "show") {
+    return false;
+  }
+
+  return Object.keys(intent.proposedFilters).length > 0;
+}
+
+function buildContextualOrientationMessage(intent: NormalizedIntent): string {
+  const base = "A partir desse recorte, você pode explorar:";
+
+  if (intent.proposedFilters.municipio) {
+    return `${base} em ${intent.proposedFilters.municipio}. Qual abordagem você prefere? Também posso listar tudo o que é possível observar deste recorte.`;
+  }
+
+  if (intent.proposedFilters.classificacao) {
+    return `${base} para a classificação ${intent.proposedFilters.classificacao}. Qual abordagem você prefere? Também posso listar tudo o que é possível observar deste recorte.`;
+  }
+
+  return `${base} Qual abordagem você prefere? Também posso listar tudo o que é possível observar deste recorte.`;
+}
+
+function buildContextualOrientationSuggestions(optionCount: number): string[] {
+  return INFORMATION_TYPE_VALUES
+    .slice(0, optionCount)
+    .map((informationType) => INFORMATION_TYPE_LABEL[informationType]);
 }
 
 /**
@@ -66,6 +140,16 @@ export async function resolveDashboardAction(
   // ── Step 2: Normalize intent ──────────────────────────────────
   const parsed = rawIntent as NormalizedIntent;
   const normalized = policyEngine.normalizeIntent(parsed);
+
+  if (
+    hasOnlyFilterContext(normalized) &&
+    !hasInformationTypeMention(request.message, config.synonyms)
+  ) {
+    return explainOnlyFallback(
+      buildContextualOrientationMessage(normalized),
+      buildContextualOrientationSuggestions(config.fallback.contextualOrientationOptionCount)
+    );
+  }
 
   // ── Step 3: Check confidence ──────────────────────────────────
   if (normalized.confidence < config.minConfidence) {

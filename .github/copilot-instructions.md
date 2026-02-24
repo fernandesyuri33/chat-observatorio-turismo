@@ -209,6 +209,7 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 | `fallback.onSchemaInvalid` | `"retry_llm"` or `"explain_only"` |
 | `fallback.onLowConfidence` | `"explain_only"`, `"heuristic"`, or `"ask_clarifying"` |
 | `fallback.retryCount` | Number of LLM retries on schema parse failure |
+| `fallback.contextualOrientationOptionCount` | Number of contextual `informationType` suggestions shown when user provides only filter context without a clear analysis recorte | <!-- Updated: configurable amount for semi-formulated contextual guidance --> |
 | `looker.baseUrl` | Looker Studio embed URL (with report/page path) |
 | `looker.paramMap` | Maps canonical filter keys → keys used inside the `params` JSON payload |
 | `looker.informationTypeMap` | Maps `informationType` values → Looker page path/id (or full URL) <!-- Updated: page mapping by information type --> |

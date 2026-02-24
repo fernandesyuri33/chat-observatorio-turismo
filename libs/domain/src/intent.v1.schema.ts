@@ -2,12 +2,14 @@ import { z } from "zod";
 
 // ── Intent v1 — LLM structured output schema ───────────────────
 
-export const InformationTypeSchema = z.enum([
-  "estabelecimentos_por_municipio",
-  "funcionarios_por_municipio",
+export const INFORMATION_TYPE_VALUES = [
   "funcionarios_ao_longo_do_tempo",
   "saldo_funcionarios_ao_longo_do_tempo",
-]);
+  "funcionarios_por_municipio",
+  "estabelecimentos_por_municipio",
+] as const;
+
+export const InformationTypeSchema = z.enum(INFORMATION_TYPE_VALUES);
 
 export const ClassificacaoSchema = z.enum([
   "alimentação",

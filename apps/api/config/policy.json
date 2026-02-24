@@ -27,7 +27,8 @@
   "fallback": {
     "onSchemaInvalid": "retry_llm",
     "onLowConfidence": "explain_only",
-    "retryCount": 1
+    "retryCount": 1,
+    "contextualOrientationOptionCount": 3
   },
   "looker": {
     "baseUrl": "https://lookerstudio.google.com/u/0/reporting/b4daa6c1-6dae-4006-b4a1-49547a31a856/page/",

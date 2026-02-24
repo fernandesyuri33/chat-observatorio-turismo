@@ -12,6 +12,7 @@ export {
 } from "./dashboard-action.schema.js";
 
 export {
+  INFORMATION_TYPE_VALUES,
   InformationTypeSchema,
   ClassificacaoSchema,
   IntentV1FiltersSchema,
