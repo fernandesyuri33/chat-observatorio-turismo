@@ -40,7 +40,7 @@ export class LookerProvider implements ActionProvider {
     );
     const intentLabel: Record<string, string> = {
       show: "visualização",
-      help: "ajuda",
+      contextual_orientation: "orientação contextual",
       initial_orientation: "orientação inicial",
     };
     const informationTypeLabel: Record<string, string> = {

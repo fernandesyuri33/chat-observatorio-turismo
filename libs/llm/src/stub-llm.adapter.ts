@@ -80,12 +80,12 @@ export class StubLlmAdapter implements LlmPort {
         confidence: 0.8,
         rationale: "Usuário pediu funcionários por município",
       };
-    } else if (lower.includes("help")) {
+    } else if (lower.includes("help") || lower.includes("ajuda")) {
       raw = {
-        intent: "help",
+        intent: "contextual_orientation",
         proposedFilters,
         confidence: 0.9,
-        rationale: "Usuário pediu ajuda",
+        rationale: "Usuário pediu orientação contextual",
       };
     } else {
       raw = {

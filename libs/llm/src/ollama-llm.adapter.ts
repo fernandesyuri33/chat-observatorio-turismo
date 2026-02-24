@@ -16,7 +16,7 @@ Sua tarefa é interpretar a mensagem do usuário e devolver um objeto JSON estru
 
 Intenções possíveis:
 - "show"     → o usuário quer visualizar uma informação no dashboard
-- "help"     → não foi possível determinar com segurança o que mostrar
+- "contextual_orientation" → o usuário mencionou um recorte/filtro, mas sem definir qual análise quer ver
 - "initial_orientation" → o usuário pediu orientação aberta sobre o que pode analisar no dashboard
 
 Tipos de informação disponíveis (páginas):
@@ -29,7 +29,7 @@ ${CLASSIFICACAO_BULLETS_TOKEN}
 
 Responda **somente** com JSON válido no seguinte formato:
 {
-  "intent": "<show|help|initial_orientation>",
+  "intent": "<show|contextual_orientation|initial_orientation>",
   "informationType": "<${INFORMATION_TYPE_PLACEHOLDER_TOKEN}>",
   "proposedFilters": {
     "classificacao"?: "<${CLASSIFICACAO_PLACEHOLDER_TOKEN}>",
@@ -41,13 +41,13 @@ Responda **somente** com JSON válido no seguinte formato:
 
 Regras:
 - Para intent "show", "informationType" é obrigatório.
-- Para "help" e "initial_orientation", omita "informationType".
+- Para "contextual_orientation" e "initial_orientation", omita "informationType".
 - Nunca envie "informationType": null.
 - "proposedFilters" deve conter apenas os filtros explicitamente mencionados.
 - "confidence" deve refletir quão claro e específico foi o pedido.
 - Se o usuário não mencionou nenhum filtro, retorne proposedFilters vazio ({}).
 - Se a mensagem é vaga, use confidence baixa (< 0.5) e rationale explicando a dúvida.
-- Se for pedido de ajuda, intent = "help" e proposedFilters = {}.
+- Se o usuário mencionar apenas recorte (ex.: município/classificação) sem definir o tipo de análise, use "contextual_orientation".
 - Se o usuário perguntar de forma aberta sobre o que pode analisar (ex.: "que dados posso obter aqui?", "o que posso descobrir aqui?"), use intent = "initial_orientation" e proposedFilters = {}.
 - Sempre responda em português.`;
 

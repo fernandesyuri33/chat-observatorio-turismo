@@ -151,7 +151,7 @@ Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
 
 ```ts
 {
-  intent: "show" | "help" | "initial_orientation",
+  intent: "show" | "contextual_orientation" | "initial_orientation",
   informationType?:
     | "estabelecimentos_por_municipio"
     | "funcionarios_por_municipio"
@@ -166,7 +166,7 @@ Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
 }
 ```
 
-`informationType` is required when `intent = "show"`, and omitted when `intent = "help"` or `intent = "initial_orientation"`. <!-- Updated: added onboarding intent -->
+`informationType` is required when `intent = "show"`, and omitted when `intent = "contextual_orientation"` or `intent = "initial_orientation"`. <!-- Updated: removed help and added contextual orientation intent -->
 
 Schema: `IntentV1Schema`. Selected at runtime via the schema registry.
 

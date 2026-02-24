@@ -28,7 +28,7 @@ export type NormalizedIntent =
       rationale?: string;
     }
   | {
-      intent: "help";
+      intent: "contextual_orientation";
       informationType?: never;
       proposedFilters: IntentFilters;
       confidence: number;
@@ -111,7 +111,7 @@ export class PolicyEngine {
       normalizedFilters.municipio = resolvedFilters["municipio"];
     }
 
-    if (raw.intent === "help" || raw.intent === "initial_orientation") {
+    if (raw.intent === "contextual_orientation" || raw.intent === "initial_orientation") {
       return {
         ...raw,
         proposedFilters: normalizedFilters,

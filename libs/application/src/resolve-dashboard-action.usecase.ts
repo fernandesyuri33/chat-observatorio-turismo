@@ -169,6 +169,13 @@ export async function resolveDashboardAction(
   const parsed = rawIntent as NormalizedIntent;
   const normalized = policyEngine.normalizeIntent(parsed);
 
+  if (normalized.intent === "contextual_orientation") {
+    return explainOnlyFallback(
+      buildContextualOrientationMessage(normalized),
+      buildContextualOrientationSuggestions(config.fallback.contextualOrientationOptionCount)
+    );
+  }
+
   if (
     hasOnlyFilterContext(normalized) &&
     !hasInformationTypeMention(request.message, config.synonyms)

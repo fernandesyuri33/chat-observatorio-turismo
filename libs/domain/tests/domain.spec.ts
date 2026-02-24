@@ -99,7 +99,7 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects non-help intent without informationType", () => {
+  it("rejects non-orientation intent without informationType", () => {
     const result = IntentV1Schema.safeParse({
       intent: "show",
       proposedFilters: {},
@@ -108,18 +108,18 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts help intent without informationType", () => {
+  it("accepts contextual_orientation intent without informationType", () => {
     const result = IntentV1Schema.safeParse({
-      intent: "help",
+      intent: "contextual_orientation",
       proposedFilters: {},
       confidence: 0.7,
     });
     expect(result.success).toBe(true);
   });
 
-  it("accepts help intent with informationType null", () => {
+  it("accepts contextual_orientation intent with informationType null", () => {
     const result = IntentV1Schema.safeParse({
-      intent: "help",
+      intent: "contextual_orientation",
       informationType: null,
       proposedFilters: {},
       confidence: 0.7,

@@ -41,8 +41,8 @@ export const ShowIntentV1Schema = IntentV1BaseSchema.extend({
   informationType: InformationTypeSchema,
 });
 
-export const HelpIntentV1Schema = IntentV1BaseSchema.extend({
-  intent: z.literal("help"),
+export const ContextualOrientationIntentV1Schema = IntentV1BaseSchema.extend({
+  intent: z.literal("contextual_orientation"),
   informationType: OmittedInformationTypeSchema,
 });
 
@@ -53,7 +53,7 @@ export const InitialOrientationIntentV1Schema = IntentV1BaseSchema.extend({
 
 export const IntentV1Schema = z.discriminatedUnion("intent", [
   ShowIntentV1Schema,
-  HelpIntentV1Schema,
+  ContextualOrientationIntentV1Schema,
   InitialOrientationIntentV1Schema,
 ]);
 
