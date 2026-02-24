@@ -281,12 +281,19 @@ pnpm lint                 # ESLint across all projects
 npx nx run api:dev        # API dev server (tsx watch, port 3001)
 npx nx run web:dev        # Vite dev server
 npx nx run <lib>:test     # Run tests for a specific library
+npx nx run application:test-real-llm # Run resolveDashboardAction tests against real Ollama LLM
 ```
 
 ### Running tests with the stub adapter
 
 Unit tests always use `StubLlmAdapter` directly (injected via DI in the test
 setup). The `LLM_ADAPTER` env var only affects the API server bootstrap.
+
+For opt-in real LLM integration tests in `libs/application/tests/application.real-llm.spec.ts`, set:
+
+| Env var | Value | Effect |
+|---|---|---|
+| `RUN_REAL_LLM_TESTS` | `"true"` | Enables `resolveDashboardAction` tests that use `OllamaLlmAdapter` instead of `StubLlmAdapter` | <!-- Updated: opt-in real LLM test suite -->
 
 ---
 
