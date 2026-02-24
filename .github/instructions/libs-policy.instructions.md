@@ -32,7 +32,7 @@ Scope: **Policy** config schema/loader and intent normalization rules.
 ## Where should X go?
 
 - "`minConfidence` threshold rule" -> `libs/policy` config + normalization.
-- "On low confidence choose explain_only/ask_clarifying/heuristic" -> **application** fallback execution using policy.
+- "On low confidence default to initial orientation" -> **application** fallback execution using policy.
 - "HTTP request schema" -> `libs/contracts`.
 
 ## Naming and placement

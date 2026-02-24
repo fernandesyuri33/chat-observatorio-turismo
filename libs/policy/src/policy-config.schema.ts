@@ -11,8 +11,6 @@ export const PolicyConfigSchema = z.object({
   synonyms: z.record(z.string()),
   activeProvider: z.string().describe("Id of the single active ActionProvider (e.g. 'looker', 'custom')"),
   fallback: z.object({
-    onSchemaInvalid: z.enum(["retry_llm", "explain_only"]),
-    onLowConfidence: z.enum(["explain_only", "heuristic", "ask_clarifying"]),
     retryCount: z.number().int().min(0),
     contextualOrientationOptionCount: z.number().int().min(1),
   }),

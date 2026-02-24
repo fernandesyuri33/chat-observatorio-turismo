@@ -19,8 +19,6 @@ const testPolicyConfig: PolicyConfig = {
   },
   activeProvider: "looker",
   fallback: {
-    onSchemaInvalid: "retry_llm",
-    onLowConfidence: "explain_only",
     retryCount: 1,
     contextualOrientationOptionCount: 3,
   },

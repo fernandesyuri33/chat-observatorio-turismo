@@ -9,7 +9,7 @@ Scope: Use-case orchestration and policy-driven fallback flow.
 ## Allowed here
 
 - Orchestrate request flow: LLM -> normalize -> confidence gate -> **provider** -> output validation.
-- Apply fallback policy decisions (schema invalid, low confidence).
+- Apply fallback policy decisions (defaulting to initial orientation when needed).
 - Use ports/interfaces and typed data from **domain**, **contracts**, **policy**, **providers**.
 
 ## DO

@@ -16,8 +16,6 @@ export const baseTestPolicyConfig: PolicyConfig = {
   },
   activeProvider: "looker",
   fallback: {
-    onSchemaInvalid: "retry_llm",
-    onLowConfidence: "explain_only",
     retryCount: 1,
     contextualOrientationOptionCount: 3,
   },
@@ -68,7 +66,7 @@ export function runResolveDashboardActionSharedSuite(
     expect(result.type).toBe("run_query");
   }, timeout);
 
-  it("returns explain_only for open onboarding questions", async () => {
+  it("returns initial orientation for open onboarding questions", async () => {
     const deps = buildDeps();
     const result = await resolveDashboardAction(deps, {
       message: "O que posso analisar ou descobrir aqui?",
@@ -76,17 +74,9 @@ export function runResolveDashboardActionSharedSuite(
 
     expect(result.type).toBe("explain_only");
     if (result.type === "explain_only") {
-      const isOrientationMessage = result.message.includes("caminhos de exploração");
-      const isLowConfidenceMessage = result.message.includes("Baixa confiança");
-
-      expect(isOrientationMessage || isLowConfidenceMessage).toBe(true);
-
-      if (isOrientationMessage) {
-        expect(result.suggestions.length).toBeGreaterThanOrEqual(3);
-        expect(result.suggestions.join(" ")).toContain("funcionários");
-      } else {
-        expect(result.suggestions.length).toBeGreaterThanOrEqual(1);
-      }
+      expect(result.message).toContain("caminhos de exploração");
+      expect(result.suggestions.length).toBeGreaterThanOrEqual(3);
+      expect(result.suggestions.join(" ")).toContain("funcionários");
     }
   }, timeout);
 

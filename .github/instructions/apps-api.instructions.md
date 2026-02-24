@@ -32,7 +32,7 @@ Scope: Fastify HTTP layer only (routes, middleware, auth, rate limit, logging, D
 ## Where should X go?
 
 - "HTTP POST `/dashboard/resolve` request schema" -> `libs/contracts/src/dashboard-resolve-contract.schema.ts`.
-- "Fallback choice for low confidence" -> `libs/application/src/resolve-dashboard-action.usecase.ts`.
+- "Fallback to initial orientation on low confidence/errors" -> `libs/application/src/resolve-dashboard-action.usecase.ts`.
 - "Domain `DashboardAction` schema" -> `libs/domain/src/dashboard-action.schema.ts`.
 
 ## Naming and placement

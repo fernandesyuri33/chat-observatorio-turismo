@@ -30,7 +30,7 @@ action provider (e.g. Looker, custom) that translates the intent into a typed
 | Zod schema validation | Every boundary (HTTP request, LLM output, provider output, HTTP response) is validated with Zod |
 | Schema registry | Versioned LLM output schemas selected at runtime via `INTENT_SCHEMA_VERSION` env var |
 | Single-provider config | `activeProvider` in `policy.json` selects which provider handles **all** intents; every provider must support every intent type |
-| Configurable fallback chain | `retry_llm`, `explain_only`, `ask_clarifying`, `heuristic` — all driven by policy config |
+| Safe default fallback | On low confidence or processing failures, the pipeline defaults to initial orientation (`explain_only`) |
 
 ---
 
@@ -206,8 +206,6 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 | `minConfidence` | Minimum confidence to proceed (below → fallback) |
 | `synonyms` | `Record<string, string>` — maps user/LLM terms to canonical filter keys |
 | `activeProvider` | `string` — id of the single active `ActionProvider` (e.g. `"looker"`, `"custom"`) <!-- Updated: replaced routing map with single activeProvider --> |
-| `fallback.onSchemaInvalid` | `"retry_llm"` or `"explain_only"` |
-| `fallback.onLowConfidence` | `"explain_only"`, `"heuristic"`, or `"ask_clarifying"` |
 | `fallback.retryCount` | Number of LLM retries on schema parse failure |
 | `fallback.contextualOrientationOptionCount` | Number of contextual `informationType` suggestions shown when user provides only filter context without a clear analysis recorte | <!-- Updated: configurable amount for semi-formulated contextual guidance --> |
 | `looker.baseUrl` | Looker Studio embed URL (with report/page path) |
