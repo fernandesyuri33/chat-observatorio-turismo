@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import Instructor from "@instructor-ai/instructor";
-import type { z } from "zod";
+import { z } from "zod";
 import type { LlmPort } from "./llm.port.js";
 
 // ── Default system prompt — tourism dashboard domain ────────────
@@ -10,142 +10,87 @@ const INFORMATION_TYPE_PLACEHOLDER_TOKEN = "__INFORMATION_TYPE_OPTIONS__";
 const CLASSIFICACAO_BULLETS_TOKEN = "__CLASSIFICACAO_BULLETS__";
 const CLASSIFICACAO_PLACEHOLDER_TOKEN = "__CLASSIFICACAO_OPTIONS__";
 
+function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
+  if (schema instanceof z.ZodOptional || schema instanceof z.ZodNullable) {
+    return unwrapSchema(schema.unwrap());
+  }
+
+  if (schema instanceof z.ZodDefault) {
+    return unwrapSchema(schema.removeDefault());
+  }
+
+  return schema;
+}
+
 function extractEnumValues(schema: z.ZodTypeAny): string[] {
-  const enumValues = (schema as z.ZodTypeAny & { _def?: { values?: readonly string[] } })._def?.values;
-  if (enumValues && Array.isArray(enumValues)) {
-    return [...enumValues];
+  const unwrapped = unwrapSchema(schema);
+
+  if (unwrapped instanceof z.ZodEnum) {
+    return [...unwrapped.options];
   }
 
-  const options = (schema as z.ZodTypeAny & { options?: readonly string[] }).options;
-  if (options && Array.isArray(options)) {
-    return [...options];
-  }
-
-  const innerType = (schema as z.ZodTypeAny & { _def?: { innerType?: z.ZodTypeAny; schema?: z.ZodTypeAny } })._def?.innerType
-    ?? (schema as z.ZodTypeAny & { _def?: { innerType?: z.ZodTypeAny; schema?: z.ZodTypeAny } })._def?.schema;
-
-  if (innerType) {
-    return extractEnumValues(innerType);
+  if (unwrapped instanceof z.ZodNativeEnum) {
+    return Object.values(unwrapped.enum).filter((value): value is string => typeof value === "string");
   }
 
   return [];
 }
 
-function extractInformationTypeValues(schema: z.ZodTypeAny): string[] {
-  const schemaDef = (schema as z.ZodTypeAny & { _def?: { options?: z.ZodTypeAny[] } })._def;
-  const options = schemaDef?.options;
-
-  if (!options || !Array.isArray(options)) {
-    return [];
+function extractSchemaHints(schema: z.ZodTypeAny): {
+  informationTypes: string[];
+  classificacoes: string[];
+} {
+  const unwrapped = unwrapSchema(schema);
+  if (!(unwrapped instanceof z.ZodDiscriminatedUnion)) {
+    return { informationTypes: [], classificacoes: [] };
   }
 
-  for (const option of options) {
-    const optionDef = option as z.ZodTypeAny & {
-      _def?: {
-        shape?: Record<string, z.ZodTypeAny> | (() => Record<string, z.ZodTypeAny>);
-      };
-    };
+  let informationTypes: string[] = [];
+  let classificacoes: string[] = [];
 
-    const rawShape = optionDef._def?.shape;
-    const shape = typeof rawShape === "function" ? rawShape() : rawShape;
-    if (!shape) {
+  for (const option of unwrapped.options) {
+    if (!(option instanceof z.ZodObject)) {
       continue;
     }
 
-    const intentDef = shape["intent"] as z.ZodTypeAny & { _def?: { value?: unknown } };
-    if (intentDef?._def?.value !== "show") {
-      continue;
+    if (informationTypes.length === 0 && "informationType" in option.shape) {
+      informationTypes = extractEnumValues(option.shape["informationType"] as z.ZodTypeAny);
     }
 
-    const informationTypeSchema = shape["informationType"] as z.ZodTypeAny & {
-      options?: readonly string[];
-      _def?: { values?: readonly string[] };
-    };
-
-    if (informationTypeSchema?._def?.values && Array.isArray(informationTypeSchema._def.values)) {
-      return [...informationTypeSchema._def.values];
+    if (classificacoes.length === 0 && "proposedFilters" in option.shape) {
+      const proposedFilters = unwrapSchema(option.shape["proposedFilters"] as z.ZodTypeAny);
+      if (proposedFilters instanceof z.ZodObject && "classificacao" in proposedFilters.shape) {
+        classificacoes = extractEnumValues(proposedFilters.shape["classificacao"] as z.ZodTypeAny);
+      }
     }
 
-    if (informationTypeSchema?.options && Array.isArray(informationTypeSchema.options)) {
-      return [...informationTypeSchema.options];
+    if (informationTypes.length > 0 && classificacoes.length > 0) {
+      break;
     }
   }
 
-  return [];
-}
-
-function extractClassificacaoValues(schema: z.ZodTypeAny): string[] {
-  const schemaDef = (schema as z.ZodTypeAny & { _def?: { options?: z.ZodTypeAny[] } })._def;
-  const options = schemaDef?.options;
-
-  if (!options || !Array.isArray(options)) {
-    return [];
-  }
-
-  for (const option of options) {
-    const optionDef = option as z.ZodTypeAny & {
-      _def?: {
-        shape?: Record<string, z.ZodTypeAny> | (() => Record<string, z.ZodTypeAny>);
-      };
-    };
-
-    const rawShape = optionDef._def?.shape;
-    const shape = typeof rawShape === "function" ? rawShape() : rawShape;
-    if (!shape) {
-      continue;
-    }
-
-    const filtersSchema = shape["proposedFilters"] as z.ZodTypeAny & {
-      _def?: {
-        shape?: Record<string, z.ZodTypeAny> | (() => Record<string, z.ZodTypeAny>);
-      };
-    };
-
-    const rawFiltersShape = filtersSchema?._def?.shape;
-    const filtersShape = typeof rawFiltersShape === "function" ? rawFiltersShape() : rawFiltersShape;
-    if (!filtersShape) {
-      continue;
-    }
-
-    const classificacaoSchema = filtersShape["classificacao"] as z.ZodTypeAny;
-    if (!classificacaoSchema) {
-      continue;
-    }
-
-    const values = extractEnumValues(classificacaoSchema);
-    if (values.length > 0) {
-      return values;
-    }
-  }
-
-  return [];
+  return { informationTypes, classificacoes };
 }
 
 function buildPromptFromSchema(template: string, schema: z.ZodTypeAny): string {
-  const informationTypes = extractInformationTypeValues(schema);
-  const classificacoes = extractClassificacaoValues(schema);
+  const { informationTypes, classificacoes } = extractSchemaHints(schema);
 
-  const informationTypeBullets = (informationTypes.length > 0 ? informationTypes : ["definido_no_schema"])
+  const informationTypeList = informationTypes.length > 0 ? informationTypes : ["valor_permitido_pelo_schema"];
+  const classificacaoList = classificacoes.length > 0 ? classificacoes : ["valor_permitido_pelo_schema"];
+
+  const informationTypeBullets = informationTypeList
     .map((informationType) => `- "${informationType}"`)
     .join("\n");
 
-  const classificacaoBullets = (classificacoes.length > 0 ? classificacoes : ["definido_no_schema"])
+  const classificacaoBullets = classificacaoList
     .map((classificacao) => `- "${classificacao}"`)
     .join("\n");
 
-  const informationTypeOptions = informationTypes.length > 0
-    ? informationTypes.join("|")
-    : "definido_no_schema";
-
-  const classificacaoOptions = classificacoes.length > 0
-    ? classificacoes.join("|")
-    : "definido_no_schema";
-
   return template
     .replace(INFORMATION_TYPE_BULLETS_TOKEN, informationTypeBullets)
-    .replace(INFORMATION_TYPE_PLACEHOLDER_TOKEN, informationTypeOptions)
+    .replace(INFORMATION_TYPE_PLACEHOLDER_TOKEN, informationTypeList.join("|"))
     .replace(CLASSIFICACAO_BULLETS_TOKEN, classificacaoBullets)
-    .replace(CLASSIFICACAO_PLACEHOLDER_TOKEN, classificacaoOptions);
+    .replace(CLASSIFICACAO_PLACEHOLDER_TOKEN, classificacaoList.join("|"));
 }
 
 const DEFAULT_SYSTEM_PROMPT = `Você é um assistente de um dashboard de turismo.
