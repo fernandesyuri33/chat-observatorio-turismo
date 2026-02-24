@@ -1,7 +1,8 @@
 import OpenAI from "openai";
 import Instructor from "@instructor-ai/instructor";
-import { z } from "zod";
+import type { z } from "zod";
 import type { LlmPort } from "./llm.port.js";
+import { fillPromptTemplate } from "./schema-hints.js";
 
 // ── Default system prompt — tourism dashboard domain ────────────
 
@@ -9,89 +10,6 @@ const INFORMATION_TYPE_BULLETS_TOKEN = "__INFORMATION_TYPE_BULLETS__";
 const INFORMATION_TYPE_PLACEHOLDER_TOKEN = "__INFORMATION_TYPE_OPTIONS__";
 const CLASSIFICACAO_BULLETS_TOKEN = "__CLASSIFICACAO_BULLETS__";
 const CLASSIFICACAO_PLACEHOLDER_TOKEN = "__CLASSIFICACAO_OPTIONS__";
-
-function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
-  if (schema instanceof z.ZodOptional || schema instanceof z.ZodNullable) {
-    return unwrapSchema(schema.unwrap());
-  }
-
-  if (schema instanceof z.ZodDefault) {
-    return unwrapSchema(schema.removeDefault());
-  }
-
-  return schema;
-}
-
-function extractEnumValues(schema: z.ZodTypeAny): string[] {
-  const unwrapped = unwrapSchema(schema);
-
-  if (unwrapped instanceof z.ZodEnum) {
-    return [...unwrapped.options];
-  }
-
-  if (unwrapped instanceof z.ZodNativeEnum) {
-    return Object.values(unwrapped.enum).filter((value): value is string => typeof value === "string");
-  }
-
-  return [];
-}
-
-function extractSchemaHints(schema: z.ZodTypeAny): {
-  informationTypes: string[];
-  classificacoes: string[];
-} {
-  const unwrapped = unwrapSchema(schema);
-  if (!(unwrapped instanceof z.ZodDiscriminatedUnion)) {
-    return { informationTypes: [], classificacoes: [] };
-  }
-
-  let informationTypes: string[] = [];
-  let classificacoes: string[] = [];
-
-  for (const option of unwrapped.options) {
-    if (!(option instanceof z.ZodObject)) {
-      continue;
-    }
-
-    if (informationTypes.length === 0 && "informationType" in option.shape) {
-      informationTypes = extractEnumValues(option.shape["informationType"] as z.ZodTypeAny);
-    }
-
-    if (classificacoes.length === 0 && "proposedFilters" in option.shape) {
-      const proposedFilters = unwrapSchema(option.shape["proposedFilters"] as z.ZodTypeAny);
-      if (proposedFilters instanceof z.ZodObject && "classificacao" in proposedFilters.shape) {
-        classificacoes = extractEnumValues(proposedFilters.shape["classificacao"] as z.ZodTypeAny);
-      }
-    }
-
-    if (informationTypes.length > 0 && classificacoes.length > 0) {
-      break;
-    }
-  }
-
-  return { informationTypes, classificacoes };
-}
-
-function buildPromptFromSchema(template: string, schema: z.ZodTypeAny): string {
-  const { informationTypes, classificacoes } = extractSchemaHints(schema);
-
-  const informationTypeList = informationTypes.length > 0 ? informationTypes : ["valor_permitido_pelo_schema"];
-  const classificacaoList = classificacoes.length > 0 ? classificacoes : ["valor_permitido_pelo_schema"];
-
-  const informationTypeBullets = informationTypeList
-    .map((informationType) => `- "${informationType}"`)
-    .join("\n");
-
-  const classificacaoBullets = classificacaoList
-    .map((classificacao) => `- "${classificacao}"`)
-    .join("\n");
-
-  return template
-    .replace(INFORMATION_TYPE_BULLETS_TOKEN, informationTypeBullets)
-    .replace(INFORMATION_TYPE_PLACEHOLDER_TOKEN, informationTypeList.join("|"))
-    .replace(CLASSIFICACAO_BULLETS_TOKEN, classificacaoBullets)
-    .replace(CLASSIFICACAO_PLACEHOLDER_TOKEN, classificacaoList.join("|"));
-}
 
 const DEFAULT_SYSTEM_PROMPT = `Você é um assistente de um dashboard de turismo.
 Sua tarefa é interpretar a mensagem do usuário e devolver um objeto JSON estruturado que represente a intenção dele.
@@ -204,7 +122,15 @@ export class OllamaLlmAdapter implements LlmPort {
         temperature: this.temperature,
         max_retries: this.maxRetries,
         messages: [
-          { role: "system", content: buildPromptFromSchema(this.systemPrompt, schema) },
+          {
+            role: "system",
+            content: fillPromptTemplate(this.systemPrompt, schema, {
+              informationTypeBulletsToken: INFORMATION_TYPE_BULLETS_TOKEN,
+              informationTypeOptionsToken: INFORMATION_TYPE_PLACEHOLDER_TOKEN,
+              classificacaoBulletsToken: CLASSIFICACAO_BULLETS_TOKEN,
+              classificacaoOptionsToken: CLASSIFICACAO_PLACEHOLDER_TOKEN,
+            }),
+          },
           { role: "user", content: input },
         ],
         response_model: {
