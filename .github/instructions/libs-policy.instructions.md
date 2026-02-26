@@ -9,7 +9,7 @@ Scope: **Policy** config schema/loader and intent normalization rules.
 ## Allowed here
 
 - Policy config Zod schemas and loading/parsing code.
-- Normalization and mode-based filtering rules.
+- Normalization and strict filter validation rules.
 - Typed policy outputs consumed by **application**.
 
 ## DO

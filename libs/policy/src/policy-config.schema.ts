@@ -17,11 +17,7 @@ const CuriosityFaqEntrySchema = z.object({
 // ── Policy configuration Zod schema ─────────────────────────────
 
 export const PolicyConfigSchema = z.object({
-  mode: z.enum(["free", "guided", "strict"]),
   minConfidence: z.number().min(0).max(1),
-  allowAmbiguity: z.boolean(),
-  knownMetrics: z.array(z.string()),
-  knownDimensions: z.array(z.string()),
   synonyms: z.record(z.string()),
   activeProvider: z.string().describe("Id of the single active ActionProvider (e.g. 'looker', 'custom')"),
   fallback: z.object({

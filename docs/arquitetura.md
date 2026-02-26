@@ -117,14 +117,14 @@ F --> G[DashboardAction]
 
 ---
 
-# 🎛️ Progressive Hardening (Modo da Policy)
+# 🎛️ Policy (estrita por padrão)
 
 ```mermaid
 flowchart LR
 
-A[free]
-   -->|menos restrições| B[guided]
-   -->|exige métricas válidas| C[strict]
+A[Synonyms]
+  --> B[Canonical filters]
+  --> C[Remove unknown keys]
 ```
 
 ---
@@ -135,22 +135,22 @@ A[free]
 flowchart TD
 
 Intent --> ProviderA[LookerProvider]
-Intent --> ProviderB[CustomDashboardProvider]
+Intent --> ProviderB[CustomProvider]
 
 ProviderA -->|open_url| Action
 ProviderB -->|run_query| Action
 ```
 
-⚠️ Apenas **um provider ativo por vez**, selecionado por config:
+⚠️ Apenas **um provider ativo por vez**, selecionado no `policy.json` pela chave `activeProvider`:
 
 ```
-ACTIVE_PROVIDER=looker
+"activeProvider": "looker"
 ```
 
 ou
 
 ```
-ACTIVE_PROVIDER=customDashboard
+"activeProvider": "custom"
 ```
 
 ---
@@ -184,8 +184,8 @@ flowchart LR
   ROOT --> PROV[libs/providers]
 
   API --> API1[Fastify routes]
-  API --> API2[Auth and rate limit]
-  API --> API3[Logging and DI wiring]
+  API --> API2[CORS e validação de contrato]
+  API --> API3[Wiring de DI]
 
   APP --> APP1[Use case orchestration]
   APP --> APP2[Fallback chain]
@@ -197,13 +197,13 @@ flowchart LR
 
   POL --> POL1[Config JSON]
   POL --> POL2[Synonyms]
-  POL --> POL3[Mode free guided strict]
+  POL --> POL3[Strict filter normalization]
 
   LLM --> LLM1[Structured output]
   LLM --> LLM2[Schema versioning]
 
   PROV --> PR1[Looker provider]
-  PROV --> PR2[Future provider]
+  PROV --> PR2[Provider alternativo]
 
   classDef root fill:#111827,stroke:#111827,color:#ffffff;
   classDef api fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e;
@@ -228,6 +228,6 @@ flowchart LR
 # 🎯 Conceito Central da Arquitetura
 
 > O LLM sugere a intenção.
-> A Policy controla o rigor.
+> A Policy normaliza de forma estrita.
 > O Provider materializa a ação.
 > O Domain garante o contrato.

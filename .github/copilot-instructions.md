@@ -101,7 +101,7 @@ libs/
     src/
       policy-config.schema.ts  # Zod schema for policy.json
       policy-config.loader.ts  # Loads + validates policy.json from disk
-      policy-engine.ts         # Synonym resolution, mode-based filtering, NormalizedIntent
+      policy-engine.ts         # Synonym resolution, strict filter normalization, NormalizedIntent <!-- Updated: removed mode-based behavior -->
       index.ts
 
   llm/                         # LLM port + adapters
@@ -202,7 +202,6 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 
 | Key | Purpose |
 |---|---|
-| `mode` | `"free"` / `"guided"` / `"strict"` — progressive hardening of allowed inputs |
 | `minConfidence` | Minimum confidence to proceed (below → fallback) |
 | `synonyms` | `Record<string, string>` — maps user/LLM terms to canonical filter keys |
 | `activeProvider` | `string` — id of the single active `ActionProvider` (e.g. `"looker"`, `"custom"`) <!-- Updated: replaced routing map with single activeProvider --> |
@@ -212,6 +211,8 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 | `looker.baseUrl` | Looker Studio embed URL (with report/page path) |
 | `looker.paramMap` | Maps canonical filter keys → keys used inside the `params` JSON payload |
 | `looker.informationTypeMap` | Maps `informationType` values → Looker page path/id (or full URL) <!-- Updated: page mapping by information type --> |
+
+Policy normalization is strict by default: unknown filter keys are removed before provider execution. <!-- Updated: strict behavior is now fixed, no mode switch -->
 
 ---
 

@@ -65,6 +65,11 @@ const CLASSIFICACOES = new Set<Classificacao>([
   "agencias e operadores",
 ]);
 
+const ALLOWED_FILTER_KEYS = new Set<keyof IntentFilters>([
+  "classificacao",
+  "municipio",
+]);
+
 /**
  * PolicyEngine wraps a validated PolicyConfig and provides
  * helper methods for intent normalization and policy queries.
@@ -79,7 +84,7 @@ export class PolicyEngine {
   /**
    * Normalize an intent payload:
    * - Apply synonyms to filter keys and values
-   * - Optionally clamp or reject fields based on mode
+    * - Reject unknown filter keys (strict by default)
    */
   normalizeIntent(raw: NormalizedIntent): NormalizedIntent {
     const synonyms = this.config.synonyms;
@@ -95,15 +100,10 @@ export class PolicyEngine {
       }
     }
 
-    // In strict mode, reject unknown metrics/dimensions
-    if (this.config.mode === "strict") {
-      for (const key of Object.keys(resolvedFilters)) {
-        const isKnown =
-          this.config.knownMetrics.includes(key) ||
-          this.config.knownDimensions.includes(key);
-        if (!isKnown) {
-          delete resolvedFilters[key];
-        }
+    // Reject unknown filter keys
+    for (const key of Object.keys(resolvedFilters)) {
+      if (!ALLOWED_FILTER_KEYS.has(key as keyof IntentFilters)) {
+        delete resolvedFilters[key];
       }
     }
 

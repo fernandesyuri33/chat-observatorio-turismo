@@ -7,11 +7,7 @@ import { StubLlmAdapter } from "@conversational/llm";
 import { LookerProvider } from "@conversational/providers";
 
 const testPolicyConfig: PolicyConfig = {
-  mode: "guided",
   minConfidence: 0.5,
-  allowAmbiguity: true,
-  knownMetrics: ["visitas", "ocupacao", "eventos"],
-  knownDimensions: ["cidade", "ano", "mes", "indicador", "classificacao", "municipio"],
   synonyms: {
     occupancy: "ocupacao",
     visits: "visitas",

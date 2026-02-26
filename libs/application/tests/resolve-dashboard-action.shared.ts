@@ -4,11 +4,7 @@ import type { ResolveDashboardActionDeps } from "../src/resolve-dashboard-action
 import type { PolicyConfig } from "@conversational/policy";
 
 export const baseTestPolicyConfig: PolicyConfig = {
-  mode: "guided",
   minConfidence: 0.5,
-  allowAmbiguity: true,
-  knownMetrics: ["visitas", "ocupacao", "eventos"],
-  knownDimensions: ["cidade", "ano", "mes", "indicador", "classificacao", "municipio"],
   synonyms: {
     occupancy: "ocupacao",
     visits: "visitas",
