@@ -38,7 +38,6 @@ Scope: **Policy** config schema/loader and intent normalization rules.
 ## Naming and placement
 
 - Config schema in `policy-config.schema.ts`.
-- Loader in `policy-config.loader.ts`.
 - Normalizer/engine in `policy-engine.ts`.
 
 ## Pre-change checklist

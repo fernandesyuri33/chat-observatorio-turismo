@@ -15,7 +15,7 @@ action provider (e.g. Looker, custom) that translates the intent into a typed
 `DashboardAction` returned to the React frontend.
 
 > **Single-provider model:** only one provider is active at a time, selected via
-> `activeProvider` in `policy.json`. Every provider implementation must handle
+> `activeProvider` in `apps/api/config/policy.ts`. Every provider implementation must handle
 > **all** intent types. The system supports multiple provider implementations so
 > the active one can be swapped without code changes — but it never routes
 > different intents to different providers simultaneously.
@@ -29,7 +29,7 @@ action provider (e.g. Looker, custom) that translates the intent into a typed
 | Port / Adapter pattern | `LlmPort` interface — `StubLlmAdapter` for tests, `OllamaLlmAdapter` for production |
 | Zod schema validation | Every boundary (HTTP request, LLM output, provider output, HTTP response) is validated with Zod |
 | Schema registry | Versioned LLM output schemas selected at runtime via `INTENT_SCHEMA_VERSION` env var |
-| Single-provider config | `activeProvider` in `policy.json` selects which provider handles **all** intents; every provider must support every intent type |
+| Single-provider config | `activeProvider` in `apps/api/config/policy.ts` selects which provider handles **all** intents; every provider must support every intent type | <!-- Updated: policy moved from JSON file to typed TS module -->
 | Safe default fallback | On low confidence or processing failures, the pipeline defaults to initial orientation (`explain_only`) |
 
 ---
@@ -68,12 +68,12 @@ action provider (e.g. Looker, custom) that translates the intent into a typed
 ```
 apps/
   api/                         # Fastify HTTP server
+    config/
+      policy.ts                #   Runtime policy configuration (typed) <!-- Updated: typed runtime policy module -->
     src/
       main.ts                  #   Bootstrap: DI wiring, adapter selection, server start
       routes/
         dashboard.ts           #   POST /dashboard/resolve — Zod-validated request/response
-    config/
-      policy.json              #   Runtime policy configuration
 
   web/                         # React + Vite frontend
     src/
@@ -100,8 +100,7 @@ libs/
 
   policy/                      # Policy engine
     src/
-      policy-config.schema.ts  # Zod schema for policy.json
-      policy-config.loader.ts  # Loads + validates policy.json from disk
+      policy-config.schema.ts  # Zod schema for typed policy configuration
       policy-engine.ts         # Synonym resolution, strict filter normalization, NormalizedIntent <!-- Updated: removed mode-based behavior -->
       index.ts
 
@@ -199,7 +198,7 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 
 ---
 
-## 7. Policy Configuration (`apps/api/config/policy.json`)
+## 7. Policy Configuration (`apps/api/config/policy.ts`)
 
 | Key | Purpose |
 |---|---|
@@ -312,7 +311,7 @@ For opt-in real LLM integration tests in `libs/application/tests/application.rea
 3. **New providers:** Implement `ActionProvider` in `libs/providers/src/<name>/`,
    export from `libs/providers/src/index.ts`, register in the provider registry
    map in `apps/api/src/main.ts`. The provider must handle **all** intent types.
-   To make it active, set `activeProvider` in `policy.json` to the new id.
+   To make it active, set `activeProvider` in `apps/api/config/policy.ts` to the new id. <!-- Updated: typed policy source -->
 
 4. **New LLM adapters:** Implement `LlmPort` in `libs/llm/src/`, export from
    barrel, add selection logic in `apps/api/src/main.ts`.

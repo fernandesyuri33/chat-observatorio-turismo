@@ -142,7 +142,7 @@ ProviderA -->|open_url| Action
 ProviderB -->|run_query| Action
 ```
 
-⚠️ Apenas **um provider ativo por vez**, selecionado no `policy.json` pela chave `activeProvider`:
+⚠️ Apenas **um provider ativo por vez**, selecionado no `apps/api/config/policy.ts` pela chave `activeProvider`:
 
 ```
 "activeProvider": "looker"
