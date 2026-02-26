@@ -52,7 +52,7 @@ export function runResolveDashboardActionSharedSuite(
 ): void {
   const timeout = options.testTimeout;
 
-  it("returns open_url with informationType page mapping and params", async () => {
+  it("retorna open_url com mapeamento de página por informationType e params", async () => {
     const deps = buildDeps();
     const result = await resolveDashboardAction(deps, {
       message: "Mostre funcionários por município em Pouso Alegre",
@@ -64,7 +64,7 @@ export function runResolveDashboardActionSharedSuite(
     }
   }, timeout);
 
-  it("returns run_query when activeProvider is custom", async () => {
+  it("retorna run_query quando activeProvider é custom", async () => {
     const deps = buildDeps({ activeProvider: "custom" });
     const result = await resolveDashboardAction(deps, {
       message: "Mostre funcionários por município",
@@ -72,7 +72,7 @@ export function runResolveDashboardActionSharedSuite(
     expect(result.type).toBe("run_query");
   }, timeout);
 
-  it("returns initial orientation for open onboarding questions", async () => {
+  it("retorna orientação inicial para perguntas abertas de onboarding", async () => {
     const deps = buildDeps();
     const result = await resolveDashboardAction(deps, {
       message: "O que posso analisar ou descobrir aqui?",
@@ -86,7 +86,7 @@ export function runResolveDashboardActionSharedSuite(
     }
   }, timeout);
 
-  it("returns contextual orientation when user provides only filter context", async () => {
+  it("retorna orientação contextual quando o usuário fornece apenas contexto de filtro", async () => {
     const deps = buildDeps();
     const result = await resolveDashboardAction(deps, {
       message: "Quero ver dados de Poços de Caldas",
@@ -103,7 +103,7 @@ export function runResolveDashboardActionSharedSuite(
     }
   }, timeout);
 
-  it("limits contextual orientation suggestions using policy config", async () => {
+  it("limita sugestões de orientação contextual usando a configuração de política", async () => {
     const deps = buildDeps({
       fallback: {
         ...baseTestPolicyConfig.fallback,
@@ -124,7 +124,7 @@ export function runResolveDashboardActionSharedSuite(
     }
   }, timeout);
 
-  it("returns curiosity_to_action answer from configured FAQ", async () => {
+  it("retorna resposta de curiosity_to_action a partir do FAQ configurado", async () => {
     const deps = buildDeps();
     const result = await resolveDashboardAction(deps, {
       message: "O setor turístico de Poços de Caldas está evoluindo?",
@@ -141,7 +141,7 @@ export function runResolveDashboardActionSharedSuite(
     }
   }, timeout);
 
-  it("falls back to initial orientation when curiosity intent has no FAQ match", async () => {
+  it("faz fallback para orientação inicial quando a intent de curiosidade não tem correspondência no FAQ", async () => {
     const deps = buildDeps({ curiosityFaq: [] });
     const result = await resolveDashboardAction(deps, {
       message: "O setor turístico de Poços de Caldas está evoluindo?",
