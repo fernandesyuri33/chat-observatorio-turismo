@@ -41,14 +41,14 @@ const intentSchema = z.discriminatedUnion("intent", [
 ]);
 
 describe("schema-hints", () => {
-  it("extracts informationType and classificacao from discriminated union schema", () => {
+  it("extrai informationType e classificacao de schema de união discriminada", () => {
     const hints = extractSchemaHints(intentSchema);
 
     expect(hints.informationTypes).toEqual(["it_a", "it_b"]);
     expect(hints.classificacoes).toEqual(["class_1", "class_2"]);
   });
 
-  it("fills prompt template with extracted schema values", () => {
+  it("preenche template de prompt com valores extraídos do schema", () => {
     const prompt = fillPromptTemplate(template, intentSchema, tokens);
 
     expect(prompt).toContain('- "it_a"');
@@ -59,7 +59,7 @@ describe("schema-hints", () => {
     expect(prompt).toContain("class_1|class_2");
   });
 
-  it("falls back to generic placeholders for non-discriminated schemas", () => {
+  it("usa placeholders genéricos para schemas não discriminados", () => {
     const fallbackSchema = z.object({ any: z.string() });
     const prompt = fillPromptTemplate(template, fallbackSchema, tokens);
 

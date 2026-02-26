@@ -4,7 +4,7 @@ import type { z } from "zod";
 import type { LlmPort } from "./llm.port.js";
 import { fillPromptTemplate } from "./schema-hints.js";
 
-// ── Default system prompt — tourism dashboard domain ────────────
+// ── Prompt de sistema padrão — domínio do dashboard de turismo ──
 
 const INFORMATION_TYPE_BULLETS_TOKEN = "__INFORMATION_TYPE_BULLETS__";
 const INFORMATION_TYPE_PLACEHOLDER_TOKEN = "__INFORMATION_TYPE_OPTIONS__";
@@ -53,24 +53,24 @@ Regras:
 - Se o usuário fizer uma pergunta de curiosidade (ex.: "o setor turístico de X está evoluindo?"), use intent = "curiosity_to_action".
 - Sempre responda em português.`;
 
-// ── Config ──────────────────────────────────────────────────────
+// ── Configuração ────────────────────────────────────────────────
 
 export interface OllamaLlmAdapterConfig {
-  /** Ollama base URL (default: env OLLAMA_BASE_URL or http://localhost:11434/v1) */
+  /** URL base do Ollama (padrão: env OLLAMA_BASE_URL ou http://localhost:11434/v1) */
   baseURL?: string;
-  /** Model identifier (default: env OLLAMA_MODEL or llama3.1:8b) */
+  /** Identificador do modelo (padrão: env OLLAMA_MODEL ou llama3.1:8b) */
   model?: string;
-  /** API key (default: env OLLAMA_API_KEY or "ollama") */
+  /** Chave de API (padrão: env OLLAMA_API_KEY ou "ollama") */
   apiKey?: string;
-  /** Override the default system prompt */
+  /** Sobrescreve o prompt de sistema padrão */
   systemPrompt?: string;
-  /** Sampling temperature (default: 0) */
+  /** Temperatura de amostragem (padrão: 0) */
   temperature?: number;
-  /** Max retries on transient failures (default: 2) */
+  /** Máximo de tentativas em falhas transitórias (padrão: 2) */
   maxRetries?: number;
 }
 
-// ── Adapter ─────────────────────────────────────────────────────
+// ── Adaptador ───────────────────────────────────────────────────
 
 export class OllamaLlmAdapter implements LlmPort {
   private readonly instructor: ReturnType<typeof Instructor>;
@@ -147,7 +147,7 @@ export class OllamaLlmAdapter implements LlmPort {
         result: JSON.stringify(result),
       });
 
-      // Instructor returns the parsed & validated object directly
+      // Instructor retorna diretamente o objeto parseado e validado
       return result as T;
     } catch (error) {
       console.error("[ollama] request:error", {

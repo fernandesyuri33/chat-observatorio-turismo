@@ -6,7 +6,7 @@ import {
 import { resolveDashboardAction } from "@conversational/application";
 import type { ResolveDashboardActionDeps } from "@conversational/application";
 
-// ── Route registration ──────────────────────────────────────────
+// ── Registro de rota ────────────────────────────────────────────
 
 export async function dashboardRoutes(app: FastifyInstance) {
   const di = (app as unknown as { di: ResolveDashboardActionDeps }).di;
@@ -25,7 +25,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
       ctx: parsed.data.ctx,
     });
 
-    // Validate outbound response to ensure contract compliance
+    // Valida resposta de saída para garantir conformidade com o contrato
     const response = ResolveDashboardResponseSchema.parse({ action });
     return reply.status(200).send(response);
   });

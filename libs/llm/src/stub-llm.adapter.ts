@@ -2,8 +2,8 @@ import type { z } from "zod";
 import type { LlmPort } from "./llm.port.js";
 
 /**
- * Stub LLM adapter for development/testing.
- * Returns deterministic structured output based on keyword matching.
+ * Adaptador LLM stub para desenvolvimento/testes.
+ * Retorna saída estruturada determinística com base em palavras-chave.
  */
 export class StubLlmAdapter implements LlmPort {
   async generateStructured<T>(schema: z.ZodType<T>, input: string): Promise<T> {
@@ -40,7 +40,7 @@ export class StubLlmAdapter implements LlmPort {
       (lower.includes("evolu") || lower.includes("crescen") || lower.includes("melhor"));
 
     if (lower.includes("invalid")) {
-      // Return an intentionally invalid shape to test fallback
+      // Retorna um formato intencionalmente inválido para testar fallback
       raw = { bad: "data" };
     } else if (isCuriosityQuestion) {
       raw = {
@@ -108,7 +108,7 @@ export class StubLlmAdapter implements LlmPort {
       };
     }
 
-    // Parse through the provided schema — may throw if raw is invalid
+    // Faz parse com o schema fornecido — pode lançar erro se raw for inválido
     return schema.parse(raw);
   }
 }

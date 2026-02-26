@@ -14,12 +14,12 @@ const CuriosityFaqEntrySchema = z.object({
   informationType: z.enum(POLICY_INFORMATION_TYPE_VALUES),
 });
 
-// ── Policy configuration Zod schema ─────────────────────────────
+// ── Schema Zod de configuração de política ──────────────────────
 
 export const PolicyConfigSchema = z.object({
   minConfidence: z.number().min(0).max(1),
   synonyms: z.record(z.string()),
-  activeProvider: z.string().describe("Id of the single active ActionProvider (e.g. 'looker', 'custom')"),
+  activeProvider: z.string().describe("Id do único ActionProvider ativo (ex.: 'looker', 'custom')"),
   fallback: z.object({
     retryCount: z.number().int().min(0),
     contextualOrientationOptionCount: z.number().int().min(1),

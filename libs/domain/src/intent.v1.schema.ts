@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// ── Intent v1 — LLM structured output schema ───────────────────
+// ── Intent v1 — schema de saída estruturada do LLM ──────────────
 
 export const INFORMATION_TYPE_VALUES = [
   "funcionarios_ao_longo_do_tempo",

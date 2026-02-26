@@ -5,7 +5,7 @@ import {
 } from "../src/index";
 
 describe("ResolveDashboardRequestSchema", () => {
-  it("accepts a valid request", () => {
+  it("aceita uma requisição válida", () => {
     const result = ResolveDashboardRequestSchema.safeParse({
       message: "Quero visitas em Sao Paulo em 2024",
       ctx: {
@@ -17,14 +17,14 @@ describe("ResolveDashboardRequestSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects empty message", () => {
+  it("rejeita mensagem vazia", () => {
     const result = ResolveDashboardRequestSchema.safeParse({ message: "" });
     expect(result.success).toBe(false);
   });
 });
 
 describe("ResolveDashboardResponseSchema", () => {
-  it("accepts a valid response", () => {
+  it("aceita uma resposta válida", () => {
     const result = ResolveDashboardResponseSchema.safeParse({
       action: {
         type: "explain_only",

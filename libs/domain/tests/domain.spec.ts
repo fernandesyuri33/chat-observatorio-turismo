@@ -5,11 +5,11 @@ import {
 } from "../src/index";
 
 describe("DashboardActionSchema", () => {
-  it("accepts a valid open_url action", () => {
+  it("aceita uma ação open_url válida", () => {
     const result = DashboardActionSchema.safeParse({
       type: "open_url",
       url: "https://example.com/dashboard",
-      title: "Test Dashboard",
+      title: "Dashboard de teste",
     });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -17,7 +17,7 @@ describe("DashboardActionSchema", () => {
     }
   });
 
-  it("accepts a valid apply_filters action", () => {
+  it("aceita uma ação apply_filters válida", () => {
     const result = DashboardActionSchema.safeParse({
       type: "apply_filters",
       filters: { cidade: "Sao Paulo", ano: "2024" },
@@ -26,7 +26,7 @@ describe("DashboardActionSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts a valid run_query action", () => {
+  it("aceita uma ação run_query válida", () => {
     const result = DashboardActionSchema.safeParse({
       type: "run_query",
       function: "tourism.resolve",
@@ -35,16 +35,16 @@ describe("DashboardActionSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts a valid explain_only action", () => {
+  it("aceita uma ação explain_only válida", () => {
     const result = DashboardActionSchema.safeParse({
       type: "explain_only",
-      message: "I did not understand",
-      suggestions: ["Try again"],
+      message: "Não entendi",
+      suggestions: ["Tente novamente"],
     });
     expect(result.success).toBe(true);
   });
 
-  it("rejects an unknown type", () => {
+  it("rejeita um tipo desconhecido", () => {
     const result = DashboardActionSchema.safeParse({
       type: "fly_to_moon",
       destination: "moon",
@@ -52,7 +52,7 @@ describe("DashboardActionSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects open_url with invalid URL", () => {
+  it("rejeita open_url com URL inválida", () => {
     const result = DashboardActionSchema.safeParse({
       type: "open_url",
       url: "not-a-url",
@@ -60,17 +60,17 @@ describe("DashboardActionSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects missing required fields", () => {
+  it("rejeita campos obrigatórios ausentes", () => {
     const result = DashboardActionSchema.safeParse({
       type: "explain_only",
-      // missing message and suggestions
+      // faltando message e suggestions
     });
     expect(result.success).toBe(false);
   });
 });
 
 describe("IntentV1Schema", () => {
-  it("accepts a valid intent", () => {
+  it("aceita uma intent válida", () => {
     const result = IntentV1Schema.safeParse({
       intent: "show",
       informationType: "funcionarios_por_municipio",
@@ -80,7 +80,7 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects confidence > 1", () => {
+  it("rejeita confidence > 1", () => {
     const result = IntentV1Schema.safeParse({
       intent: "show",
       proposedFilters: {},
@@ -89,7 +89,7 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects unknown intent type", () => {
+  it("rejeita tipo de intent desconhecido", () => {
     const result = IntentV1Schema.safeParse({
       intent: "fly",
       informationType: "funcionarios_por_municipio",
@@ -99,7 +99,7 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects non-orientation intent without informationType", () => {
+  it("rejeita intent não orientacional sem informationType", () => {
     const result = IntentV1Schema.safeParse({
       intent: "show",
       proposedFilters: {},
@@ -108,7 +108,7 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts contextual_orientation intent without informationType", () => {
+  it("aceita intent contextual_orientation sem informationType", () => {
     const result = IntentV1Schema.safeParse({
       intent: "contextual_orientation",
       proposedFilters: {},
@@ -117,7 +117,7 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts contextual_orientation intent with informationType null", () => {
+  it("aceita intent contextual_orientation com informationType null", () => {
     const result = IntentV1Schema.safeParse({
       intent: "contextual_orientation",
       informationType: null,
@@ -130,7 +130,7 @@ describe("IntentV1Schema", () => {
     }
   });
 
-  it("accepts initial_orientation intent without informationType", () => {
+  it("aceita intent initial_orientation sem informationType", () => {
     const result = IntentV1Schema.safeParse({
       intent: "initial_orientation",
       proposedFilters: {},
@@ -139,7 +139,7 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts initial_orientation intent with informationType null", () => {
+  it("aceita intent initial_orientation com informationType null", () => {
     const result = IntentV1Schema.safeParse({
       intent: "initial_orientation",
       informationType: null,
@@ -152,7 +152,7 @@ describe("IntentV1Schema", () => {
     }
   });
 
-  it("accepts curiosity_to_action intent without informationType", () => {
+  it("aceita intent curiosity_to_action sem informationType", () => {
     const result = IntentV1Schema.safeParse({
       intent: "curiosity_to_action",
       proposedFilters: {},
@@ -161,7 +161,7 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts curiosity_to_action intent with informationType null", () => {
+  it("aceita intent curiosity_to_action com informationType null", () => {
     const result = IntentV1Schema.safeParse({
       intent: "curiosity_to_action",
       informationType: null,

@@ -14,7 +14,7 @@ import type { ResolveDashboardActionDeps } from "@conversational/application";
 
 import { dashboardRoutes } from "./routes/dashboard.js";
 
-// ── Bootstrap ───────────────────────────────────────────────────
+// ── Inicialização ───────────────────────────────────────────────
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,37 +23,37 @@ const app = Fastify({ logger: true });
 
 await app.register(cors, { origin: true });
 
-// ── Load policy config ──────────────────────────────────────────
+// ── Carrega configuração de política ────────────────────────────
 const policyPath = resolve(__dirname, "..", "config", "policy.json");
 const policyConfig = loadPolicyConfig(policyPath);
 const policyEngine = new PolicyEngine(policyConfig);
 
-// ── Create LLM adapter ─────────────────────────────────────────
-// Use LLM_ADAPTER=stub to force the stub (unit-test / offline dev).
-// Otherwise the real Ollama adapter is used.
+// ── Cria adaptador de LLM ───────────────────────────────────────
+// Use LLM_ADAPTER=stub para forçar o stub (teste unitário / dev offline).
+// Caso contrário, o adaptador real do Ollama é utilizado.
 const llm: LlmPort =
   process.env["LLM_ADAPTER"] === "stub"
     ? new StubLlmAdapter()
     : new OllamaLlmAdapter();
 
-// ── Create providers registry ───────────────────────────────────
-// All known providers are registered here. Only the one identified
-// by `activeProvider` in policy.json is used at runtime.
+// ── Cria registro de providers ──────────────────────────────────
+// Todos os providers conhecidos são registrados aqui. Apenas o identificado
+// por `activeProvider` em policy.json é utilizado em tempo de execução.
 const providerRegistry = new Map<string, ActionProvider>([
   ["looker", new LookerProvider(policyConfig.looker)],
   ["custom", new CustomProvider()],
 ]);
 
-// ── Select active provider from config ──────────────────────────
+// ── Seleciona provider ativo pela configuração ──────────────────
 const activeProvider = providerRegistry.get(policyConfig.activeProvider);
 if (!activeProvider) {
   throw new Error(
-    `Unknown activeProvider "${policyConfig.activeProvider}". ` +
-    `Available: ${[...providerRegistry.keys()].join(", ")}`
+    `activeProvider desconhecido "${policyConfig.activeProvider}". ` +
+    `Disponíveis: ${[...providerRegistry.keys()].join(", ")}`
   );
 }
 
-// ── Wire DI container ───────────────────────────────────────────
+// ── Faz o wiring do container de DI ─────────────────────────────
 const di: ResolveDashboardActionDeps = {
   llm,
   policyEngine,
@@ -62,13 +62,13 @@ const di: ResolveDashboardActionDeps = {
 
 app.decorate("di", di);
 
-// ── Health check (preserved from prototype) ─────────────────────
+// ── Health check  -------------------------──────────────────────
 app.get("/health", async () => ({ status: "ok" }));
 
-// ── Register domain routes ──────────────────────────────────────
+// ── Registra rotas de domínio ───────────────────────────────────
 await app.register(dashboardRoutes);
 
-// ── Start server ────────────────────────────────────────────────
+// ── Inicia servidor ─────────────────────────────────────────────
 const port = Number(process.env["PORT"] ?? 3001);
 const host = process.env["HOST"] ?? "0.0.0.0";
 

@@ -6,11 +6,11 @@ export interface ResolveContext {
 }
 
 /**
- * Strategy interface for action providers.
- * Each provider has a unique id and can generate a DashboardAction
- * from any normalized intent. Only one provider is active at a time
- * (configured via `activeProvider` in policy.json). Every provider
- * implementation must handle all intent types.
+ * Interface de estratégia para providers de ação.
+ * Cada provider possui um id único e pode gerar um DashboardAction
+ * a partir de qualquer intent normalizado. Apenas um provider fica ativo por vez
+ * (configurado via `activeProvider` em policy.json). Toda implementação de provider
+ * deve tratar todos os tipos de intent.
  */
 export interface ActionProvider {
   readonly id: string;

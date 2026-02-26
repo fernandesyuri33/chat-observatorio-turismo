@@ -101,6 +101,11 @@ Response body (fallback):
 ## Testes
 - `libs/domain`, `libs/contracts` e `libs/application` possuem testes Vitest para schemas e pipeline.
 
+### Convenção de linguagem nos testes
+- Títulos de `describe` e `it` devem ser escritos em português (pt-BR).
+- Mensagens de erro/retorno usadas em cenários de teste devem permanecer em português quando forem user-facing.
+- Identificadores técnicos (nomes de funções, tipos, chaves de payload) permanecem em inglês quando fizerem parte da API/código.
+
 ## Pacote de contratos
 - O contrato HTTP de `POST /dashboard/resolve` fica em `libs/contracts` e é exportado por `@conversational/contracts`.
 - Objetivo: permitir publicar e reutilizar os tipos/schemas de integração da API em outros projetos.

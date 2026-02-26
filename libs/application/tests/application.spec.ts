@@ -11,21 +11,21 @@ import {
 
 const testPolicyConfig: PolicyConfig = baseTestPolicyConfig;
 
-describe("SchemaRegistry", () => {
-  it("selects v1 by default", () => {
+describe("Registro de schemas", () => {
+  it("seleciona v1 por padrão", () => {
     const version = getActiveVersion();
     expect(version).toBe("v1");
   });
 
-  it("returns a valid schema entry for v1", () => {
+  it("retorna uma entrada de schema válida para v1", () => {
     const entry = getSchemaEntry("v1");
     expect(entry).toBeDefined();
     expect(entry.schema).toBeDefined();
     expect(typeof entry.parse).toBe("function");
   });
 
-  it("throws for unknown version", () => {
-    expect(() => getSchemaEntry("v999")).toThrow("Unknown intent schema version");
+  it("lança erro para versão desconhecida", () => {
+    expect(() => getSchemaEntry("v999")).toThrow("Versão de schema de intent desconhecida");
   });
 });
 

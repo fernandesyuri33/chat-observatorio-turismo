@@ -7,8 +7,8 @@ import type { PolicyConfig } from "@conversational/policy";
 import type { ActionProvider, ResolveContext } from "../action-provider.js";
 
 /**
- * LookerProvider builds open_url actions using the Looker
- * base URL and paramMap from the policy config.
+ * LookerProvider monta ações open_url usando a URL base do Looker
+ * e o paramMap da configuração de política.
  */
 export class LookerProvider implements ActionProvider {
   readonly id = "looker";
@@ -65,7 +65,7 @@ export class LookerProvider implements ActionProvider {
 
     const mappedParams: Record<string, unknown> = {};
 
-    // Map proposedFilters through paramMap and serialize as a JSON object in "params"
+    // Mapeia proposedFilters via paramMap e serializa como objeto JSON em "params"
     for (const [filterKey, filterValue] of Object.entries(intent.proposedFilters)) {
       const paramName = this.lookerConfig.paramMap[filterKey] ?? filterKey;
       if (filterValue !== undefined && filterValue !== null) {

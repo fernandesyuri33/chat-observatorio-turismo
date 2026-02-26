@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// ── DashboardAction discriminated union ─────────────────────────
+// ── União discriminada de DashboardAction ───────────────────────
 
 export const OpenUrlActionSchema = z.object({
   type: z.literal("open_url"),

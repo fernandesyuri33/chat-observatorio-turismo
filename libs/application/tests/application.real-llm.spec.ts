@@ -13,7 +13,7 @@ const describeRealLlm = runRealLlmTests ? describe : describe.skip;
 
 const testPolicyConfig: PolicyConfig = baseTestPolicyConfig;
 
-describeRealLlm("resolveDashboardAction (real llm)", () => {
+describeRealLlm("resolveDashboardAction (LLM real)", () => {
   function buildDeps(overrideConfig?: Partial<PolicyConfig>) {
     const config = { ...testPolicyConfig, ...overrideConfig };
     const policyEngine = new PolicyEngine(config);

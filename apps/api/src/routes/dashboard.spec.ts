@@ -62,7 +62,7 @@ describe("POST /dashboard/resolve", () => {
     await app.close();
   });
 
-  it("returns initial orientation guidance for open questions", async () => {
+  it("retorna orientação inicial para perguntas abertas", async () => {
     const response = await app.inject({
       method: "POST",
       url: "/dashboard/resolve",
@@ -83,7 +83,7 @@ describe("POST /dashboard/resolve", () => {
     ]);
   });
 
-  it("returns 400 for invalid request payload", async () => {
+  it("retorna 400 para payload de requisição inválido", async () => {
     const response = await app.inject({
       method: "POST",
       url: "/dashboard/resolve",

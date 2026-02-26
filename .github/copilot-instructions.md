@@ -39,6 +39,7 @@ action provider (e.g. Looker, custom) that translates the intent into a typed
 - **Code, comments, variable names, commit messages** → English.
 - **All user-facing messages** (error strings, suggestions, fallback text,
   explain_only messages, LLM system prompts) → **always pt-BR Portuguese**.
+- **Test descriptions** (`describe`/`it` titles in Vitest) → **pt-BR Portuguese**. <!-- Updated: standardized test title language -->
   There is no runtime locale toggle — the system is permanently pt-BR.
 - When adding new user-facing copy, follow the same Portuguese tone already used
   in `resolve-dashboard-action.usecase.ts` and `fallback.ts`.

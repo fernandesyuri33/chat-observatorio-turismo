@@ -2,8 +2,8 @@ import type { DashboardAction, IntentV1 } from "@conversational/domain";
 import type { ActionProvider, ResolveContext } from "../action-provider.js";
 
 /**
- * CustomProvider returns a run_query action
- * that delegates to a custom "tourism.resolve" function.
+ * CustomProvider retorna uma ação run_query
+ * que delega para a função customizada "tourism.resolve".
  */
 export class CustomProvider implements ActionProvider {
   readonly id = "custom";

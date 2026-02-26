@@ -71,8 +71,8 @@ const ALLOWED_FILTER_KEYS = new Set<keyof IntentFilters>([
 ]);
 
 /**
- * PolicyEngine wraps a validated PolicyConfig and provides
- * helper methods for intent normalization and policy queries.
+ * PolicyEngine encapsula um PolicyConfig validado e fornece
+ * métodos auxiliares para normalização de intent e consultas de política.
  */
 export class PolicyEngine {
   constructor(private readonly config: PolicyConfig) {}
@@ -82,14 +82,14 @@ export class PolicyEngine {
   }
 
   /**
-   * Normalize an intent payload:
-   * - Apply synonyms to filter keys and values
-    * - Reject unknown filter keys (strict by default)
+   * Normaliza um payload de intent:
+   * - Aplica sinônimos em chaves e valores de filtro
+   * - Rejeita chaves de filtro desconhecidas (estrito por padrão)
    */
   normalizeIntent(raw: NormalizedIntent): NormalizedIntent {
     const synonyms = this.config.synonyms;
 
-    // Resolve proposed filter keys and values through synonyms
+    // Resolve chaves e valores de filtros propostos por meio de sinônimos
     const resolvedFilters: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(raw.proposedFilters)) {
       const resolvedKey = synonyms[key] ?? key;
@@ -100,7 +100,7 @@ export class PolicyEngine {
       }
     }
 
-    // Reject unknown filter keys
+    // Rejeita chaves de filtro desconhecidas
     for (const key of Object.keys(resolvedFilters)) {
       if (!ALLOWED_FILTER_KEYS.has(key as keyof IntentFilters)) {
         delete resolvedFilters[key];

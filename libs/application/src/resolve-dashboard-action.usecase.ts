@@ -192,22 +192,22 @@ async function resolveInitialOrientationAction(
       return validated.data;
     }
   } catch {
-    // falls through to default orientation action
+    // Continua para a ação padrão de orientação
   }
 
   return buildDefaultInitialOrientationAction();
 }
 
 /**
- * Core use case: resolve a user message into a validated DashboardAction.
+ * Caso de uso central: resolve uma mensagem do usuário em um DashboardAction validado.
  *
- * Flow:
- * 1. Call LLM via schema registry to get a structured intent
- * 2. Normalize intent via PolicyEngine
- * 3. Check confidence threshold (low confidence defaults to initial orientation)
- * 4. Route to the correct provider
- * 5. Validate output with DashboardActionSchema
- * 6. On any failure, default to initial orientation
+ * Fluxo:
+ * 1. Chama o LLM via registro de schemas para obter uma intenção estruturada
+ * 2. Normaliza a intenção via PolicyEngine
+ * 3. Verifica limite de confiança (baixa confiança volta para orientação inicial)
+ * 4. Encaminha para o provider correto
+ * 5. Valida a saída com DashboardActionSchema
+ * 6. Em qualquer falha, volta para orientação inicial
  */
 export async function resolveDashboardAction(
   deps: ResolveDashboardActionDeps,
@@ -217,7 +217,7 @@ export async function resolveDashboardAction(
   const config = policyEngine.getConfig();
   const ctx: ResolveContext = request.ctx ?? {};
 
-  // ── Step 1: Get structured intent from LLM ────────────────────
+  // ── Etapa 1: Obter intenção estruturada do LLM ────────────────
   const version = getActiveVersion();
   const schemaEntry = getSchemaEntry(version);
 
@@ -234,11 +234,11 @@ export async function resolveDashboardAction(
       if (retries > maxRetries) {
         return resolveInitialOrientationAction(provider, ctx);
       }
-      // retry loop continues
+      // Loop de retry continua
     }
   }
 
-  // ── Step 2: Normalize intent ──────────────────────────────────
+  // ── Etapa 2: Normalizar intenção ──────────────────────────────
   const parsed = rawIntent as NormalizedIntent;
   const normalized = policyEngine.normalizeIntent(parsed);
 
@@ -268,12 +268,12 @@ export async function resolveDashboardAction(
     );
   }
 
-  // ── Step 3: Check confidence ──────────────────────────────────
+  // ── Etapa 3: Verificar confiança ──────────────────────────────
   if (normalized.confidence < config.minConfidence) {
     return resolveInitialOrientationAction(provider, ctx);
   }
 
-  // ── Step 4: Generate action from provider ──────────────────────
+  // ── Etapa 4: Gerar ação a partir do provider ──────────────────
   let action: DashboardAction;
   try {
     action = await provider.generate(normalized, ctx);
@@ -281,7 +281,7 @@ export async function resolveDashboardAction(
     return resolveInitialOrientationAction(provider, ctx);
   }
 
-  // ── Step 5: Validate output against DashboardActionSchema ─────
+  // ── Etapa 5: Validar saída com DashboardActionSchema ──────────
   const validated = DashboardActionSchema.safeParse(action);
   if (!validated.success) {
     return resolveInitialOrientationAction(provider, ctx);

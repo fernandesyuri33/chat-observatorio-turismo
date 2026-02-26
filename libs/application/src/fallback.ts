@@ -1,7 +1,7 @@
 import type { DashboardAction } from "@conversational/domain";
 
 /**
- * Creates a safe "explain_only" fallback action from an error or message.
+ * Cria uma ação de fallback "explain_only" segura a partir de um erro ou mensagem.
  */
 export function explainOnlyFallback(
   reason: string,

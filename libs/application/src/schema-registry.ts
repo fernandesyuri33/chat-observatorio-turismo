@@ -1,9 +1,9 @@
 import type { z } from "zod";
 import { IntentV1Schema } from "@conversational/domain";
 
-// ── Schema Registry ─────────────────────────────────────────────
-// Maps version strings to { schema, parse }.
-// INTENT_SCHEMA_VERSION env var selects the active version at runtime.
+// ── Registro de Schemas ─────────────────────────────────────────
+// Mapeia strings de versão para { schema, parse }.
+// A env var INTENT_SCHEMA_VERSION seleciona a versão ativa em runtime.
 
 export interface SchemaEntry<T = unknown> {
   schema: z.ZodType<T>;
@@ -18,26 +18,26 @@ const registry: Record<string, SchemaEntry> = {
 };
 
 /**
- * Get a schema entry by version string.
- * Throws if the version is not registered.
+ * Obtém uma entrada de schema por string de versão.
+ * Lança erro se a versão não estiver registrada.
  */
 export function getSchemaEntry(version: string): SchemaEntry {
   const entry = registry[version];
   if (!entry) {
-    throw new Error(`Unknown intent schema version: "${version}". Registered: ${Object.keys(registry).join(", ")}`);
+    throw new Error(`Versão de schema de intent desconhecida: "${version}". Registradas: ${Object.keys(registry).join(", ")}`);
   }
   return entry;
 }
 
 /**
- * Get the currently active schema version from env, defaulting to "v1".
+ * Obtém da env a versão de schema atualmente ativa, com padrão "v1".
  */
 export function getActiveVersion(): string {
   return process.env["INTENT_SCHEMA_VERSION"] ?? "v1";
 }
 
 /**
- * Convenience: parse data through the currently active schema version.
+ * Faz parse dos dados pela versão de schema atualmente ativa.
  */
 export function parseIntent(data: unknown) {
   const version = getActiveVersion();
@@ -45,7 +45,7 @@ export function parseIntent(data: unknown) {
 }
 
 /**
- * Register a new schema version at runtime (for extensibility/testing).
+ * Registra uma nova versão de schema em runtime (extensibilidade/testes).
  */
 export function registerSchema(version: string, entry: SchemaEntry): void {
   registry[version] = entry;

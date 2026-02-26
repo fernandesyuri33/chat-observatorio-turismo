@@ -6,7 +6,7 @@ import {
   type ResolveDashboardResponse,
 } from "@conversational/contracts";
 
-// ── Inline simple UI components (previously from @conversational/ui) ──
+// ── Componentes simples de UI inline ──
 
 function ChatHistory({ messages }: { messages: { id: string; role: "user" | "assistant"; content: string }[] }) {
   return (
@@ -42,7 +42,7 @@ function ActionPanel({ lastAction }: { lastAction?: ResolveDashboardResponse["ac
   );
 }
 
-// ── Constants ───────────────────────────────────────────────────
+// ── Constantes ──────────────────────────────────────────────────
 
 const DEFAULT_SUGGESTIONS = [
   "Quero visitas em Sao Paulo em 2024",
@@ -69,7 +69,7 @@ export function App() {
   const [input, setInput] = useState("");
   const [lastAction, setLastAction] = useState<ResolveDashboardResponse["action"] | undefined>(undefined);
 
-  // Derive iframe URL from the last open_url action, or use the base embed URL
+  // Deriva a URL do iframe da última ação open_url, ou usa a URL base de embed
   const iframeUrl =
     lastAction?.type === "open_url" ? lastAction.url : baseEmbedUrl;
 
@@ -108,7 +108,7 @@ export function App() {
     const data: ResolveDashboardResponse = ResolveDashboardResponseSchema.parse(raw);
     setLastAction(data.action);
 
-    // Build assistant text based on the new DashboardAction types
+    // Monta o texto do assistente com base nos novos tipos de DashboardAction
     let assistantText: string;
     switch (data.action.type) {
       case "open_url":
@@ -135,7 +135,7 @@ export function App() {
     <div className="app">
       <header className="hero">
         <div>
-          <p className="eyebrow">Conversational Looker Studio</p>
+          <p className="eyebrow">Looker Studio Conversacional</p>
           <h1>Dashboard conversacional</h1>
           <p>
             Controle filtros do Looker Studio usando linguagem natural e veja a explicacao das
