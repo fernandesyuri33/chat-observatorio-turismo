@@ -19,7 +19,10 @@
     "test-real-llm": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "RUN_REAL_LLM_TESTS=true vitest run --passWithNoTests --config libs/application/vitest.config.ts libs/application/tests/application.real-llm.spec.ts"
+        "command": "vitest run --passWithNoTests --config libs/application/vitest.config.ts libs/application/tests/application.real-llm.spec.ts",
+        "env": {
+          "RUN_REAL_LLM_TESTS": "true"
+        }
       }
     }
   }
