@@ -51,10 +51,16 @@ export const InitialOrientationIntentV1Schema = IntentV1BaseSchema.extend({
   informationType: OmittedInformationTypeSchema,
 });
 
+export const CuriosityToActionIntentV1Schema = IntentV1BaseSchema.extend({
+  intent: z.literal("curiosity_to_action"),
+  informationType: OmittedInformationTypeSchema,
+});
+
 export const IntentV1Schema = z.discriminatedUnion("intent", [
   ShowIntentV1Schema,
   ContextualOrientationIntentV1Schema,
   InitialOrientationIntentV1Schema,
+  CuriosityToActionIntentV1Schema,
 ]);
 
 export type InformationType = z.infer<typeof InformationTypeSchema>;

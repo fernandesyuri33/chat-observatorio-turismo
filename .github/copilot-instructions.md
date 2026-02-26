@@ -151,7 +151,7 @@ Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
 
 ```ts
 {
-  intent: "show" | "contextual_orientation" | "initial_orientation",
+  intent: "show" | "contextual_orientation" | "initial_orientation" | "curiosity_to_action", <!-- Updated: added curiosity-to-action intent for guided curiosity questions -->
   informationType?:
     | "estabelecimentos_por_municipio"
     | "funcionarios_por_municipio"
@@ -166,7 +166,7 @@ Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
 }
 ```
 
-`informationType` is required when `intent = "show"`, and omitted when `intent = "contextual_orientation"` or `intent = "initial_orientation"`. <!-- Updated: removed help and added contextual orientation intent -->
+`informationType` is required when `intent = "show"`, and omitted when `intent = "contextual_orientation"`, `intent = "initial_orientation"`, or `intent = "curiosity_to_action"`. <!-- Updated: curiosity_to_action also omits informationType -->
 
 Schema: `IntentV1Schema`. Selected at runtime via the schema registry.
 
@@ -208,6 +208,7 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 | `activeProvider` | `string` — id of the single active `ActionProvider` (e.g. `"looker"`, `"custom"`) <!-- Updated: replaced routing map with single activeProvider --> |
 | `fallback.retryCount` | Number of LLM retries on schema parse failure |
 | `fallback.contextualOrientationOptionCount` | Number of contextual `informationType` suggestions shown when user provides only filter context without a clear analysis recorte | <!-- Updated: configurable amount for semi-formulated contextual guidance --> |
+| `curiosityFaq` | Configurable FAQ-style examples used to deterministically validate and answer `curiosity_to_action` intents (`questionExamples[]`, `response`, `suggestion`, `informationType`) | <!-- Updated: added deterministic curiosity mapping config --> |
 | `looker.baseUrl` | Looker Studio embed URL (with report/page path) |
 | `looker.paramMap` | Maps canonical filter keys → keys used inside the `params` JSON payload |
 | `looker.informationTypeMap` | Maps `informationType` values → Looker page path/id (or full URL) <!-- Updated: page mapping by information type --> |

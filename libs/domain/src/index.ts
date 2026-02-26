@@ -19,6 +19,7 @@ export {
   ShowIntentV1Schema,
   ContextualOrientationIntentV1Schema,
   InitialOrientationIntentV1Schema,
+  CuriosityToActionIntentV1Schema,
   IntentV1Schema,
   type InformationType,
   type Classificacao,

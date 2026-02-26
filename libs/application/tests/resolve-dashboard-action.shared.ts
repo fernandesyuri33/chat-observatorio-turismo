@@ -19,6 +19,18 @@ export const baseTestPolicyConfig: PolicyConfig = {
     retryCount: 1,
     contextualOrientationOptionCount: 3,
   },
+  curiosityFaq: [
+    {
+      questionExamples: [
+        "O setor turístico de Poços de Caldas está evoluindo?",
+        "O turismo de Poços de Caldas está crescendo?",
+      ],
+      response:
+        "Uma forma de explorar essa questão é visualizar a evolução da quantidade de funcionários ao longo do tempo. Deseja ajustar o dashboard para esse recorte?",
+      suggestion: "Visualizar a quantidade de funcionários ao longo do tempo",
+      informationType: "funcionarios_ao_longo_do_tempo",
+    },
+  ],
   looker: {
     baseUrl: "https://lookerstudio.google.com/embed/reporting/abc123/page/p_1",
     paramMap: {
@@ -115,6 +127,36 @@ export function runResolveDashboardActionSharedSuite(
         "Quantidade de funcionários ao longo do tempo",
         "Saldo de funcionários ao longo do tempo",
       ]);
+    }
+  }, timeout);
+
+  it("returns curiosity_to_action answer from configured FAQ", async () => {
+    const deps = buildDeps();
+    const result = await resolveDashboardAction(deps, {
+      message: "O setor turístico de Poços de Caldas está evoluindo?",
+    });
+
+    expect(result.type).toBe("explain_only");
+    if (result.type === "explain_only") {
+      expect(result.message).toContain(
+        "Uma forma de explorar essa questão é visualizar a evolução da quantidade de funcionários ao longo do tempo"
+      );
+      expect(result.suggestions).toEqual([
+        "Visualizar a quantidade de funcionários ao longo do tempo",
+      ]);
+    }
+  }, timeout);
+
+  it("falls back to initial orientation when curiosity intent has no FAQ match", async () => {
+    const deps = buildDeps({ curiosityFaq: [] });
+    const result = await resolveDashboardAction(deps, {
+      message: "O setor turístico de Poços de Caldas está evoluindo?",
+    });
+
+    expect(result.type).toBe("explain_only");
+    if (result.type === "explain_only") {
+      expect(result.message).toContain("caminhos de exploração");
+      expect(result.suggestions.length).toBeGreaterThanOrEqual(3);
     }
   }, timeout);
 }

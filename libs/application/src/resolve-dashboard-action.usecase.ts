@@ -6,10 +6,16 @@ import {
   type InformationType,
 } from "@conversational/domain";
 import type { LlmPort } from "@conversational/llm";
-import { PolicyEngine, type NormalizedIntent } from "@conversational/policy";
+import {
+  PolicyEngine,
+  type NormalizedIntent,
+  type PolicyConfig,
+} from "@conversational/policy";
 import type { ActionProvider, ResolveContext } from "@conversational/providers";
 import { getSchemaEntry, getActiveVersion } from "./schema-registry.js";
 import { explainOnlyFallback } from "./fallback.js";
+
+type CuriosityFaqEntry = NonNullable<PolicyConfig["curiosityFaq"]>[number];
 
 export interface ResolveDashboardActionDeps {
   llm: LlmPort;
@@ -89,6 +95,73 @@ function buildContextualOrientationSuggestions(optionCount: number): string[] {
   return INFORMATION_TYPE_VALUES
     .slice(0, optionCount)
     .map((informationType) => INFORMATION_TYPE_LABEL[informationType]);
+}
+
+function tokenizeText(value: string): Set<string> {
+  const normalized = normalizeText(value).replace(/[^a-z0-9\s]/g, " ");
+  return new Set(normalized.split(/\s+/).filter((token) => token.length >= 3));
+}
+
+function scoreFaqMatch(message: string, example: string): number {
+  const messageTokens = tokenizeText(message);
+  const exampleTokens = tokenizeText(example);
+
+  if (messageTokens.size === 0 || exampleTokens.size === 0) {
+    return 0;
+  }
+
+  let intersection = 0;
+  for (const token of messageTokens) {
+    if (exampleTokens.has(token)) {
+      intersection += 1;
+    }
+  }
+
+  if (intersection < 2) {
+    return 0;
+  }
+
+  return intersection / exampleTokens.size;
+}
+
+function findCuriosityFaqMatch(
+  message: string,
+  entries?: PolicyConfig["curiosityFaq"]
+): CuriosityFaqEntry | undefined {
+  if (!entries || entries.length === 0) {
+    return undefined;
+  }
+
+  let bestScore = 0;
+  let bestEntry: CuriosityFaqEntry | undefined;
+
+  for (const entry of entries) {
+    for (const example of entry.questionExamples) {
+      const score = scoreFaqMatch(message, example);
+      if (score > bestScore) {
+        bestScore = score;
+        bestEntry = entry;
+      }
+    }
+  }
+
+  if (bestScore < 0.45) {
+    return undefined;
+  }
+
+  return bestEntry;
+}
+
+function buildCuriosityToAction(entry: CuriosityFaqEntry): DashboardAction {
+  return {
+    type: "explain_only",
+    message: entry.response,
+    suggestions: [entry.suggestion],
+    meta: {
+      curiosityToAction: true,
+      informationType: entry.informationType,
+    },
+  };
 }
 
 function buildDefaultInitialOrientationAction(): DashboardAction {
@@ -174,6 +247,15 @@ export async function resolveDashboardAction(
       buildContextualOrientationMessage(normalized),
       buildContextualOrientationSuggestions(config.fallback.contextualOrientationOptionCount)
     );
+  }
+
+  if (normalized.intent === "curiosity_to_action") {
+    const curiosityMatch = findCuriosityFaqMatch(request.message, config.curiosityFaq);
+    if (!curiosityMatch) {
+      return resolveInitialOrientationAction(provider, ctx);
+    }
+
+    return buildCuriosityToAction(curiosityMatch);
   }
 
   if (

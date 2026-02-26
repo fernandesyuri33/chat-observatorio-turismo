@@ -40,6 +40,13 @@ export type NormalizedIntent =
       proposedFilters: IntentFilters;
       confidence: number;
       rationale?: string;
+    }
+  | {
+      intent: "curiosity_to_action";
+      informationType?: never;
+      proposedFilters: IntentFilters;
+      confidence: number;
+      rationale?: string;
     };
 
 const INFORMATION_TYPES = new Set<InformationType>([
@@ -111,7 +118,11 @@ export class PolicyEngine {
       normalizedFilters.municipio = resolvedFilters["municipio"];
     }
 
-    if (raw.intent === "contextual_orientation" || raw.intent === "initial_orientation") {
+    if (
+      raw.intent === "contextual_orientation" ||
+      raw.intent === "initial_orientation" ||
+      raw.intent === "curiosity_to_action"
+    ) {
       return {
         ...raw,
         proposedFilters: normalizedFilters,

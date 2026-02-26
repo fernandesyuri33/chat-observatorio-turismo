@@ -35,9 +35,20 @@ export class StubLlmAdapter implements LlmPort {
       lower.includes("por onde começ") ||
       lower.includes("como posso começar");
 
+    const isCuriosityQuestion =
+      (lower.includes("setor turístico") || lower.includes("setor turistico")) &&
+      (lower.includes("evolu") || lower.includes("crescen") || lower.includes("melhor"));
+
     if (lower.includes("invalid")) {
       // Return an intentionally invalid shape to test fallback
       raw = { bad: "data" };
+    } else if (isCuriosityQuestion) {
+      raw = {
+        intent: "curiosity_to_action",
+        proposedFilters,
+        confidence: 0.9,
+        rationale: "Pergunta de curiosidade que pode virar recorte acionável",
+      };
     } else if (isInitialOrientationQuestion) {
       raw = {
         intent: "initial_orientation",

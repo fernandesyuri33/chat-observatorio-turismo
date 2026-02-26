@@ -22,6 +22,17 @@ const testPolicyConfig: PolicyConfig = {
     retryCount: 1,
     contextualOrientationOptionCount: 3,
   },
+  curiosityFaq: [
+    {
+      questionExamples: [
+        "O setor turístico de Poços de Caldas está evoluindo?",
+      ],
+      response:
+        "Uma forma de explorar essa questão é visualizar a evolução da quantidade de funcionários ao longo do tempo. Deseja ajustar o dashboard para esse recorte?",
+      suggestion: "Visualizar a quantidade de funcionários ao longo do tempo",
+      informationType: "funcionarios_ao_longo_do_tempo",
+    },
+  ],
   looker: {
     baseUrl: "https://lookerstudio.google.com/embed/reporting/abc123/page/p_1",
     paramMap: {
@@ -109,6 +120,27 @@ describe("POST /dashboard/resolve", () => {
       "Quantidade de funcionários ao longo do tempo",
       "Saldo de funcionários ao longo do tempo",
       "Quantidade de funcionários por município",
+    ]);
+  });
+
+  it("retorna resposta de curiosidade baseada em FAQ configurado", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/dashboard/resolve",
+      payload: {
+        message: "O setor turístico de Poços de Caldas está evoluindo?",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const body = response.json();
+    expect(body.action.type).toBe("explain_only");
+    expect(body.action.message).toContain(
+      "Uma forma de explorar essa questão é visualizar a evolução da quantidade de funcionários ao longo do tempo"
+    );
+    expect(body.action.suggestions).toEqual([
+      "Visualizar a quantidade de funcionários ao longo do tempo",
     ]);
   });
 });

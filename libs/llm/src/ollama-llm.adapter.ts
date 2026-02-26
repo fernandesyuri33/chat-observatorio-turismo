@@ -18,6 +18,7 @@ Intenções possíveis:
 - "show"     → o usuário quer visualizar uma informação no dashboard
 - "contextual_orientation" → o usuário mencionou um recorte/filtro, mas sem definir qual análise quer ver
 - "initial_orientation" → o usuário pediu orientação aberta sobre o que pode analisar no dashboard
+- "curiosity_to_action" → o usuário fez uma pergunta de curiosidade que pode ser transformada em uma ação guiada
 
 Tipos de informação disponíveis (páginas):
 ${INFORMATION_TYPE_BULLETS_TOKEN}
@@ -29,7 +30,7 @@ ${CLASSIFICACAO_BULLETS_TOKEN}
 
 Responda **somente** com JSON válido no seguinte formato:
 {
-  "intent": "<show|contextual_orientation|initial_orientation>",
+  "intent": "<show|contextual_orientation|initial_orientation|curiosity_to_action>",
   "informationType": "<${INFORMATION_TYPE_PLACEHOLDER_TOKEN}>",
   "proposedFilters": {
     "classificacao"?: "<${CLASSIFICACAO_PLACEHOLDER_TOKEN}>",
@@ -41,7 +42,7 @@ Responda **somente** com JSON válido no seguinte formato:
 
 Regras:
 - Para intent "show", "informationType" é obrigatório.
-- Para "contextual_orientation" e "initial_orientation", omita "informationType".
+- Para "contextual_orientation", "initial_orientation" e "curiosity_to_action", omita "informationType".
 - Nunca envie "informationType": null.
 - "proposedFilters" deve conter apenas os filtros explicitamente mencionados.
 - "confidence" deve refletir quão claro e específico foi o pedido.
@@ -49,6 +50,7 @@ Regras:
 - Se a mensagem é vaga, use confidence baixa (< 0.5) e rationale explicando a dúvida.
 - Se o usuário mencionar apenas recorte (ex.: município/classificação) sem definir o tipo de análise, use "contextual_orientation".
 - Se o usuário perguntar de forma aberta sobre o que pode analisar (ex.: "que dados posso obter aqui?", "o que posso descobrir aqui?"), use intent = "initial_orientation" e proposedFilters = {}.
+- Se o usuário fizer uma pergunta de curiosidade (ex.: "o setor turístico de X está evoluindo?"), use intent = "curiosity_to_action".
 - Sempre responda em português.`;
 
 // ── Config ──────────────────────────────────────────────────────

@@ -35,6 +35,18 @@ export class LookerProvider implements ActionProvider {
       };
     }
 
+    if (intent.intent === "curiosity_to_action") {
+      return {
+        type: "explain_only",
+        message: "Posso te ajudar a transformar essa curiosidade em um recorte objetivo no dashboard.",
+        suggestions: ["Acompanhar a evolução de funcionários ao longo do tempo"],
+        meta: {
+          provider: "looker",
+          intent: "curiosity_to_action",
+        },
+      };
+    }
+
     const url = this.resolveUrlForInformationType(
       intent.intent === "show" ? intent.informationType : undefined
     );
@@ -42,6 +54,7 @@ export class LookerProvider implements ActionProvider {
       show: "visualização",
       contextual_orientation: "orientação contextual",
       initial_orientation: "orientação inicial",
+      curiosity_to_action: "curiosidade para ação",
     };
     const informationTypeLabel: Record<string, string> = {
       estabelecimentos_por_municipio: "Estabelecimentos por município",

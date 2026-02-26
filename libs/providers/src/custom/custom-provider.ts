@@ -12,16 +12,22 @@ export class CustomProvider implements ActionProvider {
     intent: IntentV1,
     _ctx: ResolveContext
   ): Promise<DashboardAction> {
-    if (intent.intent === "initial_orientation") {
+    if (intent.intent === "initial_orientation" || intent.intent === "curiosity_to_action") {
       return {
         type: "explain_only",
-        message: "Posso sugerir alguns caminhos de exploração:",
-        suggestions: [
-          "Comparar estabelecimentos entre municípios",
-          "Visualizar a quantidade de funcionários por município",
-          "Acompanhar a evolução de funcionários ao longo do tempo",
-        ],
-        meta: { provider: "custom", intent: "initial_orientation" },
+        message:
+          intent.intent === "curiosity_to_action"
+            ? "Posso te ajudar a transformar essa curiosidade em um recorte objetivo no dashboard."
+            : "Posso sugerir alguns caminhos de exploração:",
+        suggestions:
+          intent.intent === "curiosity_to_action"
+            ? ["Acompanhar a evolução de funcionários ao longo do tempo"]
+            : [
+                "Comparar estabelecimentos entre municípios",
+                "Visualizar a quantidade de funcionários por município",
+                "Acompanhar a evolução de funcionários ao longo do tempo",
+              ],
+        meta: { provider: "custom", intent: intent.intent },
       };
     }
 

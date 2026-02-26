@@ -151,4 +151,26 @@ describe("IntentV1Schema", () => {
       expect(result.data.informationType).toBeUndefined();
     }
   });
+
+  it("accepts curiosity_to_action intent without informationType", () => {
+    const result = IntentV1Schema.safeParse({
+      intent: "curiosity_to_action",
+      proposedFilters: {},
+      confidence: 0.9,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts curiosity_to_action intent with informationType null", () => {
+    const result = IntentV1Schema.safeParse({
+      intent: "curiosity_to_action",
+      informationType: null,
+      proposedFilters: {},
+      confidence: 0.9,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.informationType).toBeUndefined();
+    }
+  });
 });
