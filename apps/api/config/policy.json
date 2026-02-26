@@ -1,14 +1,6 @@
 {
   "minConfidence": 0.5,
   "synonyms": {
-    "occupancy": "ocupacao",
-    "visits": "visitas",
-    "events": "eventos",
-    "city": "cidade",
-    "year": "ano",
-    "month": "mes",
-    "indicator": "indicador",
-    "ocupação": "ocupacao",
     "classificação": "classificacao",
     "classificacao": "classificacao",
     "estabelecimentos por municipio": "estabelecimentos_por_municipio",

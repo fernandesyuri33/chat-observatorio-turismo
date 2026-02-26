@@ -9,8 +9,6 @@ import { LookerProvider } from "@conversational/providers";
 const testPolicyConfig: PolicyConfig = {
   minConfidence: 0.5,
   synonyms: {
-    occupancy: "ocupacao",
-    visits: "visitas",
     "funcionários por município": "funcionarios_por_municipio",
   },
   activeProvider: "looker",

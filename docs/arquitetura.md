@@ -123,8 +123,9 @@ F --> G[DashboardAction]
 flowchart LR
 
 A[Synonyms]
-  --> B[Canonical filters]
-  --> C[Remove unknown keys]
+  --> B[Canonical filters permitidos]
+  --> C[Mapeamento de informationType]
+  --> D[Remove unknown keys]
 ```
 
 ---
@@ -196,7 +197,7 @@ flowchart LR
   DOM --> DOM3[Zod schemas]
 
   POL --> POL1[Config JSON]
-  POL --> POL2[Synonyms]
+  POL --> POL2[Synonyms para filtros e informationType]
   POL --> POL3[Strict filter normalization]
 
   LLM --> LLM1[Structured output]
