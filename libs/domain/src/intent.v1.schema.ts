@@ -21,7 +21,7 @@ export const ClassificacaoSchema = z.enum([
 ]);
 
 export const IntentV1FiltersSchema = z.object({
-  classificacao: ClassificacaoSchema.optional(),
+  classificacao: ClassificacaoSchema.nullable().optional(),
   municipio: z.string().min(1).optional(),
 });
 

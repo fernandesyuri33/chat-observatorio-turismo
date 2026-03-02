@@ -8,6 +8,11 @@ import type { LlmPort } from "./llm.port.js";
 export class StubLlmAdapter implements LlmPort {
   async generateStructured<T>(schema: z.ZodType<T>, input: string): Promise<T> {
     const lower = input.toLowerCase();
+    const hasAnalysisSignal =
+      lower.includes("ao longo do tempo") ||
+      lower.includes("saldo") ||
+      lower.includes("estabelecimento") ||
+      lower.includes("funcion");
 
     let raw: unknown;
     const proposedFilters: Record<string, unknown> = {};
@@ -39,6 +44,10 @@ export class StubLlmAdapter implements LlmPort {
       (lower.includes("setor turístico") || lower.includes("setor turistico")) &&
       (lower.includes("evolu") || lower.includes("crescen") || lower.includes("melhor"));
 
+    const isFilterOnlyContext =
+      Object.keys(proposedFilters).length > 0 &&
+      !hasAnalysisSignal;
+
     if (lower.includes("invalid")) {
       // Retorna um formato intencionalmente inválido para testar fallback
       raw = { bad: "data" };
@@ -55,6 +64,13 @@ export class StubLlmAdapter implements LlmPort {
         proposedFilters: {},
         confidence: 0.9,
         rationale: "Usuário pediu orientação inicial sobre o que pode analisar",
+      };
+    } else if (isFilterOnlyContext) {
+      raw = {
+        intent: "contextual_orientation",
+        proposedFilters,
+        confidence: 0.85,
+        rationale: "Usuário informou apenas recorte de filtro sem análise explícita",
       };
     } else if (lower.includes("saldo")) {
       raw = {

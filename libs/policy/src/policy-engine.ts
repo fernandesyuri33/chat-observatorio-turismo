@@ -59,6 +59,13 @@ export type NormalizedIntent =
       rationale?: string;
     };
 
+function normalizeText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 const INFORMATION_TYPES = new Set<InformationType>([
   "estabelecimentos_por_municipio",
   "funcionarios_por_municipio",
@@ -96,7 +103,7 @@ export class PolicyEngine {
    * - Aplica sinônimos em chaves e valores de filtro
    * - Rejeita chaves de filtro desconhecidas (estrito por padrão)
    */
-  normalizeIntent(raw: NormalizedIntent): NormalizedIntent {
+  normalizeIntent(raw: NormalizedIntent, message?: string): NormalizedIntent {
     const synonyms = this.config.synonyms;
 
     // Resolve chaves e valores de filtros propostos por meio de sinônimos
@@ -144,10 +151,58 @@ export class PolicyEngine {
       ? (mappedInformationType as InformationType)
       : raw.informationType;
 
-    return {
+    const normalizedShowIntent: NormalizedIntent = {
       ...raw,
       informationType: normalizedInformationType,
       proposedFilters: normalizedFilters,
     };
+
+    if (this.shouldForceContextualOrientation(normalizedShowIntent, message)) {
+      return {
+        intent: "contextual_orientation",
+        proposedFilters: normalizedFilters,
+        confidence: raw.confidence,
+        rationale: raw.rationale,
+      };
+    }
+
+    return normalizedShowIntent;
+  }
+
+  private shouldForceContextualOrientation(intent: NormalizedIntent, message?: string): boolean {
+    if (intent.intent !== "show") {
+      return false;
+    }
+
+    if (!message || Object.keys(intent.proposedFilters).length === 0) {
+      return false;
+    }
+
+    return !this.hasInformationTypeMention(message);
+  }
+
+  private hasInformationTypeMention(message: string): boolean {
+    const normalizedMessage = normalizeText(message);
+    const terms = new Set<string>([
+      "estabelecimentos por municipio",
+      "funcionarios por municipio",
+      "funcionarios ao longo do tempo",
+      "saldo de funcionarios ao longo do tempo",
+      "saldo funcionarios ao longo do tempo",
+    ]);
+
+    for (const [synonym, canonical] of Object.entries(this.config.synonyms)) {
+      if (INFORMATION_TYPES.has(canonical as InformationType)) {
+        terms.add(normalizeText(synonym));
+      }
+    }
+
+    for (const term of terms) {
+      if (normalizedMessage.includes(term)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

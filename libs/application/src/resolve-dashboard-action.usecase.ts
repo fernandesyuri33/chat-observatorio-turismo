@@ -35,48 +35,6 @@ const INFORMATION_TYPE_LABEL: Record<InformationType, string> = {
   saldo_funcionarios_ao_longo_do_tempo: "Saldo de funcionários ao longo do tempo",
 };
 
-const INFORMATION_TYPES = new Set<InformationType>(INFORMATION_TYPE_VALUES);
-
-function normalizeText(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-function hasInformationTypeMention(message: string, synonyms: Record<string, string>): boolean {
-  const normalizedMessage = normalizeText(message);
-  const terms = new Set<string>([
-    "estabelecimentos por municipio",
-    "funcionarios por municipio",
-    "funcionarios ao longo do tempo",
-    "saldo de funcionarios ao longo do tempo",
-    "saldo funcionarios ao longo do tempo",
-  ]);
-
-  for (const [synonym, canonical] of Object.entries(synonyms)) {
-    if (INFORMATION_TYPES.has(canonical as InformationType)) {
-      terms.add(normalizeText(synonym));
-    }
-  }
-
-  for (const term of terms) {
-    if (normalizedMessage.includes(term)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function hasOnlyFilterContext(intent: NormalizedIntent): boolean {
-  if (intent.intent !== "show") {
-    return false;
-  }
-
-  return Object.keys(intent.proposedFilters).length > 0;
-}
-
 function buildContextualOrientationMessage(intent: NormalizedIntent): string {
   const base = "A partir desse recorte, você pode explorar:";
 
@@ -95,6 +53,13 @@ function buildContextualOrientationSuggestions(optionCount: number): string[] {
   return INFORMATION_TYPE_VALUES
     .slice(0, optionCount)
     .map((informationType) => INFORMATION_TYPE_LABEL[informationType]);
+}
+
+function normalizeText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 function tokenizeText(value: string): Set<string> {
@@ -230,7 +195,7 @@ export async function resolveDashboardAction(
 
   // ── Etapa 2: Normalizar intenção ──────────────────────────────
   const parsed = rawIntent as NormalizedIntent;
-  const normalized = policyEngine.normalizeIntent(parsed);
+  const normalized = policyEngine.normalizeIntent(parsed, request.message);
 
   if (normalized.intent === "contextual_orientation") {
     return explainOnlyFallback(
@@ -246,16 +211,6 @@ export async function resolveDashboardAction(
     }
 
     return buildCuriosityToAction(curiosityMatch);
-  }
-
-  if (
-    hasOnlyFilterContext(normalized) &&
-    !hasInformationTypeMention(request.message, config.synonyms)
-  ) {
-    return explainOnlyFallback(
-      buildContextualOrientationMessage(normalized),
-      buildContextualOrientationSuggestions(config.fallback.contextualOrientationOptionCount)
-    );
   }
 
   // ── Etapa 3: Verificar confiança ──────────────────────────────

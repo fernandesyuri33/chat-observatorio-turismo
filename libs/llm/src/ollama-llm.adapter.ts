@@ -48,9 +48,14 @@ Regras:
 - "confidence" deve refletir quão claro e específico foi o pedido.
 - Se o usuário não mencionou nenhum filtro, retorne proposedFilters vazio ({}).
 - Se a mensagem é vaga, use confidence baixa (< 0.5) e rationale explicando a dúvida.
-- Se o usuário mencionar apenas recorte (ex.: município/classificação) sem definir o tipo de análise, use "contextual_orientation".
+- Se o usuário mencionar apenas recorte (ex.: município/classificação) sem definir o tipo de análise, use **sempre** "contextual_orientation".
+- Nomes de cidade, classificação ou termos genéricos como "dados", "informações", "ver dados", "mostrar dados" não definem sozinhos um tipo de análise.
+- Só use "show" quando houver indicação clara do recorte analítico (ex.: "funcionários por município", "estabelecimentos por município", "ao longo do tempo", "saldo de funcionários").
 - Se o usuário perguntar de forma aberta sobre o que pode analisar (ex.: "que dados posso obter aqui?", "o que posso descobrir aqui?"), use intent = "initial_orientation" e proposedFilters = {}.
 - Se o usuário fizer uma pergunta de curiosidade (ex.: "o setor turístico de X está evoluindo?"), use intent = "curiosity_to_action".
+- Exemplos:
+  - "Quero ver dados de Poços de Caldas" -> intent="contextual_orientation", proposedFilters={"municipio":"Poços de Caldas"}
+  - "Mostre funcionários por município em Poços de Caldas" -> intent="show", informationType="funcionarios_por_municipio", proposedFilters={"municipio":"Poços de Caldas"}
 - Sempre responda em português.`;
 
 // ── Configuração ────────────────────────────────────────────────
