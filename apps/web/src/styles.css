@@ -67,14 +67,18 @@ body {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
-.chat-message {
+.chat-bubble {
   padding: 12px;
   border-radius: 12px;
   background: #f7f3ee;
 }
 
-.chat-message.chat-assistant {
+.chat-bubble--assistant {
   background: #e9f4f7;
+}
+
+.chat-bubble--user {
+  align-self: flex-end;
 }
 
 .chat-role {
@@ -104,6 +108,12 @@ body {
   color: #fff;
 }
 
+.chat-input button:disabled,
+.chat-input input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .suggestion-chips {
   display: flex;
   flex-wrap: wrap;
@@ -116,6 +126,7 @@ body {
   border-radius: 999px;
   padding: 6px 12px;
   font-size: 0.85rem;
+  cursor: pointer;
 }
 
 .dashboard-panel {

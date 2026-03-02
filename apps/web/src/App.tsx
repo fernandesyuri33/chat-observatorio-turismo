@@ -67,32 +67,77 @@ export function App() {
     { id: "welcome", role: "assistant" as const, content: "Como posso ajudar?" }
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
   const [lastAction, setLastAction] = useState<ResolveDashboardResponse["action"] | undefined>(undefined);
-
-  // Deriva a URL do iframe da última ação open_url, ou usa a URL base de embed
-  const iframeUrl =
-    lastAction?.type === "open_url" ? lastAction.url : baseEmbedUrl;
+  const [embedUrl, setEmbedUrl] = useState(baseEmbedUrl);
 
   async function handleSubmit(message: string) {
     const trimmed = message.trim();
-    if (!trimmed) return;
+    if (!trimmed || isLoading) return;
 
     setMessages((prev) => [
       ...prev,
       { id: crypto.randomUUID(), role: "user", content: trimmed }
     ]);
     setInput("");
+    setIsLoading(true);
 
-    const payload: ResolveDashboardRequest =
-      ResolveDashboardRequestSchema.parse({ message: trimmed });
+    try {
+      const payload: ResolveDashboardRequest =
+        ResolveDashboardRequestSchema.parse({ message: trimmed });
 
-    const response = await fetch(`${apiUrl}/dashboard/resolve`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+      const response = await fetch(`${apiUrl}/dashboard/resolve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: "Nao consegui interpretar. Tente novamente."
+          }
+        ]);
+        return;
+      }
+
+      const raw = await response.json();
+      const data: ResolveDashboardResponse = ResolveDashboardResponseSchema.parse(raw);
+      setLastAction(data.action);
+
+      if (data.action.type === "open_url") {
+        setEmbedUrl(data.action.url);
+      }
+
+      if (data.action.type === "explain_only") {
+        setSuggestions(data.action.suggestions);
+      }
+
+      let assistantText: string;
+      switch (data.action.type) {
+        case "open_url":
+          assistantText = data.action.title ?? `Abrindo: ${data.action.url}`;
+          break;
+        case "apply_filters":
+          assistantText = `Filtros aplicados: ${JSON.stringify(data.action.filters)}`;
+          break;
+        case "run_query":
+          assistantText = `Executando: ${data.action.function}`;
+          break;
+        case "explain_only":
+          assistantText = data.action.message;
+          break;
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), role: "assistant", content: assistantText }
+      ]);
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
@@ -101,34 +146,9 @@ export function App() {
           content: "Nao consegui interpretar. Tente novamente."
         }
       ]);
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    const raw = await response.json();
-    const data: ResolveDashboardResponse = ResolveDashboardResponseSchema.parse(raw);
-    setLastAction(data.action);
-
-    // Monta o texto do assistente com base nos novos tipos de DashboardAction
-    let assistantText: string;
-    switch (data.action.type) {
-      case "open_url":
-        assistantText = data.action.title ?? `Abrindo: ${data.action.url}`;
-        break;
-      case "apply_filters":
-        assistantText = `Filtros aplicados: ${JSON.stringify(data.action.filters)}`;
-        break;
-      case "run_query":
-        assistantText = `Executando: ${data.action.function}`;
-        break;
-      case "explain_only":
-        assistantText = data.action.message;
-        break;
-    }
-
-    setMessages((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), role: "assistant", content: assistantText }
-    ]);
   }
 
   return (
@@ -147,7 +167,7 @@ export function App() {
       <main className="layout">
         <section className="chat-panel">
           <ChatHistory messages={messages} />
-          <SuggestionChips suggestions={DEFAULT_SUGGESTIONS} onSelect={handleSubmit} />
+          <SuggestionChips suggestions={suggestions} onSelect={handleSubmit} />
           <form
             className="chat-input"
             onSubmit={(event) => {
@@ -159,15 +179,18 @@ export function App() {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               placeholder="Digite um pedido..."
+              disabled={isLoading}
             />
-            <button type="submit">Enviar</button>
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? "Enviando..." : "Enviar"}
+            </button>
           </form>
         </section>
 
         <section className="dashboard-panel">
           <ActionPanel lastAction={lastAction} />
           <div className="iframe-wrapper">
-            <iframe title="Looker Studio" src={iframeUrl} />
+            <iframe title="Looker Studio" src={embedUrl} />
           </div>
         </section>
       </main>
