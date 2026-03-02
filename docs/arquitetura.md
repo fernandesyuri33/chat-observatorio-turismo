@@ -1,8 +1,8 @@
-# 🏗️ Arquitetura
+# Arquitetura
 
 ---
 
-## 📐 Visão Geral da Arquitetura
+## Visão Geral da Arquitetura
 
 ```mermaid
 flowchart TD
@@ -27,7 +27,7 @@ flowchart TD
 
 ---
 
-# 🔄 Fluxo Detalhado da Requisição
+# Fluxo Detalhado da Requisição
 
 ```mermaid
 sequenceDiagram
@@ -66,7 +66,7 @@ sequenceDiagram
 
 ---
 
-# 🧠 Separação de Responsabilidades
+# Separação de Responsabilidades
 
 ```mermaid
 flowchart LR
@@ -100,7 +100,7 @@ B --> G
 
 ---
 
-# 🔁 Transformação Central (Intenção → Ação)
+# Transformação Central (Intenção → Ação)
 
 ```mermaid
 flowchart TD
@@ -117,7 +117,7 @@ F --> G[Ação de Dashboard]
 
 ---
 
-# 🎛️ Política (estrita por padrão)
+# Política (estrita por padrão)
 
 ```mermaid
 flowchart LR
@@ -130,7 +130,7 @@ A[Sinônimos]
 
 ---
 
-# 🔌 Troca de Provedor (sem mudar o domínio)
+# Troca de Provedor (sem mudar o domínio)
 
 ```mermaid
 flowchart TD
@@ -156,7 +156,7 @@ ou
 
 ---
 
-# 🛡️ Validação em Todas as Fronteiras
+# Validação em Todas as Fronteiras
 
 ```mermaid
 flowchart TD
@@ -171,7 +171,7 @@ AçãoVálida --> Resposta
 
 ---
 
-# 🧭 Mapa Mental Resumido
+# Mapa Mental Resumido
 
 ```mermaid
 flowchart LR
@@ -226,7 +226,7 @@ flowchart LR
 
 ---
 
-# 🎯 Conceito Central da Arquitetura
+# Conceito Central da Arquitetura
 
 > O LLM sugere a intenção.
 > A política normaliza de forma estrita.
