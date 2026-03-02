@@ -1,3 +1,13 @@
+/**
+ * Este módulo define como os dados brutos de intent (retorno da LLM) são normalizados,
+ * enquanto a camada de aplicação decide quando aplicar os resultados da policy.
+ *
+ * - Centraliza as regras de normalização de intent definidas na configuração de policy.
+ * - Aplica sinônimos em chaves/valores de filtros e em tipos de informação.
+ * - Garante sanitização estrita de filtros, removendo chaves desconhecidas.
+ * - Valida e mantém apenas valores canônicos suportados para os filtros.
+ * - Retorna uma intent normalizada e tipada para o caso de uso da aplicação.
+ */
 import type { PolicyConfig } from "./policy-config.schema.js";
 
 type InformationType =

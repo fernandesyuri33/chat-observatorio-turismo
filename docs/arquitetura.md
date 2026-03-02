@@ -6,21 +6,21 @@
 
 ```mermaid
 flowchart TD
-  FE[Frontend] -->|POST /dashboard/resolve| API[apps/api Fastify route]
+  FE[Frontend] -->|POST /dashboard/resolve| API[apps/api rota Fastify]
 
-  API -->|Validate request with Zod| UC[ResolveDashboardActionUseCase]
+  API -->|Valida requisição com Zod| UC[ResolveDashboardActionUseCase]
 
-  UC --> REG[Schema registry]
-  UC --> LLM[LLM adapter]
-  UC --> POL[Policy engine]
-  UC --> PROV[Active provider]
+  UC --> REG[Registro de schemas]
+  UC --> LLM[Adaptador de LLM]
+  UC --> POL[Motor de políticas]
+  UC --> PROV[Provedor ativo]
 
-  LLM -->|Raw intent| UC
-  REG -->|Intent schema v1| UC
-  POL -->|Normalized intent| UC
-  PROV -->|DashboardAction| UC
+  LLM -->|Intenção bruta| UC
+  REG -->|Schema de intenção v1| UC
+  POL -->|Intenção normalizada| UC
+  PROV -->|Ação de dashboard| UC
 
-  UC -->|Validate action with Zod| RES[HTTP response 200]
+  UC -->|Valida ação com Zod| RES[Resposta HTTP 200]
   RES --> FE
 
 ```
@@ -31,34 +31,34 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
-    participant U as User
+  participant U as Usuário
     participant FE as Frontend
-    participant API as Fastify Route
-    participant UC as Use Case
-    participant LLM as LLM Adapter
-    participant POL as Policy Engine
-    participant PROV as Active Provider
+  participant API as Rota Fastify
+  participant UC as Caso de Uso
+  participant LLM as Adaptador de LLM
+  participant POL as Motor de Políticas
+  participant PROV as Provedor Ativo
 
     U->>FE: "ocupação por bairro em 2024"
     FE->>API: POST /dashboard/resolve
 
-    API->>API: Valida Request (Zod)
+    API->>API: Valida requisição (Zod)
     API->>UC: resolveDashboardAction()
 
-    UC->>UC: Seleciona Intent Schema (v1)
+    UC->>UC: Seleciona schema de intenção (v1)
     UC->>LLM: generateStructured(schema, message)
 
-    LLM-->>UC: Intent estruturado
+    LLM-->>UC: Intenção estruturada
 
     UC->>POL: normalizeIntent(intent)
-    POL-->>UC: Intent normalizado
+    POL-->>UC: Intenção normalizada
 
-    UC->>UC: Confidence Gate
+    UC->>UC: Verificação de confiança
 
     UC->>PROV: generate(intent)
-    PROV-->>UC: DashboardAction
+    PROV-->>UC: Ação de dashboard
 
-    UC->>UC: Valida DashboardAction (Zod)
+    UC->>UC: Valida ação de dashboard (Zod)
     UC-->>API: action
 
     API-->>FE: 200 { action }
@@ -71,23 +71,23 @@ sequenceDiagram
 ```mermaid
 flowchart LR
 
-subgraph HTTP Layer
+subgraph Camada HTTP
 A[apps/api]
 end
 
-subgraph Application Layer
-B[Use Case]
+subgraph Camada de Aplicação
+B[Caso de Uso]
 end
 
-subgraph Domain Layer
-C[Intent Schema]
-D[DashboardAction Schema]
+subgraph Camada de Domínio
+C[Schema de Intenção]
+D[Schema de DashboardAction]
 end
 
-subgraph Infrastructure
-E[LLM Adapter]
-F[Policy Engine]
-G[Active Provider]
+subgraph Infraestrutura
+E[Adaptador de LLM]
+F[Motor de Políticas]
+G[Provedor Ativo]
 end
 
 A --> B
@@ -100,49 +100,49 @@ B --> G
 
 ---
 
-# 🔁 Transformação Central (Intent → Action)
+# 🔁 Transformação Central (Intenção → Ação)
 
 ```mermaid
 flowchart TD
 
-A[User Message]
-   --> B[LLM]
-   --> C[Intent]
+A[Mensagem do Usuário]
+  --> B[LLM]
+  --> C[Intenção]
 
-C --> D[Policy Normalization]
-D --> E[Confidence Gate]
-E --> F[Active Provider]
-F --> G[DashboardAction]
+C --> D[Normalização de Política]
+D --> E[Verificação de Confiança]
+E --> F[Provedor Ativo]
+F --> G[Ação de Dashboard]
 ```
 
 ---
 
-# 🎛️ Policy (estrita por padrão)
+# 🎛️ Política (estrita por padrão)
 
 ```mermaid
 flowchart LR
 
-A[Synonyms]
-  --> B[Canonical filters permitidos]
+A[Sinônimos]
+  --> B[Filtros canônicos permitidos]
   --> C[Mapeamento de informationType]
-  --> D[Remove unknown keys]
+  --> D[Remove chaves desconhecidas]
 ```
 
 ---
 
-# 🔌 Troca de Provider (sem mudar o domínio)
+# 🔌 Troca de Provedor (sem mudar o domínio)
 
 ```mermaid
 flowchart TD
 
-Intent --> ProviderA[LookerProvider]
-Intent --> ProviderB[CustomProvider]
+Intenção --> ProviderA[LookerProvider]
+Intenção --> ProviderB[CustomProvider]
 
-ProviderA -->|open_url| Action
-ProviderB -->|run_query| Action
+ProviderA -->|open_url| Ação
+ProviderB -->|run_query| Ação
 ```
 
-⚠️ Apenas **um provider ativo por vez**, selecionado no `apps/api/config/policy.ts` pela chave `activeProvider`:
+⚠️ Apenas **um provedor ativo por vez**, selecionado no `apps/api/config/policy.ts` pela chave `activeProvider`:
 
 ```
 "activeProvider": "looker"
@@ -161,12 +161,12 @@ ou
 ```mermaid
 flowchart TD
 
-Request -->|Zod| ValidRequest
-ValidRequest -->|LLM| RawIntent
-RawIntent -->|Zod| Intent
-Intent -->|Provider| Action
-Action -->|Zod| ValidAction
-ValidAction --> Response
+Requisição -->|Zod| RequisiçãoVálida
+RequisiçãoVálida -->|LLM| IntençãoBruta
+IntençãoBruta -->|Zod| Intenção
+Intenção -->|Provedor| Ação
+Ação -->|Zod| AçãoVálida
+AçãoVálida --> Resposta
 ```
 
 ---
@@ -175,7 +175,7 @@ ValidAction --> Response
 
 ```mermaid
 flowchart LR
-  ROOT[Conversational Dashboard Resolver]
+  ROOT[Resolvedor Conversacional de Dashboard]
 
   ROOT --> API[apps/api]
   ROOT --> APP[libs/application]
@@ -184,27 +184,27 @@ flowchart LR
   ROOT --> LLM[libs/llm]
   ROOT --> PROV[libs/providers]
 
-  API --> API1[Fastify routes]
+  API --> API1[Rotas Fastify]
   API --> API2[CORS e validação de contrato]
-  API --> API3[Wiring de DI]
+  API --> API3[Configuração de DI]
 
-  APP --> APP1[Use case orchestration]
-  APP --> APP2[Fallback chain]
-  APP --> APP3[Confidence gate]
+  APP --> APP1[Orquestração de caso de uso]
+  APP --> APP2[Cadeia de fallback]
+  APP --> APP3[Verificação de confiança]
 
-  DOM --> DOM1[Intent types]
-  DOM --> DOM2[DashboardAction contract]
-  DOM --> DOM3[Zod schemas]
+  DOM --> DOM1[Tipos de intenção]
+  DOM --> DOM2[Contrato de DashboardAction]
+  DOM --> DOM3[Schemas Zod]
 
-  POL --> POL1[Config JSON]
-  POL --> POL2[Synonyms para filtros e informationType]
-  POL --> POL3[Strict filter normalization]
+  POL --> POL1[Configuração de política]
+  POL --> POL2[Sinônimos para filtros e informationType]
+  POL --> POL3[Normalização estrita de filtros]
 
-  LLM --> LLM1[Structured output]
-  LLM --> LLM2[Schema versioning]
+  LLM --> LLM1[Saída estruturada]
+  LLM --> LLM2[Versionamento de schema]
 
-  PROV --> PR1[Looker provider]
-  PROV --> PR2[Provider alternativo]
+  PROV --> PR1[Provedor Looker]
+  PROV --> PR2[Provedor alternativo]
 
   classDef root fill:#111827,stroke:#111827,color:#ffffff;
   classDef api fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e;
@@ -229,6 +229,6 @@ flowchart LR
 # 🎯 Conceito Central da Arquitetura
 
 > O LLM sugere a intenção.
-> A Policy normaliza de forma estrita.
-> O Provider materializa a ação.
-> O Domain garante o contrato.
+> A política normaliza de forma estrita.
+> O provedor materializa a ação.
+> O domínio garante o contrato.
