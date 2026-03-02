@@ -27,7 +27,7 @@ const policyEngine = new PolicyEngine(policyConfig);
 const llm: LlmPort =
   process.env["LLM_ADAPTER"] === "stub"
     ? new StubLlmAdapter()
-    : new OllamaLlmAdapter();
+    : new OllamaLlmAdapter({ maxRetries: policyConfig.fallback.retryCount });
 
 // ── Cria registro de providers ──────────────────────────────────
 // Todos os providers conhecidos são registrados aqui. Apenas o identificado

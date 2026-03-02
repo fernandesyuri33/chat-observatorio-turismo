@@ -66,7 +66,7 @@ export interface OllamaLlmAdapterConfig {
   systemPrompt?: string;
   /** Temperatura de amostragem (padrão: 0) */
   temperature?: number;
-  /** Máximo de tentativas em falhas transitórias (padrão: 2) */
+  /** Máximo de tentativas em falhas transitórias (padrão: 3) */
   maxRetries?: number;
 }
 
@@ -96,7 +96,7 @@ export class OllamaLlmAdapter implements LlmPort {
       "ollama";
 
     this.temperature = config.temperature ?? 0;
-    this.maxRetries = config.maxRetries ?? 2;
+    this.maxRetries = config.maxRetries ?? 3;
     this.systemPrompt = config.systemPrompt ?? DEFAULT_SYSTEM_PROMPT;
 
     const client = new OpenAI({ baseURL, apiKey });

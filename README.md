@@ -112,3 +112,4 @@ Response body (fallback):
 
 ## Notas
 - O builder atual monta `?filters=cidade:...;ano:...;mes:...;indicador:...`. Ajuste o formato para o padrao real do Looker Studio do seu relatorio se necessario.
+- Retries técnicos de chamada ao LLM ficam no `OllamaLlmAdapter` (configurados por `fallback.retryCount` no bootstrap da API). O caso de uso não mantém loop de retry; em falha, aplica fallback de orientação.

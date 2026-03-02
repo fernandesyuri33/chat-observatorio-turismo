@@ -222,20 +222,10 @@ export async function resolveDashboardAction(
   const schemaEntry = getSchemaEntry(version);
 
   let rawIntent: unknown;
-  let retries = 0;
-  const maxRetries = config.fallback.retryCount;
-
-  while (true) {
-    try {
-      rawIntent = await llm.generateStructured(schemaEntry.schema, request.message);
-      break;
-    } catch (err) {
-      retries++;
-      if (retries > maxRetries) {
-        return resolveInitialOrientationAction(provider, ctx);
-      }
-      // Loop de retry continua
-    }
+  try {
+    rawIntent = await llm.generateStructured(schemaEntry.schema, request.message);
+  } catch {
+    return resolveInitialOrientationAction(provider, ctx);
   }
 
   // ── Etapa 2: Normalizar intenção ──────────────────────────────

@@ -32,7 +32,7 @@ Scope: LLM port and adapters for structured intent generation.
 ## Where should X go?
 
 - "Intent Zod schema versions" -> `libs/domain` + schema registry in `libs/application`.
-- "Retry on schema invalid" -> `libs/application` fallback flow.
+- "Retry técnico de chamada ao LLM" -> `libs/llm/src/*adapter.ts` (configurado no bootstrap em `apps/api/src/main.ts`).
 - "LLM HTTP client config" -> `libs/llm/src/*adapter.ts`.
 
 ## Naming and placement
