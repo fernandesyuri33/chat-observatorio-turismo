@@ -107,7 +107,7 @@ Response body (fallback):
 - Identificadores técnicos (nomes de funções, tipos, chaves de payload) permanecem em inglês quando fizerem parte da API/código.
 
 ## Pacote de contratos
-- O contrato HTTP de `POST /dashboard/resolve` fica em `libs/contracts` e é exportado por `@conversational/contracts`.
+- O contrato HTTP de `POST /mensagem` fica em `libs/contracts` e é exportado por `@conversational/contracts`.
 - Objetivo: permitir publicar e reutilizar os tipos/schemas de integração da API em outros projetos.
 
 ## Notas

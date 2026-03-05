@@ -11,7 +11,7 @@ import type { ResolveDashboardActionDeps } from "@conversational/application";
 export async function dashboardRoutes(app: FastifyInstance) {
   const di = (app as unknown as { di: ResolveDashboardActionDeps }).di;
 
-  app.post("/dashboard/resolve", async (request, reply) => {
+  app.post("/mensagem", async (request, reply) => {
     const parsed = ResolveDashboardRequestSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({

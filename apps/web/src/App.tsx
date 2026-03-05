@@ -87,7 +87,7 @@ export function App() {
       const payload: ResolveDashboardRequest =
         ResolveDashboardRequestSchema.parse({ message: trimmed });
 
-      const response = await fetch(`${apiUrl}/dashboard/resolve`, {
+      const response = await fetch(`${apiUrl}/mensagem`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

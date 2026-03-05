@@ -31,7 +31,7 @@ Scope: Public API contracts (request/response DTOs and Zod schemas) shared by AP
 
 ## Where should X go?
 
-- "`POST /dashboard/resolve` request schema" -> `libs/contracts/src/dashboard-resolve-contract.schema.ts`.
+- "`POST /mensagem` request schema" -> `libs/contracts/src/dashboard-resolve-contract.schema.ts`.
 - "Fastify route validation code" -> `apps/api/src/routes/*.ts`.
 - "Intent schema used for LLM structured output" -> `libs/domain/src/intent.v*.schema.ts`.
 

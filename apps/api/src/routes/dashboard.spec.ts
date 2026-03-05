@@ -42,7 +42,7 @@ const testPolicyConfig: PolicyConfig = {
   },
 };
 
-describe("POST /dashboard/resolve", () => {
+describe("POST /mensagem", () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -65,7 +65,7 @@ describe("POST /dashboard/resolve", () => {
   it("retorna orientação inicial para perguntas abertas", async () => {
     const response = await app.inject({
       method: "POST",
-      url: "/dashboard/resolve",
+      url: "/mensagem",
       payload: {
         message: "O que posso analisar ou descobrir aqui?",
       },
@@ -86,7 +86,7 @@ describe("POST /dashboard/resolve", () => {
   it("retorna 400 para payload de requisição inválido", async () => {
     const response = await app.inject({
       method: "POST",
-      url: "/dashboard/resolve",
+      url: "/mensagem",
       payload: {},
     });
 
@@ -99,7 +99,7 @@ describe("POST /dashboard/resolve", () => {
   it("retorna orientação contextual para perguntas semi formuladas", async () => {
     const response = await app.inject({
       method: "POST",
-      url: "/dashboard/resolve",
+      url: "/mensagem",
       payload: {
         message: "Quero ver dados de Poços de Caldas",
       },
@@ -120,7 +120,7 @@ describe("POST /dashboard/resolve", () => {
   it("retorna resposta de curiosidade baseada em FAQ configurado", async () => {
     const response = await app.inject({
       method: "POST",
-      url: "/dashboard/resolve",
+      url: "/mensagem",
       payload: {
         message: "O setor turístico de Poços de Caldas está evoluindo?",
       },

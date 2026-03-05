@@ -6,7 +6,7 @@
 
 ```mermaid
 flowchart TD
-  FE[Frontend] -->|POST /dashboard/resolve| API[apps/api rota Fastify]
+  FE[Frontend] -->|POST /mensagem| API[apps/api rota Fastify]
 
   API -->|Valida requisição com Zod| UC[ResolveDashboardActionUseCase]
 
@@ -40,7 +40,7 @@ sequenceDiagram
   participant PROV as Provedor Ativo
 
     U->>FE: "ocupação por bairro em 2024"
-    FE->>API: POST /dashboard/resolve
+    FE->>API: POST /mensagem
 
     API->>API: Valida requisição (Zod)
     API->>UC: resolveDashboardAction()

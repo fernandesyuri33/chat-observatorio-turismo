@@ -73,11 +73,11 @@ apps/
     src/
       main.ts                  #   Bootstrap: DI wiring, adapter selection, server start
       routes/
-        dashboard.ts           #   POST /dashboard/resolve — Zod-validated request/response
+        dashboard.ts           #   POST /mensagem — Zod-validated request/response <!-- Updated: endpoint renamed from /dashboard/resolve to /mensagem -->
 
   web/                         # React + Vite frontend
     src/
-      App.tsx                  #   Single-page chat UI consuming /dashboard/resolve
+      App.tsx                  #   Single-page chat UI consuming /mensagem <!-- Updated: frontend endpoint path -->
 
 libs/
   domain/                      # Pure domain types — zero infra deps
@@ -88,7 +88,7 @@ libs/
 
   contracts/                   # Shared HTTP API contracts (publishable package)
     src/
-      dashboard-resolve-contract.schema.ts # Shared HTTP contract for POST /dashboard/resolve
+      dashboard-resolve-contract.schema.ts # Shared HTTP contract for POST /mensagem <!-- Updated: endpoint path -->
       index.ts
 
   application/                 # Use case orchestration
@@ -238,7 +238,7 @@ programmatic override.
 
 ## 9. Endpoint Contract
 
-### `POST /dashboard/resolve`
+### `POST /mensagem` <!-- Updated: endpoint renamed -->
 
 **Request:**
 ```json
