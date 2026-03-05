@@ -45,16 +45,13 @@ function ActionPanel({ lastAction }: { lastAction?: ResolveDashboardResponse["ac
 // ── Constantes ──────────────────────────────────────────────────
 
 const DEFAULT_SUGGESTIONS = [
-  "Quero visitas em Sao Paulo em 2024",
-  "Mostre ocupacao em Salvador em 2023",
-  "Me ajude",
-  "O que significa indicador eventos?"
+  "O que posso descobrir aqui?"
 ];
 
 const apiUrl = import.meta.env["VITE_API_URL"] ?? "http://localhost:3001";
 const baseEmbedUrl =
   import.meta.env["VITE_LOOKER_EMBED_URL"] ??
-  "https://lookerstudio.google.com/embed/reporting/placeholder/page/p_1";
+  "https://lookerstudio.google.com/embed/reporting/b4daa6c1-6dae-4006-b4a1-49547a31a856/page/p_3niel4jewd";
 
 type ChatMessage = {
   id: string;
@@ -188,10 +185,10 @@ export function App() {
         </section>
 
         <section className="dashboard-panel">
-          <ActionPanel lastAction={lastAction} />
           <div className="iframe-wrapper">
             <iframe title="Looker Studio" src={embedUrl} />
           </div>
+          <ActionPanel lastAction={lastAction} />
         </section>
       </main>
     </div>
