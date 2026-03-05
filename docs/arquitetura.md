@@ -6,7 +6,7 @@
 
 ```mermaid
 flowchart TD
-  FE[Frontend] -->|POST /mensagem| API[apps/api rota Fastify]
+  FE[Frontend] -->|POST /mensagem| API[apps/api/src/rotas.ts (rota Fastify)]
 
   API -->|Valida requisição com Zod| UC[ResolveDashboardActionUseCase]
 
@@ -33,7 +33,7 @@ flowchart TD
 sequenceDiagram
   participant U as Usuário
     participant FE as Frontend
-  participant API as Rota Fastify
+  participant API as apps/api/src/rotas.ts
   participant UC as Caso de Uso
   participant LLM as Adaptador de LLM
   participant POL as Motor de Políticas

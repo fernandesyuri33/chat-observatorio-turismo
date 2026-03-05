@@ -9,7 +9,7 @@ import { LookerProvider, CustomProvider } from "@conversational/providers";
 import type { ActionProvider } from "@conversational/providers";
 import type { ResolveDashboardActionDeps } from "@conversational/application";
 
-import { dashboardRoutes } from "./routes/dashboard.js";
+import { rotas } from "./rotas.js";
 import { policyConfig } from "../config/policy.js";
 
 // ── Inicialização ───────────────────────────────────────────────
@@ -59,7 +59,7 @@ app.decorate("di", di);
 app.get("/health", async () => ({ status: "ok" }));
 
 // ── Registra rotas de domínio ───────────────────────────────────
-await app.register(dashboardRoutes);
+await app.register(rotas);
 
 // ── Inicia servidor ─────────────────────────────────────────────
 const port = Number(process.env["PORT"] ?? 3001);

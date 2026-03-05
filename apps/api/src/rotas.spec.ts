@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import Fastify, { type FastifyInstance } from "fastify";
-import { dashboardRoutes } from "./dashboard.js";
+import { rotas } from "./rotas.js";
 import type { ResolveDashboardActionDeps } from "@conversational/application";
 import { PolicyEngine, type PolicyConfig } from "@conversational/policy";
 import { StubLlmAdapter } from "@conversational/llm";
@@ -55,7 +55,7 @@ describe("POST /mensagem", () => {
     };
 
     app.decorate("di", deps);
-    await app.register(dashboardRoutes);
+    await app.register(rotas);
   });
 
   afterEach(async () => {

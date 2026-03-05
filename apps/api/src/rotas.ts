@@ -8,7 +8,7 @@ import type { ResolveDashboardActionDeps } from "@conversational/application";
 
 // ── Registro de rota ────────────────────────────────────────────
 
-export async function dashboardRoutes(app: FastifyInstance) {
+export async function rotas(app: FastifyInstance) {
   const di = (app as unknown as { di: ResolveDashboardActionDeps }).di;
 
   app.post("/mensagem", async (request, reply) => {

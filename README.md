@@ -46,16 +46,19 @@ Isso sobe:
 - API: http://localhost:3001
 
 ## Endpoints
-### POST /interpret
+Implementação da rota HTTP da API: `apps/api/src/rotas.ts`.
+
+### POST /mensagem
 Request body:
 ```json
 {
   "message": "Quero visitas em Sao Paulo em 2024",
-  "currentFilters": {
-    "cidade": "Rio de Janeiro",
-    "ano": [2023],
-    "mes": [1, 2],
-    "indicador": "ocupacao"
+  "ctx": {
+    "dashboardId": "turismo-main",
+    "currentFilters": {
+      "municipio": "Rio de Janeiro",
+      "classificacao": "hospedagem"
+    }
   }
 }
 ```
@@ -64,14 +67,13 @@ Response body (exemplo):
 ```json
 {
   "action": {
-    "type": "set_filters",
+    "type": "apply_filters",
     "filters": {
-      "cidade": "Sao Paulo",
-      "ano": [2024],
-      "indicador": "visitas"
-    }
-  },
-  "assistantText": "Aplicando filtros: cidade Sao Paulo | ano 2024 | indicador visitas."
+      "municipio": "Sao Paulo",
+      "classificacao": "hospedagem"
+    },
+    "target": "dashboard"
+  }
 }
 ```
 
@@ -79,15 +81,14 @@ Response body (fallback):
 ```json
 {
   "action": {
-    "type": "unknown",
-    "reason": "Nao consegui interpretar a solicitacao dentro do mundo fechado.",
+    "type": "explain_only",
+    "message": "Nao consegui identificar um recorte analitico claro para aplicar no dashboard.",
     "suggestions": [
-      "Quero visitas em Sao Paulo em 2024",
-      "Resetar filtros",
-      "Explique o indicador ocupacao"
+      "Comparar estabelecimentos entre municipios",
+      "Visualizar a quantidade de funcionarios por municipio",
+      "Acompanhar a evolucao de funcionarios ao longo do tempo"
     ]
-  },
-  "assistantText": "Nao consegui interpretar a solicitacao dentro do mundo fechado."
+  }
 }
 ```
 

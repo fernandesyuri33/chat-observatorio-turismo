@@ -37,7 +37,7 @@ Scope: Fastify HTTP layer only (routes, middleware, auth, rate limit, logging, D
 
 ## Naming and placement
 
-- Routes in `apps/api/src/routes/*.ts`.
+- Routes in `apps/api/src/rotas.ts` (single consolidated route module).
 - Bootstrap/DI in `apps/api/src/main.ts`.
 - Keep HTTP concerns isolated from domain rules.
 

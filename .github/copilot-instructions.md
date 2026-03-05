@@ -72,8 +72,7 @@ apps/
       policy.ts                #   Runtime policy configuration (typed) <!-- Updated: typed runtime policy module -->
     src/
       main.ts                  #   Bootstrap: DI wiring, adapter selection, server start
-      routes/
-        dashboard.ts           #   POST /mensagem — Zod-validated request/response <!-- Updated: endpoint renamed from /dashboard/resolve to /mensagem -->
+      rotas.ts                 #   POST /mensagem — Zod-validated request/response <!-- Updated: routes consolidated from routes/ folder to rotas.ts -->
 
   web/                         # React + Vite frontend
     src/
