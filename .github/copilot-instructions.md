@@ -171,7 +171,7 @@ Schema: `IntentV1Schema`. Selected at runtime via the schema registry.
 
 ### Shared endpoint contracts
 
-`ResolveDashboardRequestSchema` and `ResolveDashboardResponseSchema` live in
+`PostMensagemRequestSchema` and `PostMensagemResponseSchema` live in
 `libs/contracts/src/dashboard-resolve-contract.schema.ts` and must be reused by
 API routes and frontend clients to avoid contract drift.
 

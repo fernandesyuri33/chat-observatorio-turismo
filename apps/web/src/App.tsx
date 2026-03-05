@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-  ResolveDashboardRequestSchema,
-  ResolveDashboardResponseSchema,
+  PostMensagemRequestSchema,
+  PostMensagemResponseSchema,
   type ResolveDashboardRequest,
   type ResolveDashboardResponse,
 } from "@conversational/contracts";
@@ -85,7 +85,7 @@ export function App() {
 
     try {
       const payload: ResolveDashboardRequest =
-        ResolveDashboardRequestSchema.parse({ message: trimmed });
+        PostMensagemRequestSchema.parse({ message: trimmed });
 
       const response = await fetch(`${apiUrl}/mensagem`, {
         method: "POST",
@@ -106,7 +106,7 @@ export function App() {
       }
 
       const raw = await response.json();
-      const data: ResolveDashboardResponse = ResolveDashboardResponseSchema.parse(raw);
+      const data: ResolveDashboardResponse = PostMensagemResponseSchema.parse(raw);
       setLastAction(data.action);
 
       if (data.action.type === "open_url") {

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  ResolveDashboardRequestSchema,
-  ResolveDashboardResponseSchema,
+  PostMensagemRequestSchema,
+  PostMensagemResponseSchema,
 } from "../src/index";
 
-describe("ResolveDashboardRequestSchema", () => {
+describe("PostMensagemRequestSchema", () => {
   it("aceita uma requisição válida", () => {
-    const result = ResolveDashboardRequestSchema.safeParse({
+    const result = PostMensagemRequestSchema.safeParse({
       message: "Quero visitas em Sao Paulo em 2024",
       ctx: {
         dashboardId: "turismo-main",
@@ -18,14 +18,14 @@ describe("ResolveDashboardRequestSchema", () => {
   });
 
   it("rejeita mensagem vazia", () => {
-    const result = ResolveDashboardRequestSchema.safeParse({ message: "" });
+    const result = PostMensagemRequestSchema.safeParse({ message: "" });
     expect(result.success).toBe(false);
   });
 });
 
-describe("ResolveDashboardResponseSchema", () => {
+describe("PostMensagemResponseSchema", () => {
   it("aceita uma resposta válida", () => {
-    const result = ResolveDashboardResponseSchema.safeParse({
+    const result = PostMensagemResponseSchema.safeParse({
       action: {
         type: "explain_only",
         message: "Não consegui interpretar.",

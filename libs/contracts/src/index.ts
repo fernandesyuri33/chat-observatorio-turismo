@@ -1,6 +1,6 @@
 export {
-  ResolveDashboardRequestSchema,
-  ResolveDashboardResponseSchema,
+  PostMensagemRequestSchema,
+  PostMensagemResponseSchema,
   type ResolveDashboardRequest,
   type ResolveDashboardResponse,
-} from "./dashboard-resolve-contract.schema.js";
+} from "./contrato-mensagem-post.schema.js";

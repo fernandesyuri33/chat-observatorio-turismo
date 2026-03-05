@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import {
-  ResolveDashboardRequestSchema,
-  ResolveDashboardResponseSchema,
+  PostMensagemRequestSchema,
+  PostMensagemResponseSchema,
 } from "@conversational/contracts";
 import { resolveDashboardAction } from "@conversational/application";
 import type { ResolveDashboardActionDeps } from "@conversational/application";
@@ -12,7 +12,7 @@ export async function rotas(app: FastifyInstance) {
   const di = (app as unknown as { di: ResolveDashboardActionDeps }).di;
 
   app.post("/mensagem", async (request, reply) => {
-    const parsed = ResolveDashboardRequestSchema.safeParse(request.body);
+    const parsed = PostMensagemRequestSchema.safeParse(request.body);
     if (!parsed.success) {
       return reply.status(400).send({
         error: "Requisição inválida",
@@ -26,7 +26,7 @@ export async function rotas(app: FastifyInstance) {
     });
 
     // Valida resposta de saída para garantir conformidade com o contrato
-    const response = ResolveDashboardResponseSchema.parse({ action });
+    const response = PostMensagemResponseSchema.parse({ action });
     return reply.status(200).send(response);
   });
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { DashboardActionSchema } from "@conversational/domain";
 
-export const ResolveDashboardRequestSchema = z.object({
+export const PostMensagemRequestSchema = z.object({
   message: z.string().min(1),
   ctx: z
     .object({
@@ -11,9 +11,9 @@ export const ResolveDashboardRequestSchema = z.object({
     .optional(),
 });
 
-export const ResolveDashboardResponseSchema = z.object({
+export const PostMensagemResponseSchema = z.object({
   action: DashboardActionSchema,
 });
 
-export type ResolveDashboardRequest = z.infer<typeof ResolveDashboardRequestSchema>;
-export type ResolveDashboardResponse = z.infer<typeof ResolveDashboardResponseSchema>;
+export type ResolveDashboardRequest = z.infer<typeof PostMensagemRequestSchema>;
+export type ResolveDashboardResponse = z.infer<typeof PostMensagemResponseSchema>;
