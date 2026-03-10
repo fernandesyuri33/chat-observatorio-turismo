@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   PostMensagemRequestSchema,
   PostMensagemResponseSchema,
@@ -8,9 +8,15 @@ import {
 
 // ── Componentes simples de UI inline ──
 
-function ChatHistory({ messages }: { messages: { id: string; role: "user" | "assistant"; content: string }[] }) {
+function ChatHistory({
+  messages,
+  historyRef
+}: {
+  messages: { id: string; role: "user" | "assistant"; content: string }[];
+  historyRef: RefObject<HTMLDivElement>;
+}) {
   return (
-    <div className="chat-history">
+    <div ref={historyRef} className="chat-history">
       {messages.map((m) => (
         <div key={m.id} className={`chat-bubble chat-bubble--${m.role}`}>
           {m.content}
@@ -60,6 +66,7 @@ type ChatMessage = {
 };
 
 export function App() {
+  const chatHistoryRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: "welcome", role: "assistant" as const, content: "Como posso ajudar?" }
   ]);
@@ -68,6 +75,16 @@ export function App() {
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
   const [lastAction, setLastAction] = useState<ResolveDashboardResponse["action"] | undefined>(undefined);
   const [embedUrl, setEmbedUrl] = useState(baseEmbedUrl);
+
+  useEffect(() => {
+    const history = chatHistoryRef.current;
+    if (!history) return;
+
+    history.scrollTo({
+      top: history.scrollHeight,
+      behavior: "smooth"
+    });
+  }, [messages]);
 
   async function handleSubmit(message: string) {
     const trimmed = message.trim();
@@ -163,7 +180,7 @@ export function App() {
 
       <main className="layout">
         <section className="chat-panel">
-          <ChatHistory messages={messages} />
+          <ChatHistory messages={messages} historyRef={chatHistoryRef} />
           <SuggestionChips suggestions={suggestions} onSelect={handleSubmit} />
           <form
             className="chat-input"
