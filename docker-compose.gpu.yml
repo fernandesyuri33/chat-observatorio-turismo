@@ -1,0 +1,8 @@
+services:
+  # Override opcional para hosts com GPU NVIDIA.
+  # Use junto com o compose base para acelerar o Ollama por GPU.
+  ollama:
+    gpus: all
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility

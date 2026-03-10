@@ -12,7 +12,6 @@ Monorepo Nx + pnpm para uma webapp conversacional que controla filtros de um rel
 ## Requisitos locais
 - Node.js 20+
 - pnpm 9+
-- Ollama rodando localmente
 
 ## Setup
 1. Instalar dependencias
@@ -42,6 +41,63 @@ pnpm dev
 Isso sobe:
 - Web: http://localhost:3000
 - API: http://localhost:3001
+
+## Rodando com Docker Compose
+
+O projeto possui um `Dockerfile` por app:
+- `apps/api/Dockerfile`
+- `apps/web/Dockerfile`
+
+Arquivos de Compose:
+- `docker-compose.yml`: compose base, compativel com CPU
+- `docker-compose.gpu.yml`: override opcional para hosts com GPU NVIDIA
+
+### Subir tudo com Docker Compose
+```
+docker compose up --build
+```
+
+Isso sobe:
+- Web: http://localhost:3000
+- API: http://localhost:3001
+- Ollama API: http://localhost:11434
+
+No `docker-compose.yml`, a API sobe com Ollama por padrao (`OllamaLlmAdapter`).
+
+### Usar GPU com Ollama
+Para hosts com GPU NVIDIA, drivers instalados e `nvidia-container-toolkit` configurado, use o override de GPU:
+
+```
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+```
+
+Se a maquina nao tiver GPU NVIDIA pronta para containers, use apenas o compose base. Assim o Ollama continua funcionando em CPU.
+
+### Pull do modelo automatico
+O compose possui um servico `ollama-init` que faz `ollama pull` automaticamente usando a mesma variavel `OLLAMA_MODEL` da API.
+
+Com isso:
+- o `ollama` sobe e fica `healthy`
+- o `ollama-init` baixa o modelo e encerra com sucesso
+- a API so inicia depois que esse bootstrap termina
+
+A API usa a rede interna do Compose em `http://ollama:11434/v1`.
+
+Por padrao, o modelo usado e `llama3.2:8b`.
+Para sobrescrever sem editar o compose:
+
+```
+OLLAMA_MODEL=llama3.1:8b docker compose up --build
+```
+
+### Comandos uteis
+```
+docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
+docker compose logs -f api
+docker compose logs -f web
+docker compose down
+```
 
 ## Endpoints
 Implementação da rota HTTP da API: `apps/api/src/rotas.ts`.

@@ -1,0 +1,67 @@
+services:
+  # Ollama rodando dentro do próprio compose.
+  # Este arquivo base funciona em CPU e pode ser combinado com um override de GPU.
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    # Healthcheck para garantir que a API do Ollama esta pronta para receber requisicoes.
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  # Servico de inicializacao: baixa o modelo uma vez e encerra com sucesso.
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: "ollama:11434"
+      # Usa o mesmo modelo configurado para a API.
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2:8b}"
+    volumes:
+      - ollama_data:/root/.ollama
+    # A imagem ja possui entrypoint `ollama`; aqui passamos apenas o subcomando.
+    command: ["pull", "${OLLAMA_MODEL:-llama3.2:8b}"]
+
+  # API Fastify (porta 3001) com Ollama real como padrao.
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"
+      HOST: "0.0.0.0"
+      # Configuracao do adaptador Ollama (OpenAI-compatible API).
+      OLLAMA_BASE_URL: "http://ollama:11434/v1"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2:8b}"
+      OLLAMA_API_KEY: "ollama"
+    depends_on:
+      ollama:
+        condition: service_healthy
+      ollama-init:
+        condition: service_completed_successfully
+
+  # Frontend React/Vite servido por Nginx na porta 3000.
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # URL da API injetada no build do Vite.
+        VITE_API_URL: http://localhost:3001
+    ports:
+      - "3000:80"
+    # Garante que a API seja iniciada antes do frontend.
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  ollama_data:
