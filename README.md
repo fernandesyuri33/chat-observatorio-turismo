@@ -23,7 +23,7 @@ pnpm i
 2. Rodar o Ollama e baixar o modelo
 ```
 ollama serve
-ollama pull llama3.1:8b
+ollama pull llama3.2:8b
 ```
 
 3. Configurar variaveis de ambiente
@@ -33,8 +33,6 @@ ollama pull llama3.1:8b
 Arquivos de exemplo:
 - `apps/web/.env.example`
 - `apps/api/.env.example`
-
-Observacao: no frontend, use `VITE_LOOKER_EMBED_URL` (equivalente ao `LOOKER_EMBED_URL` citado no requisito, mas com o prefixo `VITE_` exigido pelo Vite).
 
 4. Rodar em dev
 ```
@@ -110,7 +108,3 @@ Response body (fallback):
 ## Pacote de contratos
 - O contrato HTTP de `POST /mensagem` fica em `libs/contracts` e é exportado por `@conversational/contracts`.
 - Objetivo: permitir publicar e reutilizar os tipos/schemas de integração da API em outros projetos.
-
-## Notas
-- O builder atual monta `?filters=cidade:...;ano:...;mes:...;indicador:...`. Ajuste o formato para o padrao real do Looker Studio do seu relatorio se necessario.
-- Retries técnicos de chamada ao LLM ficam no `OllamaLlmAdapter` (configurados por `fallback.retryCount` no bootstrap da API). O caso de uso não mantém loop de retry; em falha, aplica fallback de orientação.
