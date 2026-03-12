@@ -9,6 +9,10 @@ export const policyConfig: PolicyConfig = PolicyConfigSchema.parse({
     retryCount: 1,
     contextualOrientationOptionCount: 3,
   },
+  history: {
+    maxMessages: 4,
+    ttlSeconds: 1800,
+  },
   curiosityFaq: [
     {
       questionExamples: [

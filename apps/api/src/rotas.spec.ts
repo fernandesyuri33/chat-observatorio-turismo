@@ -3,7 +3,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import { rotas } from "./rotas.js";
 import type { ResolveDashboardActionDeps } from "@conversational/application";
 import { PolicyEngine, type PolicyConfig } from "@conversational/policy";
-import { StubLlmAdapter } from "@conversational/llm";
+import { StubLlmAdapter, type ConversationTurn } from "@conversational/llm";
 import { LookerProvider } from "@conversational/providers";
 
 const testPolicyConfig: PolicyConfig = {
@@ -15,6 +15,10 @@ const testPolicyConfig: PolicyConfig = {
   fallback: {
     retryCount: 1,
     contextualOrientationOptionCount: 3,
+  },
+  history: {
+    maxMessages: 3,
+    ttlSeconds: 1800,
   },
   curiosityFaq: [
     {
@@ -44,9 +48,11 @@ const testPolicyConfig: PolicyConfig = {
 
 describe("POST /mensagem", () => {
   let app: FastifyInstance;
+  const historyStore = new Map<string, ConversationTurn[]>();
 
   beforeEach(async () => {
     app = Fastify();
+    historyStore.clear();
 
     const deps: ResolveDashboardActionDeps = {
       llm: new StubLlmAdapter(),
@@ -55,6 +61,16 @@ describe("POST /mensagem", () => {
     };
 
     app.decorate("di", deps);
+    app.decorate("historyService", {
+      async get(conversationId: string) {
+        return historyStore.get(conversationId) ?? [];
+      },
+      async append(conversationId: string, newTurns: ConversationTurn[]) {
+        const existing = historyStore.get(conversationId) ?? [];
+        const merged = [...existing, ...newTurns].slice(-testPolicyConfig.history.maxMessages);
+        historyStore.set(conversationId, merged);
+      },
+    });
     await app.register(rotas);
   });
 
@@ -136,5 +152,44 @@ describe("POST /mensagem", () => {
     expect(body.action.suggestions).toEqual([
       "Visualizar a quantidade de funcionários ao longo do tempo",
     ]);
+  });
+
+  it("usa e persiste histórico quando recebe x-conversation-id", async () => {
+    const conversationId = "conv-teste-1";
+    historyStore.set(conversationId, [
+      { role: "user", content: "Mostre funcionários por município" },
+      {
+        role: "assistant",
+        content: JSON.stringify({ type: "open_url", url: "https://example.com" }),
+      },
+    ]);
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/mensagem",
+      headers: {
+        "x-conversation-id": conversationId,
+      },
+      payload: {
+        message: "Poços de Caldas",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const stored = historyStore.get(conversationId);
+    expect(stored).toBeDefined();
+    expect(stored?.length).toBe(testPolicyConfig.history.maxMessages);
+    expect(stored?.at(-2)).toEqual({ role: "user", content: "Poços de Caldas" });
+    expect(stored?.at(-1)?.role).toBe("assistant");
+
+    const assistantContent = stored?.at(-1)?.content;
+    expect(assistantContent).toBeDefined();
+
+    const parsedAssistant = JSON.parse(assistantContent ?? "{}");
+    expect(parsedAssistant).toMatchObject({
+      intent: "contextual_orientation",
+    });
+    expect(parsedAssistant.type).toBeUndefined();
   });
 });

@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import Instructor from "@instructor-ai/instructor";
 import type { z } from "zod";
-import type { LlmPort } from "./llm.port.js";
+import type { LlmPort, ConversationTurn } from "./llm.port.js";
 import { fillPromptTemplate } from "./schema-hints.js";
 
 // ── Prompt de sistema padrão — domínio do dashboard de turismo ──
@@ -113,15 +113,23 @@ export class OllamaLlmAdapter implements LlmPort {
     });
   }
 
-  async generateStructured<T>(schema: z.ZodType<T>, input: string): Promise<T> {
+  async generateStructured<T>(
+    schema: z.ZodType<T>,
+    input: string,
+    history?: ConversationTurn[]
+  ): Promise<T> {
     const requestId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const startedAt = Date.now();
 
     console.info("[ollama] request:start", {
       requestId,
       model: this.model,
+      historyLength: history?.length ?? 0,
       input,
     });
+
+    const historyMessages: { role: "user" | "assistant"; content: string }[] =
+      history?.map((turn) => ({ role: turn.role, content: turn.content })) ?? [];
 
     try {
       const result = await this.instructor.chat.completions.create({
@@ -138,6 +146,7 @@ export class OllamaLlmAdapter implements LlmPort {
               classificacaoOptionsToken: CLASSIFICACAO_PLACEHOLDER_TOKEN,
             }),
           },
+          ...historyMessages,
           { role: "user", content: input },
         ],
         response_model: {

@@ -1,4 +1,15 @@
 services:
+  # Redis para armazenamento de histórico de conversa.
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   # Ollama rodando dentro do próprio compose.
   # Este arquivo base funciona em CPU e pode ser combinado com um override de GPU.
   ollama:
@@ -42,7 +53,11 @@ services:
       OLLAMA_BASE_URL: "http://ollama:11434/v1"
       OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2:8b}"
       OLLAMA_API_KEY: "ollama"
+      # Redis para histórico de conversa.
+      REDIS_URL: "redis://redis:6379"
     depends_on:
+      redis:
+        condition: service_healthy
       ollama:
         condition: service_healthy
       ollama-init:

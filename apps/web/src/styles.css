@@ -136,6 +136,35 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
+}
+
+.action-panel {
+  max-width: 100%;
+  min-width: 0;
+  background: #fff;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.action-panel code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.action-panel pre {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  background: #f7f3ee;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.muted {
+  color: #555;
 }
 
 .applied-filters {
@@ -152,13 +181,6 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
-}
-
-.last-action pre {
-  background: #f7f3ee;
-  padding: 12px;
-  border-radius: 12px;
-  overflow: auto;
 }
 
 .iframe-wrapper {

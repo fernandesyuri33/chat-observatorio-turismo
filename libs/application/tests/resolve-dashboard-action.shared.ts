@@ -13,6 +13,10 @@ export const baseTestPolicyConfig: PolicyConfig = {
     retryCount: 1,
     contextualOrientationOptionCount: 3,
   },
+  history: {
+    maxMessages: 3,
+    ttlSeconds: 1800,
+  },
   curiosityFaq: [
     {
       questionExamples: [

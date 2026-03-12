@@ -6,8 +6,6 @@ import {
   type ResolveDashboardResponse,
 } from "@conversational/contracts";
 
-// ── Componentes simples de UI inline ──
-
 function ChatHistory({
   messages,
   historyRef
@@ -48,11 +46,7 @@ function ActionPanel({ lastAction }: { lastAction?: ResolveDashboardResponse["ac
   );
 }
 
-// ── Constantes ──────────────────────────────────────────────────
-
-const DEFAULT_SUGGESTIONS = [
-  "O que posso descobrir aqui?"
-];
+const DEFAULT_SUGGESTIONS = ["O que posso descobrir aqui?"];
 
 const apiUrl = import.meta.env["VITE_API_URL"] ?? "http://localhost:3001";
 const baseEmbedUrl =
@@ -65,6 +59,19 @@ type ChatMessage = {
   content: string;
 };
 
+const CONVERSATION_ID_STORAGE_KEY = "conversationId";
+
+function getOrCreateConversationId(): string {
+  const stored = localStorage.getItem(CONVERSATION_ID_STORAGE_KEY);
+  if (stored && stored.trim().length > 0) {
+    return stored;
+  }
+
+  const created = crypto.randomUUID();
+  localStorage.setItem(CONVERSATION_ID_STORAGE_KEY, created);
+  return created;
+}
+
 export function App() {
   const chatHistoryRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -75,6 +82,7 @@ export function App() {
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
   const [lastAction, setLastAction] = useState<ResolveDashboardResponse["action"] | undefined>(undefined);
   const [embedUrl, setEmbedUrl] = useState(baseEmbedUrl);
+  const [conversationId] = useState<string>(() => getOrCreateConversationId());
 
   useEffect(() => {
     const history = chatHistoryRef.current;
@@ -103,7 +111,10 @@ export function App() {
 
       const response = await fetch(`${apiUrl}/mensagem`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-conversation-id": conversationId,
+        },
         body: JSON.stringify(payload)
       });
 

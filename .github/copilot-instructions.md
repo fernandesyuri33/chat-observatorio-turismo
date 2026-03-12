@@ -56,6 +56,7 @@ action provider (e.g. Looker, custom) that translates the intent into a typed
 | API framework | Fastify + @fastify/cors | 4.28 |
 | Schema validation | Zod | 3.23 |
 | LLM runtime | Ollama (OpenAI-compatible API) | — |
+| Conversation history store | Redis + ioredis | 7.x / 5.x | <!-- Updated: added Redis-backed conversation context persistence -->
 | LLM structured output | @instructor-ai/instructor (JSON mode) + openai SDK | 1.x / 4.x |
 | Frontend | React + Vite | 18.x / 5.x |
 | Testing | Vitest | 2.x |
@@ -73,6 +74,7 @@ apps/
     src/
       main.ts                  #   Bootstrap: DI wiring, adapter selection, server start
       rotas.ts                 #   POST /mensagem — Zod-validated request/response <!-- Updated: routes consolidated from routes/ folder to rotas.ts -->
+      history.service.ts       #   Redis-backed conversation history service (conversationId -> turns) <!-- Updated: added server-side conversation memory -->
 
   web/                         # React + Vite frontend
     src/
@@ -181,12 +183,16 @@ API routes and frontend clients to avoid contract drift.
 
 ```
 User message
+  + conversation history (from Redis by `x-conversation-id`)
   → LLM.generateStructured(IntentSchema, message)
   → PolicyEngine.normalizeIntent(rawIntent)
   → Confidence check (minConfidence from policy)
   → activeProvider.generate(normalizedIntent, ctx)
   → DashboardActionSchema.parse(action)     ← output validation
   → Return to HTTP layer
+
+After generating a response action, the API persists the turn pair
+(`user` message + serialized assistant intent normalizada) back to Redis and renews TTL.
 ```
 
 There is no intent-to-provider routing step — the single active provider
@@ -206,6 +212,8 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 | `activeProvider` | `string` — id of the single active `ActionProvider` (e.g. `"looker"`, `"custom"`) <!-- Updated: replaced routing map with single activeProvider --> |
 | `fallback.retryCount` | Number of LLM retries on schema parse failure |
 | `fallback.contextualOrientationOptionCount` | Number of contextual `informationType` suggestions shown when user provides only filter context without a clear analysis recorte | <!-- Updated: configurable amount for semi-formulated contextual guidance --> |
+| `history.maxMessages` | Maximum number of conversation turns (user + assistant) injected into LLM context per request (default: `3`) | <!-- Updated: configurable history window --> |
+| `history.ttlSeconds` | Redis TTL for each conversation history key in seconds (default: `1800`) | <!-- Updated: configurable Redis expiration --> |
 | `curiosityFaq` | Configurable FAQ-style examples used to deterministically validate and answer `curiosity_to_action` intents (`questionExamples[]`, `response`, `suggestion`, `informationType`) | <!-- Updated: added deterministic curiosity mapping config --> |
 | `looker.baseUrl` | Looker Studio embed URL (with report/page path) |
 | `looker.paramMap` | Maps canonical filter keys → keys used inside the `params` JSON payload |
@@ -229,6 +237,7 @@ Policy normalization is strict by default: unknown filter keys are removed befor
 | `OLLAMA_BASE_URL` | `http://localhost:11434/v1` | Ollama OpenAI-compatible endpoint |
 | `OLLAMA_MODEL` | `llama3.1:8b` | Model identifier |
 | `OLLAMA_API_KEY` | `ollama` | API key (Ollama default) |
+| `REDIS_URL` | `redis://localhost:6379` | Redis connection string used by the API conversation history service | <!-- Updated: added Redis environment variable --> |
 
 The `OllamaLlmAdapter` constructor also accepts these as a config object for
 programmatic override.
@@ -249,6 +258,9 @@ programmatic override.
   }
 }
 ```
+
+**Headers:**
+- `x-conversation-id: string` (optional, generated and persisted by frontend in `localStorage`) <!-- Updated: conversation identifier moved to header -->
 
 **Response (always):**
 ```json

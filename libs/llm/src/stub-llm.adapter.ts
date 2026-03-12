@@ -1,12 +1,18 @@
 import type { z } from "zod";
-import type { LlmPort } from "./llm.port.js";
+import type { LlmPort, ConversationTurn } from "./llm.port.js";
 
 /**
  * Adaptador LLM stub para desenvolvimento/testes.
  * Retorna saída estruturada determinística com base em palavras-chave.
+ * O parâmetro `history` é aceito mas ignorado — comportamento determinístico preservado.
  */
 export class StubLlmAdapter implements LlmPort {
-  async generateStructured<T>(schema: z.ZodType<T>, input: string): Promise<T> {
+  async generateStructured<T>(
+    schema: z.ZodType<T>,
+    input: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _history?: ConversationTurn[]
+  ): Promise<T> {
     const lower = input.toLowerCase();
     const hasAnalysisSignal =
       lower.includes("ao longo do tempo") ||

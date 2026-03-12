@@ -8,30 +8,45 @@ Monorepo Nx + pnpm para uma webapp conversacional que controla filtros de um rel
 - `libs/domain`: modelos de dominio (acoes e intents)
 - `libs/contracts`: contratos HTTP compartilhados (request/response)
 - `libs/application`, `libs/policy`, `libs/llm`, `libs/providers`: orquestracao e adaptadores
-
 ## Requisitos locais
 - Node.js 20+
 - pnpm 9+
+- Redis 7+ (para cache de historico de conversas)
+- Docker + Docker Compose (recomendado para Ollama e Redis)
 
 ## Setup
+
 1. Instalar dependencias
 ```
 pnpm i
 ```
 
-2. Rodar o Ollama e baixar o modelo
+2. Rodar Redis e Ollama
+Para desenvolvimento local, use Docker Compose:
 ```
-ollama serve
-ollama pull llama3.2:8b
+docker compose up redis
+docker compose up ollama  # ou rode Ollama localmente (veja seção abaixo)
+```
+
+Ou, para subir tudo junto (API, web, Redis, Ollama):
+```
+docker compose up --build
 ```
 
 3. Configurar variaveis de ambiente
 - `apps/web/.env` (base do embed do Looker Studio)
-- `apps/api/.env` (endpoint do Ollama)
+- `apps/api/.env` (endpoint do Ollama e Redis)
 
 Arquivos de exemplo:
 - `apps/web/.env.example`
 - `apps/api/.env.example`
+
+Variaveis obrigatorias para desenvolvimento:
+```
+REDIS_URL=redis://localhost:6379
+OLLAMA_BASE_URL=http://localhost:11434/v1
+OLLAMA_MODEL=llama3.2:8b
+```
 
 4. Rodar em dev
 ```
@@ -62,7 +77,7 @@ Isso sobe:
 - API: http://localhost:3001
 - Ollama API: http://localhost:11434
 
-No `docker-compose.yml`, a API sobe com Ollama por padrao (`OllamaLlmAdapter`).
+No `docker-compose.yml`, a API sobe com Ollama por padrao (`OllamaLlmAdapter`) e Redis para persistencia de historico de conversas.
 
 ### Usar GPU com Ollama
 Para hosts com GPU NVIDIA, drivers instalados e `nvidia-container-toolkit` configurado, use o override de GPU:
@@ -90,9 +105,23 @@ Para sobrescrever sem editar o compose:
 OLLAMA_MODEL=llama3.1:8b docker compose up --build
 ```
 
+### Rodar apenas Redis com Docker (dev)
+Para desenvolvimento local em modo standalone (sem API e web em containers):
+```
+docker compose up redis
+```
+
+Para verificar conexao:
+```
+redis-cli ping
+```
+
+Responde `PONG` se estiver rodando.
+
 ### Comandos uteis
 ```
 docker compose up -d --build
+docker compose up redis
 docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
 docker compose logs -f api
 docker compose logs -f web

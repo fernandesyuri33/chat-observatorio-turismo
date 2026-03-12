@@ -34,19 +34,23 @@ sequenceDiagram
   participant U as Usuário
     participant FE as Frontend
   participant API as apps/api/src/rotas.ts
+  participant RED as Redis (historico)
   participant UC as Caso de Uso
   participant LLM as Adaptador de LLM
   participant POL as Motor de Políticas
   participant PROV as Provedor Ativo
 
     U->>FE: "ocupação por bairro em 2024"
-    FE->>API: POST /mensagem
+    FE->>API: POST /mensagem + x-conversation-id
+
+    API->>RED: Carrega historico (conversationId)
+    RED-->>API: turns anteriores
 
     API->>API: Valida requisição (Zod)
-    API->>UC: resolveDashboardAction()
+    API->>UC: resolveDashboardAction(message, history)
 
     UC->>UC: Seleciona schema de intenção (v1)
-    UC->>LLM: generateStructured(schema, message)
+    UC->>LLM: generateStructured(schema, message + contexto historico)
 
     LLM-->>UC: Intenção estruturada
 
@@ -61,6 +65,7 @@ sequenceDiagram
     UC->>UC: Valida ação de dashboard (Zod)
     UC-->>API: action
 
+    API->>RED: Persiste novo turn (user + assistant)
     API-->>FE: 200 { action }
 ```
 
@@ -88,14 +93,52 @@ subgraph Infraestrutura
 E[Adaptador de LLM]
 F[Motor de Políticas]
 G[Provedor Ativo]
+H[Redis - Histórico]
 end
 
 A --> B
+A --> H
 B --> C
 B --> D
 B --> E
 B --> F
 B --> G
+H -.->|recupera contexto| B
+```
+
+---
+
+# Histórico de Conversas com Redis
+
+A API persiste o histórico de mensagens em Redis para manter contexto conversacional:
+
+- **Chave no Redis**: `conversation:{conversationId}` (string serializada JSON com array de turns)
+- **TTL**: configurável via `history.ttlSeconds` em `apps/api/config/policy.ts` (padrão: 1800s = 30min)
+- **Estrutura**: cada turn contém `{role: "user" | "assistant", message: string, intent: NormalizedIntent}`
+- **Janela de contexto**: configurável via `history.maxMessages` (padrão: 3) — últimas 3 turns enviadas para o LLM
+
+Quando uma requisição chega com `x-conversation-id`:
+
+1. A API carrega o histórico do Redis
+2. Injeta as últimas `maxMessages` turns como contexto na requisição ao LLM
+3. Após gerar a ação, persiste o novo turn (user + assistant) de volta no Redis
+4. TTL é renovado a cada novo turn
+
+Se nenhum `x-conversation-id` for fornecido, o frontend gera um UUID e o persiste em `localStorage` para manter continuidade.
+
+```mermaid
+flowchart TD
+  A[Requisição com conversation-id]
+  --> B{Existe historico no Redis?}
+  B -->|Sim| C[Carrega turns]
+  B -->|Não| D[Primeira mensagem]
+  C --> E[Injeta contexto no LLM]
+  D --> E
+  E --> F[LLM processa com contexto]
+  F --> G[Retorna intenção]
+  G --> H[Persiste novo turn no Redis]
+  H --> I[Renova TTL]
+  I --> J[Responde ao cliente]
 ```
 
 ---
@@ -228,7 +271,8 @@ flowchart LR
 
 # Conceito Central da Arquitetura
 
-> O LLM sugere a intenção.
+> O LLM sugere a intenção (com contexto do histórico em Redis).
 > A política normaliza de forma estrita.
 > O provedor materializa a ação.
 > O domínio garante o contrato.
+> Redis persiste a conversa para continuidade.

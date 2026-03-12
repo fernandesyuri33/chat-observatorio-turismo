@@ -1,6 +1,7 @@
 import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import { Redis } from "ioredis";
 
 import { PolicyEngine } from "@conversational/policy";
 import { OllamaLlmAdapter, StubLlmAdapter } from "@conversational/llm";
@@ -11,6 +12,7 @@ import type { ResolveDashboardActionDeps } from "@conversational/application";
 
 import { rotas } from "./rotas.js";
 import { policyConfig } from "../config/policy.js";
+import { HistoryService } from "./history.service.js";
 
 // ── Inicialização ───────────────────────────────────────────────
 
@@ -54,6 +56,16 @@ const di: ResolveDashboardActionDeps = {
 };
 
 app.decorate("di", di);
+
+// ── Histórico de conversa (Redis) ────────────────────────────────
+const redisClient = new Redis(
+  process.env["REDIS_URL"] ?? "redis://localhost:6379",
+  { lazyConnect: true }
+);
+
+const historyService = new HistoryService(redisClient, policyConfig.history);
+
+app.decorate("historyService", historyService);
 
 // ── Health check  -------------------------──────────────────────
 app.get("/health", async () => ({ status: "ok" }));

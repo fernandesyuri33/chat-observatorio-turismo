@@ -5,7 +5,7 @@ import {
   type DashboardAction,
   type InformationType,
 } from "@conversational/domain";
-import type { LlmPort } from "@conversational/llm";
+import type { LlmPort, ConversationTurn } from "@conversational/llm";
 import {
   PolicyEngine,
   type NormalizedIntent,
@@ -26,6 +26,10 @@ export interface ResolveDashboardActionDeps {
 export interface ResolveRequest {
   message: string;
   ctx?: ResolveContext;
+  /** Turnos anteriores da conversa, repassados ao LLM como contexto de histórico. */
+  history?: ConversationTurn[];
+  /** Callback opcional para observar a intent normalizada retornada pelo LLM/policy. */
+  onIntentResolved?: (intent: NormalizedIntent) => void;
 }
 
 const INFORMATION_TYPE_LABEL: Record<InformationType, string> = {
@@ -188,7 +192,11 @@ export async function resolveDashboardAction(
 
   let rawIntent: unknown;
   try {
-    rawIntent = await llm.generateStructured(schemaEntry.schema, request.message);
+    rawIntent = await llm.generateStructured(
+      schemaEntry.schema,
+      request.message,
+      request.history
+    );
   } catch {
     return resolveInitialOrientationAction(provider, ctx);
   }
@@ -196,6 +204,7 @@ export async function resolveDashboardAction(
   // ── Etapa 2: Normalizar intenção ──────────────────────────────
   const parsed = rawIntent as NormalizedIntent;
   const normalized = policyEngine.normalizeIntent(parsed, request.message);
+  request.onIntentResolved?.(normalized);
 
   if (normalized.intent === "contextual_orientation") {
     return explainOnlyFallback(

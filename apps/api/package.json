@@ -11,15 +11,16 @@
     "test": "vitest run --passWithNoTests --config vitest.config.ts"
   },
   "dependencies": {
-    "@conversational/contracts": "workspace:*",
     "@conversational/application": "workspace:*",
-    "@conversational/policy": "workspace:*",
+    "@conversational/contracts": "workspace:*",
     "@conversational/llm": "workspace:*",
+    "@conversational/policy": "workspace:*",
     "@conversational/providers": "workspace:*",
     "@fastify/cors": "^9.0.1",
     "@instructor-ai/instructor": "^1.5.3",
     "dotenv": "^16.4.7",
     "fastify": "^4.28.1",
+    "ioredis": "^5.10.0",
     "openai": "^4.77.0",
     "zod": "^3.23.8"
   },
