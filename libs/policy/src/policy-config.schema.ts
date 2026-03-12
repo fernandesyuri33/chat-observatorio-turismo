@@ -24,6 +24,14 @@ export const PolicyConfigSchema = z.object({
     retryCount: z.number().int().min(0),
     contextualOrientationOptionCount: z.number().int().min(1),
   }),
+  history: z
+    .object({
+      /** Número máximo de turnos (user + assistant) incluídos no contexto do LLM. */
+      maxMessages: z.number().int().min(1),
+      /** Tempo de expiração do histórico no Redis (segundos). 0 = sem expiração. */
+      ttlSeconds: z.number().int().min(0),
+    })
+    .default({ maxMessages: 3, ttlSeconds: 1800 }),
   curiosityFaq: z.array(CuriosityFaqEntrySchema).optional(),
   looker: z.object({
     baseUrl: z.string().url(),
