@@ -34,11 +34,21 @@ export const ExplainOnlyActionSchema = z.object({
   meta: z.record(z.any()).optional(),
 });
 
+export const AskMissingInformationActionSchema = z.object({
+  type: z.literal("ask_missing_information"),
+  message: z.string(),
+  suggestions: z.array(z.string()),
+  missing: z.array(z.string()),
+  context: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
+  meta: z.record(z.any()).optional(),
+});
+
 export const DashboardActionSchema = z.discriminatedUnion("type", [
   OpenUrlActionSchema,
   ApplyFiltersActionSchema,
   RunQueryActionSchema,
   ExplainOnlyActionSchema,
+  AskMissingInformationActionSchema,
 ]);
 
 export type DashboardAction = z.infer<typeof DashboardActionSchema>;
@@ -46,3 +56,4 @@ export type OpenUrlAction = z.infer<typeof OpenUrlActionSchema>;
 export type ApplyFiltersAction = z.infer<typeof ApplyFiltersActionSchema>;
 export type RunQueryAction = z.infer<typeof RunQueryActionSchema>;
 export type ExplainOnlyAction = z.infer<typeof ExplainOnlyActionSchema>;
+export type AskMissingInformationAction = z.infer<typeof AskMissingInformationActionSchema>;

@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { IntentV1Schema } from "@conversational/domain";
+import { IntentV1Schema, RequestStateResultSchema, ExtractionResultSchema } from "@conversational/domain";
 
 // ── Registro de Schemas ─────────────────────────────────────────
 // Mapeia strings de versão para { schema, parse }.
@@ -14,6 +14,14 @@ const registry: Record<string, SchemaEntry> = {
   v1: {
     schema: IntentV1Schema,
     parse: (data: unknown) => IntentV1Schema.parse(data),
+  },
+  "request-state-v1": {
+    schema: RequestStateResultSchema,
+    parse: (data: unknown) => RequestStateResultSchema.parse(data),
+  },
+  "extraction-v1": {
+    schema: ExtractionResultSchema,
+    parse: (data: unknown) => ExtractionResultSchema.parse(data),
   },
 };
 

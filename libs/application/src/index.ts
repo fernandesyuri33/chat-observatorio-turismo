@@ -11,3 +11,13 @@ export {
   type SchemaEntry,
 } from "./schema-registry.js";
 export { explainOnlyFallback } from "./fallback.js";
+export { routeResponse, type RouteResponseParams } from "./response-router.js";
+export { findCuriosityFaqMatch, scoreFaqMatch } from "./curiosity-matcher.js";
+export {
+  buildContextualOrientationMessage,
+  buildContextualOrientationSuggestions,
+  buildCuriosityToAction,
+  buildAskMissingInformationAction,
+  buildDefaultInitialOrientationAction,
+  resolveInitialOrientationAction,
+} from "./response-builder.js";

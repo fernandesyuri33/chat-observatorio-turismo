@@ -6,7 +6,7 @@ export const policyConfig: PolicyConfig = PolicyConfigSchema.parse({
   synonyms,
   activeProvider: "looker",
   fallback: {
-    retryCount: 1,
+    retryCount: 3,
     contextualOrientationOptionCount: 3,
   },
   history: {

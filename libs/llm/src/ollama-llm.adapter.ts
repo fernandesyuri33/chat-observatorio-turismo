@@ -2,61 +2,6 @@ import OpenAI from "openai";
 import Instructor from "@instructor-ai/instructor";
 import type { z } from "zod";
 import type { LlmPort, ConversationTurn } from "./llm.port.js";
-import { fillPromptTemplate } from "./schema-hints.js";
-
-// ── Prompt de sistema padrão — domínio do dashboard de turismo ──
-
-const INFORMATION_TYPE_BULLETS_TOKEN = "__INFORMATION_TYPE_BULLETS__";
-const INFORMATION_TYPE_PLACEHOLDER_TOKEN = "__INFORMATION_TYPE_OPTIONS__";
-const CLASSIFICACAO_BULLETS_TOKEN = "__CLASSIFICACAO_BULLETS__";
-const CLASSIFICACAO_PLACEHOLDER_TOKEN = "__CLASSIFICACAO_OPTIONS__";
-
-const DEFAULT_SYSTEM_PROMPT = `Você é um assistente de um dashboard de turismo.
-Sua tarefa é interpretar a mensagem do usuário e devolver um objeto JSON estruturado que represente a intenção dele.
-
-Intenções possíveis:
-- "show"     → o usuário quer visualizar uma informação no dashboard
-- "contextual_orientation" → o usuário mencionou um recorte/filtro, mas sem definir qual análise quer ver
-- "initial_orientation" → o usuário pediu orientação aberta sobre o que pode analisar no dashboard
-- "curiosity_to_action" → o usuário fez uma pergunta de curiosidade que pode ser transformada em uma ação guiada
-
-Tipos de informação disponíveis (páginas):
-${INFORMATION_TYPE_BULLETS_TOKEN}
-
-Filtros disponíveis:
-- classificacao (valores permitidos):
-${CLASSIFICACAO_BULLETS_TOKEN}
-- municipio: string
-
-Responda **somente** com JSON válido no seguinte formato:
-{
-  "intent": "<show|contextual_orientation|initial_orientation|curiosity_to_action>",
-  "informationType": "<${INFORMATION_TYPE_PLACEHOLDER_TOKEN}>",
-  "proposedFilters": {
-    "classificacao"?: "<${CLASSIFICACAO_PLACEHOLDER_TOKEN}>",
-    "municipio"?: string
-  },
-  "confidence": <número de 0 a 1>,
-  "rationale": "<breve justificativa da interpretação>"
-}
-
-Regras:
-- Para intent "show", "informationType" é obrigatório.
-- Para "contextual_orientation", "initial_orientation" e "curiosity_to_action", omita "informationType".
-- Nunca envie "informationType": null.
-- "proposedFilters" deve conter apenas os filtros explicitamente mencionados.
-- "confidence" deve refletir quão claro e específico foi o pedido.
-- Se o usuário não mencionou nenhum filtro, retorne proposedFilters vazio ({}).
-- Se a mensagem é vaga, use confidence baixa (< 0.5) e rationale explicando a dúvida.
-- Se o usuário mencionar apenas recorte (ex.: município/classificação) sem definir o tipo de análise, use **sempre** "contextual_orientation".
-- Nomes de cidade, classificação ou termos genéricos como "dados", "informações", "ver dados", "mostrar dados" não definem sozinhos um tipo de análise.
-- Só use "show" quando houver indicação clara do recorte analítico (ex.: "funcionários por município", "estabelecimentos por município", "ao longo do tempo", "saldo de funcionários").
-- Se o usuário perguntar de forma aberta sobre o que pode analisar (ex.: "que dados posso obter aqui?", "o que posso descobrir aqui?"), use intent = "initial_orientation" e proposedFilters = {}.
-- Se o usuário fizer uma pergunta de curiosidade (ex.: "o setor turístico de X está evoluindo?"), use intent = "curiosity_to_action".
-- Exemplos:
-  - "Quero ver dados de Poços de Caldas" -> intent="contextual_orientation", proposedFilters={"municipio":"Poços de Caldas"}
-  - "Mostre funcionários por município em Poços de Caldas" -> intent="show", informationType="funcionarios_por_municipio", proposedFilters={"municipio":"Poços de Caldas"}
-- Sempre responda em português.`;
 
 // ── Configuração ────────────────────────────────────────────────
 
@@ -67,8 +12,6 @@ export interface OllamaLlmAdapterConfig {
   model?: string;
   /** Chave de API (padrão: env OLLAMA_API_KEY ou "ollama") */
   apiKey?: string;
-  /** Sobrescreve o prompt de sistema padrão */
-  systemPrompt?: string;
   /** Temperatura de amostragem (padrão: 0) */
   temperature?: number;
   /** Máximo de tentativas em falhas transitórias (padrão: 3) */
@@ -80,7 +23,6 @@ export interface OllamaLlmAdapterConfig {
 export class OllamaLlmAdapter implements LlmPort {
   private readonly instructor: ReturnType<typeof Instructor>;
   private readonly model: string;
-  private readonly systemPrompt: string;
   private readonly temperature: number;
   private readonly maxRetries: number;
 
@@ -102,7 +44,6 @@ export class OllamaLlmAdapter implements LlmPort {
 
     this.temperature = config.temperature ?? 0;
     this.maxRetries = config.maxRetries ?? 3;
-    this.systemPrompt = config.systemPrompt ?? DEFAULT_SYSTEM_PROMPT;
 
     const client = new OpenAI({ baseURL, apiKey });
     this.instructor = Instructor({ client, mode: "JSON" });
@@ -116,16 +57,15 @@ export class OllamaLlmAdapter implements LlmPort {
   async generateStructured<T>(
     schema: z.ZodType<T>,
     input: string,
-    history?: ConversationTurn[]
+    systemPrompt: string,
+    history?: ConversationTurn[],
   ): Promise<T> {
-    const requestId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const startedAt = Date.now();
 
-    console.info("[ollama] request:start", {
-      requestId,
-      model: this.model,
-      historyLength: history?.length ?? 0,
-      input,
+    console.info("Enviando mensagem para o LLM", {
+      modelo: this.model,
+      mensagem: input,
+      mensagensNoHistorico: history?.length ?? 0,
     });
 
     const historyMessages: { role: "user" | "assistant"; content: string }[] =
@@ -139,12 +79,7 @@ export class OllamaLlmAdapter implements LlmPort {
         messages: [
           {
             role: "system",
-            content: fillPromptTemplate(this.systemPrompt, schema, {
-              informationTypeBulletsToken: INFORMATION_TYPE_BULLETS_TOKEN,
-              informationTypeOptionsToken: INFORMATION_TYPE_PLACEHOLDER_TOKEN,
-              classificacaoBulletsToken: CLASSIFICACAO_BULLETS_TOKEN,
-              classificacaoOptionsToken: CLASSIFICACAO_PLACEHOLDER_TOKEN,
-            }),
+            content: systemPrompt,
           },
           ...historyMessages,
           { role: "user", content: input },
@@ -153,20 +88,19 @@ export class OllamaLlmAdapter implements LlmPort {
           schema: schema as unknown as z.AnyZodObject,
           name: "StructuredOutput",
         },
+
       });
 
-      console.info("[ollama] request:done", {
-        requestId,
-        durationMs: Date.now() - startedAt,
-        result: JSON.stringify(result),
+      console.info("Resposta recebida da LLM", {
+        duracaoEmMs: Date.now() - startedAt,
+        resultado: JSON.stringify(result),
       });
 
       // Instructor retorna diretamente o objeto parseado e validado
       return result as T;
     } catch (error) {
-      console.error("[ollama] request:error", {
-        requestId,
-        durationMs: Date.now() - startedAt,
+      console.error("Erro ao enviar mensagem para o LLM", {
+        duracaoEmMs: Date.now() - startedAt,
         error,
       });
       throw error;

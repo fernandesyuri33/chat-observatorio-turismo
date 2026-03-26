@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   DashboardActionSchema,
   IntentV1Schema,
+  RequestStateResultSchema,
+  ExtractionResultSchema,
+  ResponseDecisionSchema,
 } from "../src/index";
 
 describe("DashboardActionSchema", () => {
@@ -64,6 +67,40 @@ describe("DashboardActionSchema", () => {
     const result = DashboardActionSchema.safeParse({
       type: "explain_only",
       // faltando message e suggestions
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("aceita uma ação ask_missing_information válida", () => {
+    const result = DashboardActionSchema.safeParse({
+      type: "ask_missing_information",
+      message: "Preciso saber qual análise você quer ver.",
+      suggestions: ["Estabelecimentos por município"],
+      missing: ["informationType"],
+      context: { municipio: "Pouso Alegre" },
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.type).toBe("ask_missing_information");
+    }
+  });
+
+  it("aceita ask_missing_information sem context", () => {
+    const result = DashboardActionSchema.safeParse({
+      type: "ask_missing_information",
+      message: "Qual análise você quer ver?",
+      suggestions: [],
+      missing: ["informationType"],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejeita ask_missing_information sem missing", () => {
+    const result = DashboardActionSchema.safeParse({
+      type: "ask_missing_information",
+      message: "Qual análise?",
+      suggestions: [],
+      // faltando missing
     });
     expect(result.success).toBe(false);
   });
@@ -172,5 +209,151 @@ describe("IntentV1Schema", () => {
     if (result.success) {
       expect(result.data.informationType).toBeUndefined();
     }
+  });
+});
+
+describe("RequestStateResultSchema", () => {
+  it("aceita um request state válido", () => {
+    const result = RequestStateResultSchema.safeParse({
+      requestState: "complete_show",
+      confidence: 0.9,
+      rationale: "Pedido claro de visualização",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.requestState).toBe("complete_show");
+    }
+  });
+
+  it("aceita todos os valores possíveis de requestState", () => {
+    for (const state of ["complete_show", "context_only", "initial_orientation", "curiosity_to_action", "unclear"]) {
+      const result = RequestStateResultSchema.safeParse({
+        requestState: state,
+        confidence: 0.5,
+      });
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it("rejeita requestState desconhecido", () => {
+    const result = RequestStateResultSchema.safeParse({
+      requestState: "invalid_state",
+      confidence: 0.5,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejeita confidence fora do intervalo 0-1", () => {
+    const result = RequestStateResultSchema.safeParse({
+      requestState: "complete_show",
+      confidence: 1.5,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rationale é opcional", () => {
+    const result = RequestStateResultSchema.safeParse({
+      requestState: "unclear",
+      confidence: 0.3,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.rationale).toBeUndefined();
+    }
+  });
+});
+
+describe("ExtractionResultSchema", () => {
+  it("aceita extração com informationType e filtros", () => {
+    const result = ExtractionResultSchema.safeParse({
+      candidateInformationType: "funcionarios_por_municipio",
+      proposedFilters: { classificacao: "hospedagem", municipio: "Pouso Alegre" },
+      confidence: 0.8,
+      rationale: "Extração clara",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.candidateInformationType).toBe("funcionarios_por_municipio");
+    }
+  });
+
+  it("aceita extração sem informationType", () => {
+    const result = ExtractionResultSchema.safeParse({
+      proposedFilters: { municipio: "Pouso Alegre" },
+      confidence: 0.6,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.candidateInformationType).toBeUndefined();
+    }
+  });
+
+  it("aceita extração com filtros vazios", () => {
+    const result = ExtractionResultSchema.safeParse({
+      proposedFilters: {},
+      confidence: 0.5,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejeita informationType inválido", () => {
+    const result = ExtractionResultSchema.safeParse({
+      candidateInformationType: "tipo_invalido",
+      proposedFilters: {},
+      confidence: 0.5,
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("ResponseDecisionSchema", () => {
+  it("aceita execute_show válido", () => {
+    const result = ResponseDecisionSchema.safeParse({
+      responseType: "execute_show",
+      informationType: "funcionarios_por_municipio",
+      filters: { municipio: "Pouso Alegre" },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("aceita ask_missing_information válido", () => {
+    const result = ResponseDecisionSchema.safeParse({
+      responseType: "ask_missing_information",
+      missing: ["informationType"],
+      context: { municipio: "Pouso Alegre" },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("aceita give_initial_orientation válido", () => {
+    const result = ResponseDecisionSchema.safeParse({
+      responseType: "give_initial_orientation",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("aceita give_contextual_orientation válido", () => {
+    const result = ResponseDecisionSchema.safeParse({
+      responseType: "give_contextual_orientation",
+      filters: { classificacao: "hospedagem" },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("aceita convert_curiosity_to_action válido", () => {
+    const result = ResponseDecisionSchema.safeParse({
+      responseType: "convert_curiosity_to_action",
+      faqResponse: "Uma forma de explorar...",
+      faqSuggestion: "Visualizar funcionários",
+      faqInformationType: "funcionarios_ao_longo_do_tempo",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejeita responseType desconhecido", () => {
+    const result = ResponseDecisionSchema.safeParse({
+      responseType: "unknown_type",
+    });
+    expect(result.success).toBe(false);
   });
 });

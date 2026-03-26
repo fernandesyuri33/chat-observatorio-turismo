@@ -13,12 +13,17 @@ export interface ConversationTurn {
  * Interface de porta para qualquer adaptador de LLM.
  * `generateStructured` envia uma string de entrada e espera
  * que o modelo retorne saída conforme o schema Zod informado.
- * O parâmetro opcional `history` injeta turnos anteriores no contexto da chamada.
+ *
+ * @param schema      Schema Zod que define a estrutura esperada da resposta.
+ * @param input       Mensagem do usuário.
+ * @param systemPrompt Prompt de sistema que contextualiza a chamada ao modelo.
+ * @param history     Turnos anteriores da conversa injetados no contexto.
  */
 export interface LlmPort {
   generateStructured<T>(
     schema: z.ZodType<T>,
     input: string,
-    history?: ConversationTurn[]
+    systemPrompt: string,
+    history?: ConversationTurn[],
   ): Promise<T>;
 }

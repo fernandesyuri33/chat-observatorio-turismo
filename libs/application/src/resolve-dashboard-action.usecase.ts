@@ -1,21 +1,33 @@
 import {
-  INFORMATION_TYPE_VALUES,
   DashboardActionSchema,
+  RequestStateResultSchema,
+  ExtractionResultSchema,
   type IntentV1,
   type DashboardAction,
-  type InformationType,
+  type RequestStateResult,
+  type ExtractionResult,
+  type ResponseDecision,
 } from "@conversational/domain";
 import type { LlmPort, ConversationTurn } from "@conversational/llm";
+import {
+  buildRequestStatePrompt,
+  buildExtractionPrompt,
+} from "@conversational/llm";
 import {
   PolicyEngine,
   type NormalizedIntent,
   type PolicyConfig,
 } from "@conversational/policy";
 import type { ActionProvider, ResolveContext } from "@conversational/providers";
-import { getSchemaEntry, getActiveVersion } from "./schema-registry.js";
 import { explainOnlyFallback } from "./fallback.js";
-
-type CuriosityFaqEntry = NonNullable<PolicyConfig["curiosityFaq"]>[number];
+import { routeResponse } from "./response-router.js";
+import {
+  buildContextualOrientationMessage,
+  buildContextualOrientationSuggestions,
+  buildCuriosityToAction,
+  buildAskMissingInformationAction,
+  resolveInitialOrientationAction,
+} from "./response-builder.js";
 
 export interface ResolveDashboardActionDeps {
   llm: LlmPort;
@@ -32,151 +44,36 @@ export interface ResolveRequest {
   onIntentResolved?: (intent: NormalizedIntent) => void;
 }
 
-const INFORMATION_TYPE_LABEL: Record<InformationType, string> = {
-  estabelecimentos_por_municipio: "Quantidade de estabelecimentos por município",
-  funcionarios_por_municipio: "Quantidade de funcionários por município",
-  funcionarios_ao_longo_do_tempo: "Quantidade de funcionários ao longo do tempo",
-  saldo_funcionarios_ao_longo_do_tempo: "Saldo de funcionários ao longo do tempo",
-};
-
-function buildContextualOrientationMessage(intent: NormalizedIntent): string {
-  const base = "A partir desse recorte, você pode explorar:";
-
-  if (intent.proposedFilters.municipio) {
-    return `${base} em ${intent.proposedFilters.municipio}. Qual abordagem você prefere? Também posso listar tudo o que é possível observar deste recorte.`;
-  }
-
-  if (intent.proposedFilters.classificacao) {
-    return `${base} para a classificação ${intent.proposedFilters.classificacao}. Qual abordagem você prefere? Também posso listar tudo o que é possível observar deste recorte.`;
-  }
-
-  return `${base} Qual abordagem você prefere? Também posso listar tudo o que é possível observar deste recorte.`;
-}
-
-function buildContextualOrientationSuggestions(optionCount: number): string[] {
-  return INFORMATION_TYPE_VALUES
-    .slice(0, optionCount)
-    .map((informationType) => INFORMATION_TYPE_LABEL[informationType]);
-}
-
-function normalizeText(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
-function tokenizeText(value: string): Set<string> {
-  const normalized = normalizeText(value).replace(/[^a-z0-9\s]/g, " ");
-  return new Set(normalized.split(/\s+/).filter((token) => token.length >= 3));
-}
-
-function scoreFaqMatch(message: string, example: string): number {
-  const messageTokens = tokenizeText(message);
-  const exampleTokens = tokenizeText(example);
-
-  if (messageTokens.size === 0 || exampleTokens.size === 0) {
-    return 0;
-  }
-
-  let intersection = 0;
-  for (const token of messageTokens) {
-    if (exampleTokens.has(token)) {
-      intersection += 1;
-    }
-  }
-
-  if (intersection < 2) {
-    return 0;
-  }
-
-  return intersection / exampleTokens.size;
-}
-
-function findCuriosityFaqMatch(
-  message: string,
-  entries?: PolicyConfig["curiosityFaq"]
-): CuriosityFaqEntry | undefined {
-  if (!entries || entries.length === 0) {
-    return undefined;
-  }
-
-  let bestScore = 0;
-  let bestEntry: CuriosityFaqEntry | undefined;
-
-  for (const entry of entries) {
-    for (const example of entry.questionExamples) {
-      const score = scoreFaqMatch(message, example);
-      if (score > bestScore) {
-        bestScore = score;
-        bestEntry = entry;
-      }
-    }
-  }
-
-  if (bestScore < 0.45) {
-    return undefined;
-  }
-
-  return bestEntry;
-}
-
-function buildCuriosityToAction(entry: CuriosityFaqEntry): DashboardAction {
-  return {
-    type: "explain_only",
-    message: entry.response,
-    suggestions: [entry.suggestion],
-    meta: {
-      curiosityToAction: true,
-      informationType: entry.informationType,
-    },
-  };
-}
-
-function buildDefaultInitialOrientationAction(): DashboardAction {
-  return explainOnlyFallback(
-    "Posso sugerir alguns caminhos de exploração:",
-    [
-      "Comparar estabelecimentos entre municípios",
-      "Visualizar a quantidade de funcionários por município",
-      "Acompanhar a evolução de funcionários ao longo do tempo",
-    ]
-  );
-}
-
-async function resolveInitialOrientationAction(
-  provider: ActionProvider,
-  ctx: ResolveContext
-): Promise<DashboardAction> {
-  const initialOrientationIntent: IntentV1 = {
-    intent: "initial_orientation",
-    proposedFilters: {},
-    confidence: 1,
-  };
-
-  try {
-    const action = await provider.generate(initialOrientationIntent, ctx);
-    const validated = DashboardActionSchema.safeParse(action);
-    if (validated.success) {
-      return validated.data;
-    }
-  } catch {
-    // Continua para a ação padrão de orientação
-  }
-
-  return buildDefaultInitialOrientationAction();
-}
-
 /**
- * Caso de uso central: resolve uma mensagem do usuário em um DashboardAction validado.
+ * Caso de uso central: resolve uma mensagem em linguagem natural do usuário
+ * em um {@link DashboardAction} validado via Zod.
  *
- * Fluxo:
- * 1. Chama o LLM via registro de schemas para obter uma intenção estruturada
- * 2. Normaliza a intenção via PolicyEngine
- * 3. Verifica limite de confiança (baixa confiança volta para orientação inicial)
- * 4. Encaminha para o provider correto
- * 5. Valida a saída com DashboardActionSchema
- * 6. Em qualquer falha, volta para orientação inicial
+ * O pipeline opera em **3 etapas sequenciais**, cada uma com responsabilidade isolada:
+ *
+ * ### Etapa 1 — Request State Detection (LLM)
+ * Classifica a mensagem do usuário em um dos estados de pedido
+ * (`complete_show`, `context_only`, `initial_orientation`, `curiosity_to_action`, `unclear`).
+ * Pedidos de orientação inicial ou mensagens vagas (`unclear`) fazem short-circuit
+ * direto para a ação de orientação, sem avançar para as demais etapas.
+ *
+ * ### Etapa 2 — Structured Extraction (LLM)
+ * Extrai campos estruturados da mensagem: `candidateInformationType` e `proposedFilters`.
+ * O resultado é normalizado pelo {@link PolicyEngine} (sinônimos, sanitização de filtros)
+ * antes de prosseguir.
+ *
+ * ### Etapa 3 — Response Decision (determinístico, sem LLM)
+ * O {@link routeResponse} cruza o estado do pedido com os dados extraídos e a configuração
+ * de policy para produzir uma {@link ResponseDecision} determinística. A decisão é então
+ * traduzida em um `DashboardAction` concreto via {@link executeDecision}.
+ *
+ * ### Garantias
+ * - **Fallback seguro:** toda exceção ou falha de validação retorna `initial_orientation`
+ *   (nunca propaga erro para a camada HTTP).
+ * - **Saída validada:** o `DashboardAction` final é sempre validado com
+ *   `DashboardActionSchema.safeParse` antes de ser retornado.
+ * - **Callback de observabilidade:** se `onIntentResolved` for fornecido, o pipeline
+ *   notifica a intent normalizada reconstruída, permitindo persistência de histórico
+ *   e logging sem acoplamento.
  */
 export async function resolveDashboardAction(
   deps: ResolveDashboardActionDeps,
@@ -186,60 +83,202 @@ export async function resolveDashboardAction(
   const config = policyEngine.getConfig();
   const ctx: ResolveContext = request.ctx ?? {};
 
-  // ── Etapa 1: Obter intenção estruturada do LLM ────────────────
-  const version = getActiveVersion();
-  const schemaEntry = getSchemaEntry(version);
+  // ── Etapa 1: Request State Detection ──────────────────────────
+  const requestStatePrompt = buildRequestStatePrompt();
 
-  let rawIntent: unknown;
+  let requestState: RequestStateResult;
   try {
-    rawIntent = await llm.generateStructured(
-      schemaEntry.schema,
+    requestState = await llm.generateStructured(
+      RequestStateResultSchema,
       request.message,
-      request.history
+      requestStatePrompt,
+      request.history,
     );
   } catch {
     return resolveInitialOrientationAction(provider, ctx);
   }
 
-  // ── Etapa 2: Normalizar intenção ──────────────────────────────
-  const parsed = rawIntent as NormalizedIntent;
-  const normalized = policyEngine.normalizeIntent(parsed, request.message);
-  request.onIntentResolved?.(normalized);
+  // ── Short-circuit: initial_orientation / unclear → sem extração
+  if (
+    requestState.requestState === "initial_orientation" ||
+    requestState.requestState === "unclear"
+  ) {
+    const intent: NormalizedIntent = {
+      intent: "initial_orientation",
+      proposedFilters: {},
+      confidence: requestState.confidence,
+      rationale: requestState.rationale,
+    };
+    request.onIntentResolved?.(intent);
 
-  if (normalized.intent === "contextual_orientation") {
-    return explainOnlyFallback(
-      buildContextualOrientationMessage(normalized),
-      buildContextualOrientationSuggestions(config.fallback.contextualOrientationOptionCount)
-    );
+    return resolveInitialOrientationAction(provider, ctx);
   }
 
-  if (normalized.intent === "curiosity_to_action") {
-    const curiosityMatch = findCuriosityFaqMatch(request.message, config.curiosityFaq);
-    if (!curiosityMatch) {
+  // ── Etapa 2: Structured Extraction ────────────────────────────
+  let extraction: ExtractionResult;
+  try {
+    extraction = await llm.generateStructured(
+      ExtractionResultSchema,
+      request.message,
+      buildExtractionPrompt(),
+      request.history,
+    );
+  } catch {
+    return resolveInitialOrientationAction(provider, ctx);
+  }
+
+  // ── Normalizar extração via PolicyEngine ──────────────────────
+  const normalizedExtraction = policyEngine.normalizeExtraction(extraction);
+
+  const intent = buildIntent(requestState, normalizedExtraction);
+  request.onIntentResolved?.(intent);
+
+  // ── Etapa 3: Response Decision (determinístico) ───────────────
+  const decision = routeResponse({
+    requestState,
+    extraction: normalizedExtraction,
+    config,
+    message: request.message,
+  });
+
+  // ── Executar decisão ──────────────────────────────────────────
+  return executeDecision(decision, normalizedExtraction, config, provider, ctx);
+}
+
+// ── Helpers internos ────────────────────────────────────────────
+
+type StrictIntentFilters = {
+  classificacao?: ExtractionResult["proposedFilters"]["classificacao"] extends infer C
+    ? Exclude<C, null>
+    : never;
+  municipio?: string;
+};
+
+/**
+ * Converte proposedFilters do ExtractionResult (que pode conter null via Zod)
+ * para o formato IntentFilters usado pelo NormalizedIntent (sem null).
+ */
+function stripNullFilters(
+  filters: ExtractionResult["proposedFilters"]
+): StrictIntentFilters {
+  return {
+    classificacao: filters.classificacao ?? undefined,
+    municipio: filters.municipio,
+  };
+}
+
+/**
+ * Reconstrói um NormalizedIntent a partir do request state e da extração.
+ * Alimenta o callback {@link ResolveRequest.onIntentResolved} e a
+ * interface {@link ActionProvider.generate}.
+ */
+function buildIntent(
+  requestState: RequestStateResult,
+  extraction: ExtractionResult
+): NormalizedIntent {
+  const state = requestState.requestState;
+  const filters = stripNullFilters(extraction.proposedFilters);
+
+  if (state === "complete_show" && extraction.candidateInformationType) {
+    return {
+      intent: "show",
+      informationType: extraction.candidateInformationType,
+      proposedFilters: filters,
+      confidence: extraction.confidence,
+      rationale: extraction.rationale,
+    };
+  }
+
+  if (state === "context_only") {
+    return {
+      intent: "contextual_orientation",
+      proposedFilters: filters,
+      confidence: extraction.confidence,
+      rationale: extraction.rationale,
+    };
+  }
+
+  if (state === "curiosity_to_action") {
+    return {
+      intent: "curiosity_to_action",
+      proposedFilters: filters,
+      confidence: extraction.confidence,
+      rationale: extraction.rationale,
+    };
+  }
+
+  // Fallback: show genérico ou initial_orientation
+  return {
+    intent: "initial_orientation",
+    proposedFilters: filters,
+    confidence: extraction.confidence,
+    rationale: extraction.rationale,
+  };
+}
+
+/**
+ * Executa a decisão de resposta, traduzindo ResponseDecision para DashboardAction.
+ * Mantém fallbacks seguros em todos os pontos de falha.
+ */
+async function executeDecision(
+  decision: ResponseDecision,
+  extraction: ExtractionResult,
+  config: PolicyConfig,
+  provider: ActionProvider,
+  ctx: ResolveContext
+): Promise<DashboardAction> {
+  switch (decision.responseType) {
+    case "give_initial_orientation":
       return resolveInitialOrientationAction(provider, ctx);
+
+    case "give_contextual_orientation":
+      return explainOnlyFallback(
+        buildContextualOrientationMessage(decision.filters),
+        buildContextualOrientationSuggestions(
+          config.fallback.contextualOrientationOptionCount
+        )
+      );
+
+    case "convert_curiosity_to_action":
+      return buildCuriosityToAction({
+        response: decision.faqResponse,
+        suggestion: decision.faqSuggestion,
+        informationType: decision.faqInformationType,
+      });
+
+    case "ask_missing_information":
+      return buildAskMissingInformationAction(
+        decision.missing,
+        decision.context,
+        config.fallback.contextualOrientationOptionCount
+      );
+
+    case "execute_show": {
+      const intentForProvider: IntentV1 = {
+        intent: "show",
+        informationType: decision.informationType,
+        proposedFilters: decision.filters,
+        confidence: extraction.confidence,
+        rationale: extraction.rationale,
+      };
+
+      let action: DashboardAction;
+      try {
+        action = await provider.generate(intentForProvider, ctx);
+      } catch {
+        return resolveInitialOrientationAction(provider, ctx);
+      }
+
+      const validated = DashboardActionSchema.safeParse(action);
+      if (!validated.success) {
+        return resolveInitialOrientationAction(provider, ctx);
+      }
+
+      return validated.data;
     }
 
-    return buildCuriosityToAction(curiosityMatch);
+    default:
+      return resolveInitialOrientationAction(provider, ctx);
   }
-
-  // ── Etapa 3: Verificar confiança ──────────────────────────────
-  if (normalized.confidence < config.minConfidence) {
-    return resolveInitialOrientationAction(provider, ctx);
-  }
-
-  // ── Etapa 4: Gerar ação a partir do provider ──────────────────
-  let action: DashboardAction;
-  try {
-    action = await provider.generate(normalized, ctx);
-  } catch {
-    return resolveInitialOrientationAction(provider, ctx);
-  }
-
-  // ── Etapa 5: Validar saída com DashboardActionSchema ──────────
-  const validated = DashboardActionSchema.safeParse(action);
-  if (!validated.success) {
-    return resolveInitialOrientationAction(provider, ctx);
-  }
-
-  return validated.data;
 }
+

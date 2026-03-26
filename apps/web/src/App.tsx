@@ -138,7 +138,10 @@ export function App() {
         setEmbedUrl(data.action.url);
       }
 
-      if (data.action.type === "explain_only") {
+      if (
+        data.action.type === "explain_only" ||
+        data.action.type === "ask_missing_information"
+      ) {
         setSuggestions(data.action.suggestions);
       }
 
@@ -154,6 +157,9 @@ export function App() {
           assistantText = `Executando: ${data.action.function}`;
           break;
         case "explain_only":
+          assistantText = data.action.message;
+          break;
+        case "ask_missing_information":
           assistantText = data.action.message;
           break;
       }

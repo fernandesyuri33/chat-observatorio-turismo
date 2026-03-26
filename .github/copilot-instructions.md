@@ -83,7 +83,7 @@ apps/
 libs/
   domain/                      # Pure domain types — zero infra deps
     src/
-      dashboard-action.schema.ts   # DashboardAction discriminated union (4 variants)
+      dashboard-action.schema.ts   # DashboardAction discriminated union (5 variants) <!-- Updated: added ask_missing_information variant -->
       intent.v1.schema.ts          # IntentV1 — versioned LLM structured output schema
       index.ts                     # Barrel export
 
@@ -102,7 +102,7 @@ libs/
   policy/                      # Policy engine
     src/
       policy-config.schema.ts  # Zod schema for typed policy configuration
-      policy-engine.ts         # Synonym resolution, strict filter normalization, NormalizedIntent <!-- Updated: removed mode-based behavior -->
+      policy-engine.ts         # Synonym resolution, strict filter normalization, NormalizedIntent <!-- Updated: removed normalizeIntent method, kept normalizeExtraction for v2 pipeline -->
       index.ts
 
   llm/                         # LLM port + adapters
@@ -145,6 +145,7 @@ libs/
 | `apply_filters` | `filters: Record<string, string\|number\|boolean\|string[]>`, `target?: "dashboard"\|"chart"\|"table"`, `meta?: Record` |
 | `run_query` | `function: string`, `args: Record`, `meta?: Record` |
 | `explain_only` | `message: string`, `suggestions: string[]`, `meta?: Record` |
+| `ask_missing_information` | `message: string`, `suggestions: string[]`, `missing: string[]`, `context?: Record<string, string\|number\|boolean>`, `meta?: Record` | <!-- Updated: added ask_missing_information variant -->
 
 Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
 
@@ -184,16 +185,18 @@ API routes and frontend clients to avoid contract drift.
 ```
 User message
   + conversation history (from Redis by `x-conversation-id`)
-  → LLM.generateStructured(IntentSchema, message)
-  → PolicyEngine.normalizeIntent(rawIntent)
-  → Confidence check (minConfidence from policy)
-  → activeProvider.generate(normalizedIntent, ctx)
-  → DashboardActionSchema.parse(action)     ← output validation
+  → LLM.generateStructured(RequestStateSchema, message)   ← Stage 1: classify request state
+  → LLM.generateStructured(ExtractionSchema, message)      ← Stage 2: extract informationType + filters
+  → PolicyEngine.normalizeExtraction(extraction)            ← synonym/filter normalization
+  → routeResponse(requestState, extraction, config)         ← Stage 3: deterministic decision
+  → executeDecision(decision) → DashboardAction
+  → DashboardActionSchema.parse(action)                    ← output validation
   → Return to HTTP layer
 
 After generating a response action, the API persists the turn pair
 (`user` message + serialized assistant intent normalizada) back to Redis and renews TTL.
 ```
+<!-- Updated: 3-stage pipeline (request state → extraction → response decision) -->
 
 There is no intent-to-provider routing step — the single active provider
 (injected at startup based on `activeProvider` config) handles every intent.

@@ -6,8 +6,9 @@
  * - Aplica sinônimos em chaves/valores de filtros e em tipos de informação.
  * - Garante sanitização estrita de filtros, removendo chaves desconhecidas.
  * - Valida e mantém apenas valores canônicos suportados para os filtros.
- * - Retorna uma intent normalizada e tipada para o caso de uso da aplicação.
+ * - Retorna dados normalizados e tipados para o caso de uso da aplicação.
  */
+import type { ExtractionResult } from "@conversational/domain";
 import type { PolicyConfig } from "./policy-config.schema.js";
 
 type InformationType =
@@ -99,16 +100,26 @@ export class PolicyEngine {
   }
 
   /**
-   * Normaliza um payload de intent:
-   * - Aplica sinônimos em chaves e valores de filtro
-   * - Rejeita chaves de filtro desconhecidas (estrito por padrão)
+   * Normaliza um ExtractionResult.
+   * Aplica sinônimos e sanitização de filtros sem reclassificar intent
+   * (a responsabilidade de classificação pertence ao request state / response router).
    */
-  normalizeIntent(raw: NormalizedIntent, message?: string): NormalizedIntent {
+  normalizeExtraction(raw: ExtractionResult): ExtractionResult {
     const synonyms = this.config.synonyms;
 
-    // Resolve chaves e valores de filtros propostos por meio de sinônimos
+    // Resolve candidateInformationType via sinônimos
+    let normalizedInformationType = raw.candidateInformationType;
+    if (normalizedInformationType) {
+      const mapped = synonyms[normalizedInformationType] ?? normalizedInformationType;
+      normalizedInformationType = INFORMATION_TYPES.has(mapped as InformationType)
+        ? (mapped as ExtractionResult["candidateInformationType"])
+        : normalizedInformationType;
+    }
+
+    // Resolve filtros via sinônimos
     const resolvedFilters: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(raw.proposedFilters)) {
+      if (value === undefined || value === null) continue;
       const resolvedKey = synonyms[key] ?? key;
       if (typeof value === "string") {
         resolvedFilters[resolvedKey] = synonyms[value] ?? value;
@@ -117,7 +128,7 @@ export class PolicyEngine {
       }
     }
 
-    // Rejeita chaves de filtro desconhecidas
+    // Sanitiza filtros
     for (const key of Object.keys(resolvedFilters)) {
       if (!ALLOWED_FILTER_KEYS.has(key as keyof IntentFilters)) {
         delete resolvedFilters[key];
@@ -135,74 +146,11 @@ export class PolicyEngine {
       normalizedFilters.municipio = resolvedFilters["municipio"];
     }
 
-    if (
-      raw.intent === "contextual_orientation" ||
-      raw.intent === "initial_orientation" ||
-      raw.intent === "curiosity_to_action"
-    ) {
-      return {
-        ...raw,
-        proposedFilters: normalizedFilters,
-      };
-    }
-
-    const mappedInformationType = synonyms[raw.informationType] ?? raw.informationType;
-    const normalizedInformationType = INFORMATION_TYPES.has(mappedInformationType as InformationType)
-      ? (mappedInformationType as InformationType)
-      : raw.informationType;
-
-    const normalizedShowIntent: NormalizedIntent = {
-      ...raw,
-      informationType: normalizedInformationType,
+    return {
+      candidateInformationType: normalizedInformationType,
       proposedFilters: normalizedFilters,
+      confidence: raw.confidence,
+      rationale: raw.rationale,
     };
-
-    if (this.shouldForceContextualOrientation(normalizedShowIntent, message)) {
-      return {
-        intent: "contextual_orientation",
-        proposedFilters: normalizedFilters,
-        confidence: raw.confidence,
-        rationale: raw.rationale,
-      };
-    }
-
-    return normalizedShowIntent;
-  }
-
-  private shouldForceContextualOrientation(intent: NormalizedIntent, message?: string): boolean {
-    if (intent.intent !== "show") {
-      return false;
-    }
-
-    if (!message || Object.keys(intent.proposedFilters).length === 0) {
-      return false;
-    }
-
-    return !this.hasInformationTypeMention(message);
-  }
-
-  private hasInformationTypeMention(message: string): boolean {
-    const normalizedMessage = normalizeText(message);
-    const terms = new Set<string>([
-      "estabelecimentos por municipio",
-      "funcionarios por municipio",
-      "funcionarios ao longo do tempo",
-      "saldo de funcionarios ao longo do tempo",
-      "saldo funcionarios ao longo do tempo",
-    ]);
-
-    for (const [synonym, canonical] of Object.entries(this.config.synonyms)) {
-      if (INFORMATION_TYPES.has(canonical as InformationType)) {
-        terms.add(normalizeText(synonym));
-      }
-    }
-
-    for (const term of terms) {
-      if (normalizedMessage.includes(term)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 }
