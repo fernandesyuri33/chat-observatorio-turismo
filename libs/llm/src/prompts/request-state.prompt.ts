@@ -15,7 +15,7 @@ ${GRAFICOS_DISPONIVEIS_TOKEN}
 
 Estados possíveis:
 - "complete_show" → o usuário pediu para ver um dos gráficos acima (mencionou qual análise, opcionalmente com filtros)
-- "context_only" → o usuário mencionou filtros ou recorte (município, classificação) mas NÃO especificou qual gráfico/análise quer ver
+- "context_only" → o usuário mencionou APENAS filtros (município, classificação) mas NÃO especificou qual gráfico quer ver
 - "initial_orientation" → o usuário pediu orientação aberta sobre o que pode fazer no dashboard
 - "curiosity_to_action" → o usuário fez uma pergunta de curiosidade sobre o domínio (ex.: "o turismo está crescendo?")
 - "unclear" → a mensagem é vaga ou incompreensível

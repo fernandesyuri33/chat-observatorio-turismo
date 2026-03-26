@@ -94,7 +94,12 @@ export async function resolveDashboardAction(
       requestStatePrompt,
       request.history,
     );
+    console.info("[flow] etapa1", {
+      state: requestState.requestState,
+      confidence: requestState.confidence,
+    });
   } catch {
+    console.warn("[flow] etapa1_falha -> fallback_initial_orientation");
     return resolveInitialOrientationAction(provider, ctx);
   }
 
@@ -103,6 +108,11 @@ export async function resolveDashboardAction(
     requestState.requestState === "initial_orientation" ||
     requestState.requestState === "unclear"
   ) {
+    console.info("[flow] etapa1_short_circuit", {
+      state: requestState.requestState,
+      decision: "give_initial_orientation",
+    });
+
     const intent: NormalizedIntent = {
       intent: "initial_orientation",
       proposedFilters: {},
@@ -123,7 +133,13 @@ export async function resolveDashboardAction(
       buildExtractionPrompt(),
       request.history,
     );
+    console.info("[flow] etapa2", {
+      informationType: extraction.candidateInformationType ?? null,
+      filters: extraction.proposedFilters,
+      confidence: extraction.confidence,
+    });
   } catch {
+    console.warn("[flow] etapa2_falha -> fallback_initial_orientation");
     return resolveInitialOrientationAction(provider, ctx);
   }
 
@@ -131,6 +147,11 @@ export async function resolveDashboardAction(
   const normalizedExtraction = policyEngine.normalizeExtraction(extraction);
 
   const intent = buildIntent(requestState, normalizedExtraction);
+  console.info("[flow] etapa2_normalized", {
+    intent: intent.intent,
+    informationType: intent.informationType ?? null,
+    filters: intent.proposedFilters,
+  });
   request.onIntentResolved?.(intent);
 
   // ── Etapa 3: Response Decision (determinístico) ───────────────
@@ -140,9 +161,23 @@ export async function resolveDashboardAction(
     config,
     message: request.message,
   });
+  console.info("[flow] etapa3", {
+    responseType: decision.responseType,
+  });
 
   // ── Executar decisão ──────────────────────────────────────────
-  return executeDecision(decision, normalizedExtraction, config, provider, ctx);
+  const action = await executeDecision(
+    decision,
+    normalizedExtraction,
+    config,
+    provider,
+    ctx
+  );
+  console.info("[flow] output", {
+    actionType: action.type,
+  });
+
+  return action;
 }
 
 // ── Helpers internos ────────────────────────────────────────────
@@ -266,11 +301,13 @@ async function executeDecision(
       try {
         action = await provider.generate(intentForProvider, ctx);
       } catch {
+        console.warn("[flow] execute_show_provider_falha -> fallback_initial_orientation");
         return resolveInitialOrientationAction(provider, ctx);
       }
 
       const validated = DashboardActionSchema.safeParse(action);
       if (!validated.success) {
+        console.warn("[flow] execute_show_invalid_action -> fallback_initial_orientation");
         return resolveInitialOrientationAction(provider, ctx);
       }
 
