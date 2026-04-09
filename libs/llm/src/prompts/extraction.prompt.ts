@@ -32,8 +32,8 @@ Responda **somente** com JSON:
 Regras:
 - "candidateInformationType" deve ser preenchido APENAS se o usuário indicou claramente qual análise quer ver.
 - Se o usuário mencionou apenas filtros sem tipo de análise, omita "candidateInformationType".
-- "proposedFilters" deve conter apenas filtros explicitamente mencionados na mensagem.
-- Se nenhum filtro foi mencionado, retorne proposedFilters vazio ({}).
+- "proposedFilters" deve conter SOMENTE filtros que aparecem explicitamente na mensagem atual OU no histórico da conversa. NUNCA invente, suponha ou infira filtros que não foram mencionados em nenhum momento da conversa.
+- Se nenhum filtro foi mencionado (nem na mensagem atual, nem no histórico), retorne proposedFilters vazio ({}).
 - "confidence" deve refletir quão claro e específico foi o pedido.
 - Sempre responda em português.
 `;
