@@ -1,6 +1,5 @@
 import OpenAI from "openai";
-import Instructor from "@instructor-ai/instructor";
-import type { z } from "zod";
+import { z } from "zod";
 import type { LlmPort, ConversationTurn } from "./llm.port.js";
 
 // ── Configuração ────────────────────────────────────────────────
@@ -21,7 +20,7 @@ export interface OllamaLlmAdapterConfig {
 // ── Adaptador ───────────────────────────────────────────────────
 
 export class OllamaLlmAdapter implements LlmPort {
-  private readonly instructor: ReturnType<typeof Instructor>;
+  private readonly client: OpenAI;
   private readonly model: string;
   private readonly temperature: number;
   private readonly maxRetries: number;
@@ -45,8 +44,7 @@ export class OllamaLlmAdapter implements LlmPort {
     this.temperature = config.temperature ?? 0;
     this.maxRetries = config.maxRetries ?? 3;
 
-    const client = new OpenAI({ baseURL, apiKey });
-    this.instructor = Instructor({ client, mode: "JSON" });
+    this.client = new OpenAI({ baseURL, apiKey });
 
     console.info("[ollama] adapter initialized", {
       baseURL,
@@ -71,39 +69,53 @@ export class OllamaLlmAdapter implements LlmPort {
     const historyMessages: { role: "user" | "assistant"; content: string }[] =
       history?.map((turn) => ({ role: turn.role, content: turn.content })) ?? [];
 
-    try {
-      const result = await this.instructor.chat.completions.create({
-        model: this.model,
-        temperature: this.temperature,
-        max_retries: this.maxRetries,
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt,
-          },
-          ...historyMessages,
-          { role: "user", content: input },
-        ],
-        response_model: {
-          schema: schema as unknown as z.AnyZodObject,
-          name: "StructuredOutput",
-        },
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: "system", content: systemPrompt },
+      ...historyMessages,
+      { role: "user", content: input },
+    ];
 
-      });
+    let lastError: unknown;
 
-      console.info("Resposta recebida da LLM", {
-        duracaoEmMs: Date.now() - startedAt,
-        resultado: JSON.stringify(result),
-      });
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        const completion = await this.client.chat.completions.create({
+          model: this.model,
+          temperature: this.temperature,
+          response_format: { type: "json_object" },
+          messages,
+        });
 
-      // Instructor retorna diretamente o objeto parseado e validado
-      return result as T;
-    } catch (error) {
-      console.error("Erro ao enviar mensagem para o LLM", {
-        duracaoEmMs: Date.now() - startedAt,
-        error,
-      });
-      throw error;
+        // console.info("Resposta recebida do LLM antes do parsing", {
+        //   duracaoEmMs: Date.now() - startedAt,
+        //   tentativa: attempt,
+        //   resposta: completion.choices[0]?.message?.content,
+        // });
+
+        const raw = completion.choices[0]?.message?.content ?? "";
+        const parsed = schema.parse(JSON.parse(raw));
+
+        console.info("Resposta recebida da LLM", {
+          duracaoEmMs: Date.now() - startedAt,
+          tentativa: attempt,
+          resultado: raw,
+        });
+
+        return parsed;
+      } catch (error) {
+        lastError = error;
+        console.warn("Tentativa falhou", {
+          tentativa: attempt,
+          maxTentativas: this.maxRetries,
+          error,
+        });
+      }
     }
+
+    console.error("Todas as tentativas falharam", {
+      duracaoEmMs: Date.now() - startedAt,
+      error: lastError,
+    });
+    throw lastError;
   }
 }

@@ -57,7 +57,7 @@ action provider (e.g. Looker, custom) that translates the intent into a typed
 | Schema validation | Zod | 3.23 |
 | LLM runtime | Ollama (OpenAI-compatible API) | — |
 | Conversation history store | Redis + ioredis | 7.x / 5.x | <!-- Updated: added Redis-backed conversation context persistence -->
-| LLM structured output | @instructor-ai/instructor (JSON mode) + openai SDK | 1.x / 4.x |
+| LLM structured output | openai SDK (JSON response format + Zod parse) | 4.x |
 | Frontend | React + Vite | 18.x / 5.x |
 | Testing | Vitest | 2.x |
 | Dev runner | tsx (watch mode) | 4.x |
@@ -109,7 +109,7 @@ libs/
     src/
       llm.port.ts              # LlmPort interface: generateStructured<T>(schema, input)
       stub-llm.adapter.ts      # StubLlmAdapter — deterministic keyword-matching (tests only)
-      ollama-llm.adapter.ts    # OllamaLlmAdapter — real Ollama via Instructor + OpenAI SDK
+      ollama-llm.adapter.ts    # OllamaLlmAdapter — real Ollama via OpenAI SDK + manual JSON/Zod handling <!-- Updated: removed Instructor dependency -->
       index.ts
 
   providers/                   # Action provider strategies

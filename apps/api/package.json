@@ -17,7 +17,6 @@
     "@conversational/policy": "workspace:*",
     "@conversational/providers": "workspace:*",
     "@fastify/cors": "^9.0.1",
-    "@instructor-ai/instructor": "^1.5.3",
     "dotenv": "^16.4.7",
     "fastify": "^4.28.1",
     "ioredis": "^5.10.0",
