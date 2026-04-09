@@ -52,7 +52,7 @@ function formatValue(v: unknown): string {
 
 /** Header de início de etapa — imprime só o box, sem campos (use logInfo para o resultado). */
 export function logStepStart(stepNum: number, title: string): void {
-  printBox(`ETAPA ${stepNum} — ${title}`, STEP_BORDER, STEP_COLOR);
+  printBox(`ETAPA ${stepNum} [INÍCIO] — ${title}`, STEP_BORDER, STEP_COLOR);
 }
 
 /** Divisor e campos de uma etapa numerada (ex: "ETAPA 1 — Request State Detection"). */
@@ -61,7 +61,7 @@ export function logStep(
   title: string,
   fields?: Record<string, unknown>,
 ): void {
-  printBox(`ETAPA ${stepNum} — ${title}`, STEP_BORDER, STEP_COLOR, fields);
+  printBox(`ETAPA ${stepNum} [FIM] — ${title}`, STEP_BORDER, STEP_COLOR, fields);
 }
 
 /** Box de saída final (resultado DashboardAction). */
