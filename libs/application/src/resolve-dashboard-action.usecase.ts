@@ -21,6 +21,7 @@ import {
 import type { ActionProvider, ResolveContext } from "@conversational/providers";
 import { explainOnlyFallback } from "./fallback.js";
 import { routeResponse } from "./response-router.js";
+import { logStep, logStepStart, logOutput, logFallback, logInfo } from "./pipeline-logger.js";
 import {
   buildContextualOrientationMessage,
   buildContextualOrientationSuggestions,
@@ -83,9 +84,9 @@ export async function resolveDashboardAction(
   const config = policyEngine.getConfig();
   const ctx: ResolveContext = request.ctx ?? {};
 
-  // ── Etapa 1: Request State Detection ──────────────────────────
-  const requestStatePrompt = buildRequestStatePrompt();
+  logStepStart(1, "Detecção do estado da requisição");
 
+  const requestStatePrompt = buildRequestStatePrompt();
   let requestState: RequestStateResult;
   try {
     requestState = await llm.generateStructured(
@@ -94,21 +95,22 @@ export async function resolveDashboardAction(
       requestStatePrompt,
       request.history,
     );
-    console.info("[flow] etapa1", {
-      state: requestState.requestState,
-      confidence: requestState.confidence,
-    });
   } catch {
-    console.warn("[flow] etapa1_falha -> fallback_initial_orientation");
+    logFallback("etapa1_falha", "fallback_initial_orientation");
     return resolveInitialOrientationAction(provider, ctx);
   }
+
+  logStep(1, "Detecção do estado da requisição", {
+    state: requestState.requestState,
+    confidence: requestState.confidence,
+  });
 
   // ── Short-circuit: initial_orientation / unclear → sem extração
   if (
     requestState.requestState === "initial_orientation" ||
     requestState.requestState === "unclear"
   ) {
-    console.info("[flow] etapa1_short_circuit", {
+    logInfo("etapa1_short_circuit", {
       state: requestState.requestState,
       decision: "give_initial_orientation",
     });
@@ -124,7 +126,8 @@ export async function resolveDashboardAction(
     return resolveInitialOrientationAction(provider, ctx);
   }
 
-  // ── Etapa 2: Structured Extraction ────────────────────────────
+  logStepStart(2, "Extração Estruturada");
+
   let extraction: ExtractionResult;
   try {
     extraction = await llm.generateStructured(
@@ -133,13 +136,8 @@ export async function resolveDashboardAction(
       buildExtractionPrompt(),
       request.history,
     );
-    console.info("[flow] etapa2", {
-      informationType: extraction.candidateInformationType ?? null,
-      filters: extraction.proposedFilters,
-      confidence: extraction.confidence,
-    });
   } catch {
-    console.warn("[flow] etapa2_falha -> fallback_initial_orientation");
+    logFallback("etapa2_falha", "fallback_initial_orientation");
     return resolveInitialOrientationAction(provider, ctx);
   }
 
@@ -147,22 +145,29 @@ export async function resolveDashboardAction(
   const normalizedExtraction = policyEngine.normalizeExtraction(extraction);
 
   const intent = buildIntent(requestState, normalizedExtraction);
-  console.info("[flow] etapa2_normalized", {
-    intent: intent.intent,
-    informationType: intent.informationType ?? null,
-    filters: intent.proposedFilters,
+
+  logStep(2, "Extração Estruturada", {
+    informationType: extraction.candidateInformationType ?? "—",
+    filters: extraction.proposedFilters,
+    confidence: extraction.confidence,
   });
+
   request.onIntentResolved?.(intent);
 
-  // ── Etapa 3: Response Decision (determinístico) ───────────────
+  logStepStart(3, "Decisão de Resposta");
+
   const decision = routeResponse({
     requestState,
     extraction: normalizedExtraction,
     config,
     message: request.message,
   });
-  console.info("[flow] etapa3", {
+
+  logStep(3, "Decisão de Resposta", {
     responseType: decision.responseType,
+    intent: intent.intent,
+    informationType: (intent as { informationType?: string }).informationType ?? "—",
+    filters: intent.proposedFilters,
   });
 
   // ── Executar decisão ──────────────────────────────────────────
@@ -173,9 +178,8 @@ export async function resolveDashboardAction(
     provider,
     ctx
   );
-  console.info("[flow] output", {
-    actionType: action.type,
-  });
+
+  logOutput(action.type);
 
   return action;
 }
@@ -301,13 +305,13 @@ async function executeDecision(
       try {
         action = await provider.generate(intentForProvider, ctx);
       } catch {
-        console.warn("[flow] execute_show_provider_falha -> fallback_initial_orientation");
+        logFallback("execute_show_provider_falha", "fallback_initial_orientation");
         return resolveInitialOrientationAction(provider, ctx);
       }
 
       const validated = DashboardActionSchema.safeParse(action);
       if (!validated.success) {
-        console.warn("[flow] execute_show_invalid_action -> fallback_initial_orientation");
+        logFallback("execute_show_invalid_action", "fallback_initial_orientation");
         return resolveInitialOrientationAction(provider, ctx);
       }
 

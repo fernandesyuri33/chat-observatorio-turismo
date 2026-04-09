@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { z } from "zod";
 import type { LlmPort, ConversationTurn } from "./llm.port.js";
+import { logLlmInit, logLlmRequest, logLlmResponse, logLlmRetry, logLlmParseError, logLlmFailure } from "./llm-logger.js";
 
 // ── Configuração ────────────────────────────────────────────────
 
@@ -46,7 +47,7 @@ export class OllamaLlmAdapter implements LlmPort {
 
     this.client = new OpenAI({ baseURL, apiKey });
 
-    console.info("[ollama] adapter initialized", {
+    logLlmInit({
       baseURL,
       model: this.model,
     });
@@ -60,10 +61,10 @@ export class OllamaLlmAdapter implements LlmPort {
   ): Promise<T> {
     const startedAt = Date.now();
 
-    console.info("Enviando mensagem para o LLM", {
+    logLlmRequest({
       modelo: this.model,
       mensagem: input,
-      mensagensNoHistorico: history?.length ?? 0,
+      histórico: `${history?.length ?? 0} turnos`,
     });
 
     const historyMessages: { role: "user" | "assistant"; content: string }[] =
@@ -78,6 +79,7 @@ export class OllamaLlmAdapter implements LlmPort {
     let lastError: unknown;
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      let raw = "";
       try {
         const completion = await this.client.chat.completions.create({
           model: this.model,
@@ -86,17 +88,11 @@ export class OllamaLlmAdapter implements LlmPort {
           messages,
         });
 
-        // console.info("Resposta recebida do LLM antes do parsing", {
-        //   duracaoEmMs: Date.now() - startedAt,
-        //   tentativa: attempt,
-        //   resposta: completion.choices[0]?.message?.content,
-        // });
-
-        const raw = completion.choices[0]?.message?.content ?? "";
+        raw = completion.choices[0]?.message?.content ?? "";
         const parsed = schema.parse(JSON.parse(raw));
 
-        console.info("Resposta recebida da LLM", {
-          duracaoEmMs: Date.now() - startedAt,
+        logLlmResponse({
+          duraçãoMs: `${Date.now() - startedAt}ms`,
           tentativa: attempt,
           resultado: raw,
         });
@@ -104,18 +100,12 @@ export class OllamaLlmAdapter implements LlmPort {
         return parsed;
       } catch (error) {
         lastError = error;
-        console.warn("Tentativa falhou", {
-          tentativa: attempt,
-          maxTentativas: this.maxRetries,
-          error,
-        });
+        logLlmParseError(attempt, this.maxRetries, raw, error);
+        logLlmRetry(attempt, this.maxRetries, error);
       }
     }
 
-    console.error("Todas as tentativas falharam", {
-      duracaoEmMs: Date.now() - startedAt,
-      error: lastError,
-    });
+    logLlmFailure(Date.now() - startedAt, lastError);
     throw lastError;
   }
 }
