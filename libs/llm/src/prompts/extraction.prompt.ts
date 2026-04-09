@@ -43,7 +43,10 @@ Regras:
  */
 export function buildExtractionPrompt(): string {
   const graficoBullets = GRAFICOS_DASHBOARD
-    .map((g) => `- "${g.informationType}" — ${g.descricao}`)
+    .map((g) => {
+      const variacoesList = g.variacoes.map((v) => `    - "${v}"`).join("\n");
+      return `- "${g.informationType}" — ${g.descricao}\n  Exemplos de pedidos que correspondem a este tipo:\n${variacoesList}`;
+    })
     .join("\n");
 
   const classificacaoBullets = ClassificacaoSchema.options
