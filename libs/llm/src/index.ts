@@ -4,3 +4,4 @@ export { OllamaLlmAdapter } from "./ollama-llm.adapter.js";
 export type { OllamaLlmAdapterConfig } from "./ollama-llm.adapter.js";
 export { REQUEST_STATE_PROMPT, REQUEST_STATE_PROMPT_TOKENS, buildRequestStatePrompt } from "./prompts/request-state.prompt.js";
 export { buildExtractionPrompt } from "./prompts/extraction.prompt.js";
+export { summarizeAssistantTurn } from "./history-summarizer.js";

@@ -186,10 +186,7 @@ describe("POST /mensagem", () => {
     const assistantContent = stored?.at(-1)?.content;
     expect(assistantContent).toBeDefined();
 
-    const parsedAssistant = JSON.parse(assistantContent ?? "{}");
-    expect(parsedAssistant).toMatchObject({
-      intent: "contextual_orientation",
-    });
-    expect(parsedAssistant.type).toBeUndefined();
+    expect(assistantContent).toContain("contexto");
+    expect(assistantContent).not.toContain("{");
   });
 });

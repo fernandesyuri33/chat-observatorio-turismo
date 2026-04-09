@@ -4,6 +4,7 @@ import {
   PostMensagemResponseSchema,
 } from "@conversational/contracts";
 import type { ConversationTurn } from "@conversational/llm";
+import { summarizeAssistantTurn } from "@conversational/llm";
 import { resolveDashboardAction } from "@conversational/application";
 import type { ResolveDashboardActionDeps } from "@conversational/application";
 import type { HistoryService } from "./history.service.js";
@@ -48,7 +49,7 @@ export async function rotas(app: FastifyInstance) {
       ];
 
       if (resolvedIntentPayload) {
-        turnsToPersist.push({ role: "assistant", content: resolvedIntentPayload });
+        turnsToPersist.push({ role: "assistant", content: summarizeAssistantTurn(resolvedIntentPayload) });
       }
 
       await historyService.append(conversationId, turnsToPersist);
