@@ -18,6 +18,22 @@ export interface OllamaLlmAdapterConfig {
   maxRetries?: number;
 }
 
+// ── Normalização de aliases de campo ────────────────────────────
+// LLMs às vezes retornam "rational" ao invés de "rationale".
+// Normalizamos antes do parse Zod para não perder o campo.
+const LLM_FIELD_ALIASES: Record<string, string> = {
+  rational: "rationale",
+};
+
+function normalizeLlmFieldAliases(obj: Record<string, unknown>): void {
+  for (const [alias, canonical] of Object.entries(LLM_FIELD_ALIASES)) {
+    if (alias in obj && !(canonical in obj)) {
+      obj[canonical] = obj[alias];
+      delete obj[alias];
+    }
+  }
+}
+
 // ── Adaptador ───────────────────────────────────────────────────
 
 export class OllamaLlmAdapter implements LlmPort {
@@ -89,7 +105,9 @@ export class OllamaLlmAdapter implements LlmPort {
         });
 
         raw = completion.choices[0]?.message?.content ?? "";
-        const parsed = schema.parse(JSON.parse(raw));
+        const jsonObj = JSON.parse(raw) as Record<string, unknown>;
+        normalizeLlmFieldAliases(jsonObj);
+        const parsed = schema.parse(jsonObj);
 
         logLlmResponse({
           duraçãoMs: `${Date.now() - startedAt}ms`,

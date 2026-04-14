@@ -37,8 +37,17 @@ export interface ResolveDashboardActionDeps {
 }
 
 export interface StageRationale {
-  stage1?: string;
-  stage2?: string;
+  stage1?: {
+    rationale?: string;
+    classification?: string;
+    confidence?: number;
+  };
+  stage2?: {
+    rationale?: string;
+    informationType?: string;
+    filters?: Record<string, unknown>;
+    confidence?: number;
+  };
 }
 
 export interface ResolveRequest {
@@ -91,8 +100,8 @@ export async function resolveDashboardAction(
   const config = policyEngine.getConfig();
   const ctx: ResolveContext = request.ctx ?? {};
 
-  let stage1Rationale: string | undefined;
-  let stage2Rationale: string | undefined;
+  let stage1Result: StageRationale["stage1"];
+  let stage2Result: StageRationale["stage2"];
 
   logStepStart(1, "Detecção do estado da requisição");
 
@@ -111,7 +120,11 @@ export async function resolveDashboardAction(
     return resolveInitialOrientationAction(provider, ctx);
   }
 
-  stage1Rationale = requestState.rationale;
+  stage1Result = {
+    rationale: requestState.rationale,
+    classification: requestState.requestState,
+    confidence: requestState.confidence,
+  };
 
   logStep(1, "Detecção do estado da requisição", {
     state: requestState.requestState,
@@ -135,7 +148,7 @@ export async function resolveDashboardAction(
       rationale: requestState.rationale,
     };
     request.onIntentResolved?.(intent);
-    request.onStageRationale?.({ stage1: stage1Rationale });
+    request.onStageRationale?.({ stage1: stage1Result });
 
     return resolveInitialOrientationAction(provider, ctx);
   }
@@ -152,7 +165,7 @@ export async function resolveDashboardAction(
     );
   } catch {
     logFallback("etapa2_falha", "fallback_initial_orientation");
-    request.onStageRationale?.({ stage1: stage1Rationale });
+    request.onStageRationale?.({ stage1: stage1Result });
     return resolveInitialOrientationAction(provider, ctx);
   }
 
@@ -167,10 +180,15 @@ export async function resolveDashboardAction(
     confidence: extraction.confidence,
   });
 
-  stage2Rationale = extraction.rationale;
+  stage2Result = {
+    rationale: extraction.rationale,
+    informationType: normalizedExtraction.candidateInformationType ?? undefined,
+    filters: { ...normalizedExtraction.proposedFilters },
+    confidence: extraction.confidence,
+  };
 
   request.onIntentResolved?.(intent);
-  request.onStageRationale?.({ stage1: stage1Rationale, stage2: stage2Rationale });
+  request.onStageRationale?.({ stage1: stage1Result, stage2: stage2Result });
 
   logStepStart(3, "Decisão de Resposta");
 

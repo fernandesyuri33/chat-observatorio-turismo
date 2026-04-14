@@ -50,10 +50,35 @@ function ActionPanel({
         <div className="rationale-section">
           <strong>Raciocínio da IA:</strong>
           {rationale.stage1 && (
-            <p><em>Etapa 1 (classificação):</em> {rationale.stage1}</p>
+            <div className="rationale-stage">
+              <p className="rationale-title">Etapa 1 — Classificação</p>
+              {rationale.stage1.classification && (
+                <p><strong>Resultado:</strong> <code>{rationale.stage1.classification}</code></p>
+              )}
+              {rationale.stage1.confidence != null && (
+                <p><strong>Confiança:</strong> {(rationale.stage1.confidence * 100).toFixed(0)}%</p>
+              )}
+              {rationale.stage1.rationale && (
+                <p><strong>Raciocínio:</strong> {rationale.stage1.rationale}</p>
+              )}
+            </div>
           )}
           {rationale.stage2 && (
-            <p><em>Etapa 2 (extração):</em> {rationale.stage2}</p>
+            <div className="rationale-stage">
+              <p className="rationale-title">Etapa 2 — Extração</p>
+              {rationale.stage2.informationType && (
+                <p><strong>Tipo de informação:</strong> <code>{rationale.stage2.informationType}</code></p>
+              )}
+              {rationale.stage2.filters && Object.keys(rationale.stage2.filters).length > 0 && (
+                <p><strong>Filtros:</strong> <code>{JSON.stringify(rationale.stage2.filters)}</code></p>
+              )}
+              {rationale.stage2.confidence != null && (
+                <p><strong>Confiança:</strong> {(rationale.stage2.confidence * 100).toFixed(0)}%</p>
+              )}
+              {rationale.stage2.rationale && (
+                <p><strong>Raciocínio:</strong> {rationale.stage2.rationale}</p>
+              )}
+            </div>
           )}
         </div>
       )}

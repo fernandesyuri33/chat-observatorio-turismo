@@ -162,8 +162,20 @@ body {
   line-height: 1.5;
 }
 
+.rationale-stage {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #eee9e1;
+  border-radius: 8px;
+}
+
+.rationale-title {
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
 .rationale-section p {
-  margin: 4px 0;
+  margin: 2px 0;
 }
 
 .action-panel pre {

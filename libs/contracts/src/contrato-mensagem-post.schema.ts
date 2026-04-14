@@ -11,12 +11,25 @@ export const PostMensagemRequestSchema = z.object({
     .optional(),
 });
 
+const StageClassificationSchema = z.object({
+  rationale: z.string().optional(),
+  classification: z.string().optional(),
+  confidence: z.number().optional(),
+});
+
+const StageExtractionSchema = z.object({
+  rationale: z.string().optional(),
+  informationType: z.string().optional(),
+  filters: z.record(z.unknown()).optional(),
+  confidence: z.number().optional(),
+});
+
 export const PostMensagemResponseSchema = z.object({
   action: DashboardActionSchema,
   rationale: z
     .object({
-      stage1: z.string().optional(),
-      stage2: z.string().optional(),
+      stage1: StageClassificationSchema.optional(),
+      stage2: StageExtractionSchema.optional(),
     })
     .optional(),
 });
