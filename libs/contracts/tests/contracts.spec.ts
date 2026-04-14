@@ -35,4 +35,24 @@ describe("PostMensagemResponseSchema", () => {
 
     expect(result.success).toBe(true);
   });
+
+  it("aceita resposta com rationale das etapas", () => {
+    const result = PostMensagemResponseSchema.safeParse({
+      action: {
+        type: "explain_only",
+        message: "Orientação inicial.",
+        suggestions: [],
+      },
+      rationale: {
+        stage1: "Usuário pediu orientação geral.",
+        stage2: "Nenhum filtro identificado.",
+      },
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.rationale?.stage1).toBe("Usuário pediu orientação geral.");
+      expect(result.data.rationale?.stage2).toBe("Nenhum filtro identificado.");
+    }
+  });
 });

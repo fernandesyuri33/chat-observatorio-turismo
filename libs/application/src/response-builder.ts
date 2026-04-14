@@ -21,7 +21,7 @@ const INFORMATION_TYPE_LABEL: Record<InformationType, string> = {
 
 export interface ContextualOrientationFilters {
   classificacao?: string | null;
-  municipio?: string;
+  municipio?: string | null;
 }
 
 export function buildContextualOrientationMessage(

@@ -153,6 +153,19 @@ body {
   word-break: break-word;
 }
 
+.rationale-section {
+  background: #f7f3ee;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.rationale-section p {
+  margin: 4px 0;
+}
+
 .action-panel pre {
   max-width: 100%;
   white-space: pre-wrap;

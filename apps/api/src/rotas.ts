@@ -6,7 +6,7 @@ import {
 import type { ConversationTurn } from "@conversational/llm";
 import { summarizeAssistantTurn } from "@conversational/llm";
 import { resolveDashboardAction } from "@conversational/application";
-import type { ResolveDashboardActionDeps } from "@conversational/application";
+import type { ResolveDashboardActionDeps, StageRationale } from "@conversational/application";
 import type { HistoryService } from "./history.service.js";
 
 // ── Registro de rota ────────────────────────────────────────────
@@ -32,6 +32,7 @@ export async function rotas(app: FastifyInstance) {
         : [];
 
     let resolvedIntentPayload: string | undefined;
+    let stageRationale: StageRationale | undefined;
 
     const action = await resolveDashboardAction(di, {
       message: parsed.data.message,
@@ -39,6 +40,9 @@ export async function rotas(app: FastifyInstance) {
       history,
       onIntentResolved(intent) {
         resolvedIntentPayload = JSON.stringify(intent);
+      },
+      onStageRationale(rationale) {
+        stageRationale = rationale;
       },
     });
 
@@ -56,7 +60,7 @@ export async function rotas(app: FastifyInstance) {
     }
 
     // Valida resposta de saída para garantir conformidade com o contrato
-    const response = PostMensagemResponseSchema.parse({ action });
+    const response = PostMensagemResponseSchema.parse({ action, rationale: stageRationale });
     return reply.status(200).send(response);
   });
 }

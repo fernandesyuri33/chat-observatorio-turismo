@@ -2,6 +2,7 @@ export {
   resolveDashboardAction,
   type ResolveDashboardActionDeps,
   type ResolveRequest,
+  type StageRationale,
 } from "./resolve-dashboard-action.usecase.js";
 export {
   getSchemaEntry,

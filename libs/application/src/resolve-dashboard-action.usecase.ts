@@ -36,6 +36,11 @@ export interface ResolveDashboardActionDeps {
   provider: ActionProvider;
 }
 
+export interface StageRationale {
+  stage1?: string;
+  stage2?: string;
+}
+
 export interface ResolveRequest {
   message: string;
   ctx?: ResolveContext;
@@ -43,6 +48,8 @@ export interface ResolveRequest {
   history?: ConversationTurn[];
   /** Callback opcional para observar a intent normalizada retornada pelo LLM/policy. */
   onIntentResolved?: (intent: NormalizedIntent) => void;
+  /** Callback opcional para observar o rationale das etapas 1 e 2 do pipeline. */
+  onStageRationale?: (rationale: StageRationale) => void;
 }
 
 /**
@@ -84,6 +91,9 @@ export async function resolveDashboardAction(
   const config = policyEngine.getConfig();
   const ctx: ResolveContext = request.ctx ?? {};
 
+  let stage1Rationale: string | undefined;
+  let stage2Rationale: string | undefined;
+
   logStepStart(1, "Detecção do estado da requisição");
 
   const requestStatePrompt = buildRequestStatePrompt();
@@ -97,8 +107,11 @@ export async function resolveDashboardAction(
     );
   } catch {
     logFallback("etapa1_falha", "fallback_initial_orientation");
+    request.onStageRationale?.({});
     return resolveInitialOrientationAction(provider, ctx);
   }
+
+  stage1Rationale = requestState.rationale;
 
   logStep(1, "Detecção do estado da requisição", {
     state: requestState.requestState,
@@ -122,6 +135,7 @@ export async function resolveDashboardAction(
       rationale: requestState.rationale,
     };
     request.onIntentResolved?.(intent);
+    request.onStageRationale?.({ stage1: stage1Rationale });
 
     return resolveInitialOrientationAction(provider, ctx);
   }
@@ -138,6 +152,7 @@ export async function resolveDashboardAction(
     );
   } catch {
     logFallback("etapa2_falha", "fallback_initial_orientation");
+    request.onStageRationale?.({ stage1: stage1Rationale });
     return resolveInitialOrientationAction(provider, ctx);
   }
 
@@ -152,7 +167,10 @@ export async function resolveDashboardAction(
     confidence: extraction.confidence,
   });
 
+  stage2Rationale = extraction.rationale;
+
   request.onIntentResolved?.(intent);
+  request.onStageRationale?.({ stage1: stage1Rationale, stage2: stage2Rationale });
 
   logStepStart(3, "Decisão de Resposta");
 
@@ -202,7 +220,7 @@ function stripNullFilters(
 ): StrictIntentFilters {
   return {
     classificacao: filters.classificacao ?? undefined,
-    municipio: filters.municipio,
+    municipio: filters.municipio ?? undefined,
   };
 }
 

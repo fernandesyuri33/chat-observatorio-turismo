@@ -13,6 +13,12 @@ export const PostMensagemRequestSchema = z.object({
 
 export const PostMensagemResponseSchema = z.object({
   action: DashboardActionSchema,
+  rationale: z
+    .object({
+      stage1: z.string().optional(),
+      stage2: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type ResolveDashboardRequest = z.infer<typeof PostMensagemRequestSchema>;

@@ -36,10 +36,27 @@ function SuggestionChips({ suggestions, onSelect }: { suggestions: string[]; onS
   );
 }
 
-function ActionPanel({ lastAction }: { lastAction?: ResolveDashboardResponse["action"] }) {
+function ActionPanel({
+  lastAction,
+  rationale,
+}: {
+  lastAction?: ResolveDashboardResponse["action"];
+  rationale?: ResolveDashboardResponse["rationale"];
+}) {
   if (!lastAction) return <p className="muted">Nenhuma acao aplicada ainda.</p>;
   return (
     <div className="action-panel">
+      {rationale && (rationale.stage1 || rationale.stage2) && (
+        <div className="rationale-section">
+          <strong>Raciocínio da IA:</strong>
+          {rationale.stage1 && (
+            <p><em>Etapa 1 (classificação):</em> {rationale.stage1}</p>
+          )}
+          {rationale.stage2 && (
+            <p><em>Etapa 2 (extração):</em> {rationale.stage2}</p>
+          )}
+        </div>
+      )}
       <strong>Ultima acao:</strong> <code>{lastAction.type}</code>
       <pre>{JSON.stringify(lastAction, null, 2)}</pre>
     </div>
@@ -81,6 +98,7 @@ export function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
   const [lastAction, setLastAction] = useState<ResolveDashboardResponse["action"] | undefined>(undefined);
+  const [lastRationale, setLastRationale] = useState<ResolveDashboardResponse["rationale"] | undefined>(undefined);
   const [embedUrl, setEmbedUrl] = useState(baseEmbedUrl);
   const [conversationId] = useState<string>(() => getOrCreateConversationId());
 
@@ -133,6 +151,7 @@ export function App() {
       const raw = await response.json();
       const data: ResolveDashboardResponse = PostMensagemResponseSchema.parse(raw);
       setLastAction(data.action);
+      setLastRationale(data.rationale);
 
       if (data.action.type === "open_url") {
         setEmbedUrl(data.action.url);
@@ -222,7 +241,7 @@ export function App() {
           <div className="iframe-wrapper">
             <iframe title="Looker Studio" src={embedUrl} />
           </div>
-          <ActionPanel lastAction={lastAction} />
+          <ActionPanel lastAction={lastAction} rationale={lastRationale} />
         </section>
       </main>
     </div>
