@@ -20,6 +20,19 @@ describe("DashboardActionSchema", () => {
     }
   });
 
+  it("aceita open_url com campo message opcional", () => {
+    const result = DashboardActionSchema.safeParse({
+      type: "open_url",
+      url: "https://example.com/dashboard",
+      title: "Título",
+      message: "Aqui está o gráfico que você pediu!",
+    });
+    expect(result.success).toBe(true);
+    if (result.success && result.data.type === "open_url") {
+      expect(result.data.message).toBe("Aqui está o gráfico que você pediu!");
+    }
+  });
+
   it("aceita uma ação apply_filters válida", () => {
     const result = DashboardActionSchema.safeParse({
       type: "apply_filters",

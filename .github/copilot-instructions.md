@@ -83,7 +83,8 @@ apps/
 libs/
   domain/                      # Pure domain types — zero infra deps
     src/
-      dashboard-action.schema.ts   # DashboardAction discriminated union (5 variants) <!-- Updated: added ask_missing_information variant -->
+      dashboard-action.schema.ts   # DashboardAction discriminated union (5 variants) — all variants support optional `message` <!-- Updated: added message field to open_url, apply_filters, run_query for Stage 4 friendly messages -->
+      friendly-message.schema.ts   # FriendlyMessageSchema — Stage 4 LLM output schema <!-- Updated: added for AI-generated friendly messages -->
       intent.v1.schema.ts          # IntentV1 — versioned LLM structured output schema
       index.ts                     # Barrel export
 
@@ -111,6 +112,10 @@ libs/
       stub-llm.adapter.ts      # StubLlmAdapter — deterministic keyword-matching (tests only)
       ollama-llm.adapter.ts    # OllamaLlmAdapter — real Ollama via OpenAI SDK + manual JSON/Zod handling <!-- Updated: removed Instructor dependency -->
       index.ts
+      prompts/
+        request-state.prompt.ts  # System prompt for Stage 1 (request state classification)
+        extraction.prompt.ts     # System prompt for Stage 2 (structured extraction)
+        friendly-message.prompt.ts # System prompt for Stage 4 (friendly message generation) <!-- Updated: added for AI-generated friendly messages -->
 
   providers/                   # Action provider strategies
     src/
@@ -141,11 +146,11 @@ libs/
 
 | Variant | Key fields |
 |---|---|
-| `open_url` | `url: string (URL)`, `title?: string`, `meta?: Record` |
-| `apply_filters` | `filters: Record<string, string\|number\|boolean\|string[]>`, `target?: "dashboard"\|"chart"\|"table"`, `meta?: Record` |
-| `run_query` | `function: string`, `args: Record`, `meta?: Record` |
+| `open_url` | `url: string (URL)`, `title?: string`, `message?: string`, `meta?: Record` |
+| `apply_filters` | `filters: Record<string, string\|number\|boolean\|string[]>`, `target?: "dashboard"\|"chart"\|"table"`, `message?: string`, `meta?: Record` |
+| `run_query` | `function: string`, `args: Record`, `message?: string`, `meta?: Record` |
 | `explain_only` | `message: string`, `suggestions: string[]`, `meta?: Record` |
-| `ask_missing_information` | `message: string`, `suggestions: string[]`, `missing: string[]`, `context?: Record<string, string\|number\|boolean>`, `meta?: Record` | <!-- Updated: added ask_missing_information variant -->
+| `ask_missing_information` | `message: string`, `suggestions: string[]`, `missing: string[]`, `context?: Record<string, string\|number\|boolean>`, `meta?: Record` | <!-- Updated: added message field to open_url, apply_filters, run_query for Stage 4 friendly messages -->
 
 Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
 
@@ -190,16 +195,24 @@ User message
   → PolicyEngine.normalizeExtraction(extraction)            ← synonym/filter normalization
   → routeResponse(requestState, extraction, config)         ← Stage 3: deterministic decision
   → executeDecision(decision) → DashboardAction
+  → enrichWithFriendlyMessage(action, userMessage)          ← Stage 4: AI-generated friendly message (best-effort)
   → DashboardActionSchema.parse(action)                    ← output validation
   → Return to HTTP layer
 
 After generating a response action, the API persists the turn pair
 (`user` message + serialized assistant intent normalizada) back to Redis and renews TTL.
 ```
-<!-- Updated: 3-stage pipeline (request state → extraction → response decision) -->
+<!-- Updated: 4-stage pipeline (request state → extraction → response decision → friendly message) -->
 
 There is no intent-to-provider routing step — the single active provider
 (injected at startup based on `activeProvider` config) handles every intent.
+
+**Stage 4 (friendly message)** operates in **best-effort** mode: if the LLM call
+fails, the original action is returned unchanged. The `message` field is injected
+into all action types. For `explain_only` and `ask_missing_information`, it
+overwrites the template message. For `open_url`, `apply_filters`, and `run_query`,
+it adds a new `message` field. The frontend prefers `message` over type-specific
+fallbacks (`title`, `JSON.stringify(filters)`, etc.).
 
 At **every** failure point the pipeline returns an `explain_only` fallback
 (never throws to the HTTP layer).

@@ -192,13 +192,13 @@ export function App() {
       let assistantText: string;
       switch (data.action.type) {
         case "open_url":
-          assistantText = data.action.title ?? `Abrindo: ${data.action.url}`;
+          assistantText = data.action.message ?? data.action.title ?? `Abrindo: ${data.action.url}`;
           break;
         case "apply_filters":
-          assistantText = `Filtros aplicados: ${JSON.stringify(data.action.filters)}`;
+          assistantText = data.action.message ?? `Filtros aplicados: ${JSON.stringify(data.action.filters)}`;
           break;
         case "run_query":
-          assistantText = `Executando: ${data.action.function}`;
+          assistantText = data.action.message ?? `Executando: ${data.action.function}`;
           break;
         case "explain_only":
           assistantText = data.action.message;

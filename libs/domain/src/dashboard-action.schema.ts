@@ -6,6 +6,7 @@ export const OpenUrlActionSchema = z.object({
   type: z.literal("open_url"),
   url: z.string().url(),
   title: z.string().optional(),
+  message: z.string().optional(),
   meta: z.record(z.any()).optional(),
 });
 
@@ -17,6 +18,7 @@ export const ApplyFiltersActionSchema = z.object({
   target: z
     .enum(["dashboard", "chart", "table"])
     .optional(),
+  message: z.string().optional(),
   meta: z.record(z.any()).optional(),
 });
 
@@ -24,6 +26,7 @@ export const RunQueryActionSchema = z.object({
   type: z.literal("run_query"),
   function: z.string(),
   args: z.record(z.any()),
+  message: z.string().optional(),
   meta: z.record(z.any()).optional(),
 });
 

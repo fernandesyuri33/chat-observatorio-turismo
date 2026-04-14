@@ -81,6 +81,20 @@ function isExtractionResultSchema(schema: z.ZodTypeAny): boolean {
   }
 }
 
+function isFriendlyMessageSchema(schema: z.ZodTypeAny): boolean {
+  try {
+    const result = schema.safeParse({ message: "teste" });
+    // Distinguish from other schemas that also have a message field
+    const rejectsExtraFields = !schema.safeParse({
+      requestState: "unclear",
+      confidence: 0.5,
+    }).success;
+    return result.success && rejectsExtraFields;
+  } catch {
+    return false;
+  }
+}
+
 // ── Stub response builders per schema type ──────────────────────
 
 function buildRequestStateResponse(lower: string, filters: Record<string, unknown>): unknown {
@@ -165,6 +179,25 @@ function buildExtractionResponse(lower: string, filters: Record<string, unknown>
   }
 
   return raw;
+}
+
+function buildFriendlyMessageResponse(lower: string): unknown {
+  if (lower.includes("estabelecimento")) {
+    return { message: "Preparei a visualização dos estabelecimentos turísticos para você!" };
+  }
+  if (lower.includes("funcion") && lower.includes("ao longo")) {
+    return { message: "Aqui está a evolução do número de funcionários no período!" };
+  }
+  if (lower.includes("saldo")) {
+    return { message: "Trouxe o balanço entre admissões e desligamentos para você conferir!" };
+  }
+  if (lower.includes("funcion")) {
+    return { message: "Veja como os funcionários estão distribuídos entre os municípios!" };
+  }
+  if (lower.includes("orientação") || lower.includes("o que posso")) {
+    return { message: "Fico feliz em ajudar! Veja o que temos disponível para você explorar." };
+  }
+  return { message: "Aqui está o que encontrei para você!" };
 }
 
 function buildIntentV1Response(lower: string, filters: Record<string, unknown>): unknown {
@@ -281,6 +314,8 @@ export class StubLlmAdapter implements LlmPort {
       raw = buildRequestStateResponse(lower, filters);
     } else if (isExtractionResultSchema(schema)) {
       raw = buildExtractionResponse(lower, filters);
+    } else if (isFriendlyMessageSchema(schema)) {
+      raw = buildFriendlyMessageResponse(lower);
     } else {
       // Fallback: assume IntentV1Schema (legado) ou qualquer schema desconhecido
       raw = buildIntentV1Response(lower, filters);

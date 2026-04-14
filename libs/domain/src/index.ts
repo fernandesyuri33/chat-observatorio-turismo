@@ -56,3 +56,8 @@ export {
   type GraficoDashboard,
 } from "./graficos.js";
 
+export {
+  FriendlyMessageSchema,
+  type FriendlyMessage,
+} from "./friendly-message.schema.js";
+

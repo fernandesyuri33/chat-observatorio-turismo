@@ -2,6 +2,7 @@ import {
   DashboardActionSchema,
   RequestStateResultSchema,
   ExtractionResultSchema,
+  FriendlyMessageSchema,
   type IntentV1,
   type DashboardAction,
   type RequestStateResult,
@@ -12,6 +13,8 @@ import type { LlmPort, ConversationTurn } from "@conversational/llm";
 import {
   buildRequestStatePrompt,
   buildExtractionPrompt,
+  buildFriendlyMessagePrompt,
+  buildFriendlyMessageInput,
 } from "@conversational/llm";
 import {
   PolicyEngine,
@@ -150,7 +153,14 @@ export async function resolveDashboardAction(
     request.onIntentResolved?.(intent);
     request.onStageRationale?.({ stage1: stage1Result });
 
-    return resolveInitialOrientationAction(provider, ctx);
+    const orientationAction = await resolveInitialOrientationAction(provider, ctx);
+    return enrichWithFriendlyMessage(
+      llm,
+      orientationAction,
+      request.message,
+      { proposedFilters: {}, confidence: requestState.confidence, rationale: requestState.rationale },
+      request.history,
+    );
   }
 
   logStepStart(2, "Extração Estruturada");
@@ -215,9 +225,25 @@ export async function resolveDashboardAction(
     ctx
   );
 
-  logOutput(action.type);
+  // ── Etapa 4 — Geração de mensagem amigável (LLM, best-effort) ─
+  logStepStart(4, "Geração de mensagem amigável");
 
-  return action;
+  const enrichedAction = await enrichWithFriendlyMessage(
+    llm,
+    action,
+    request.message,
+    normalizedExtraction,
+    request.history,
+  );
+
+  logStep(4, "Geração de mensagem amigável", {
+    actionType: enrichedAction.type,
+    hasMessage: "message" in enrichedAction && !!enrichedAction.message,
+  });
+
+  logOutput(enrichedAction.type);
+
+  return enrichedAction;
 }
 
 // ── Helpers internos ────────────────────────────────────────────
@@ -356,6 +382,51 @@ async function executeDecision(
 
     default:
       return resolveInitialOrientationAction(provider, ctx);
+  }
+}
+
+/**
+ * Enriquece a ação com uma mensagem amigável gerada pelo LLM (Etapa 4).
+ * Opera em modo best-effort: se a geração falhar, retorna a ação original inalterada.
+ */
+async function enrichWithFriendlyMessage(
+  llm: LlmPort,
+  action: DashboardAction,
+  userMessage: string,
+  extraction: ExtractionResult,
+  history?: ConversationTurn[],
+): Promise<DashboardAction> {
+  try {
+    const informationType =
+      action.type === "open_url"
+        ? (action.meta?.["informationType"] as string | undefined)
+        : undefined;
+
+    const originalMessage =
+      "message" in action ? (action as { message?: string }).message : undefined;
+
+    const contextInput = buildFriendlyMessageInput({
+      userMessage,
+      actionType: action.type,
+      informationType,
+      filters: extraction.proposedFilters as Record<string, unknown>,
+      suggestions: "suggestions" in action ? (action as { suggestions?: string[] }).suggestions : undefined,
+      missing: "missing" in action ? (action as { missing?: string[] }).missing : undefined,
+      originalMessage,
+    });
+
+    const prompt = buildFriendlyMessagePrompt();
+    const result = await llm.generateStructured(
+      FriendlyMessageSchema,
+      contextInput,
+      prompt,
+      history,
+    );
+
+    return { ...action, message: result.message };
+  } catch {
+    logFallback("etapa4_falha", "mensagem_original_mantida");
+    return action;
   }
 }
 
