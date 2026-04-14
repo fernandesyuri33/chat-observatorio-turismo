@@ -22,7 +22,7 @@ export const ClassificacaoSchema = z.enum([
 
 export const IntentV1FiltersSchema = z.object({
   classificacao: ClassificacaoSchema.nullable().optional(),
-  municipio: z.string().min(1).optional(),
+  municipio: z.string().min(1).nullable().optional(),
 });
 
 const IntentV1BaseSchema = z.object({
