@@ -8,13 +8,20 @@ describe("PostMensagemRequestSchema", () => {
   it("aceita uma requisição válida", () => {
     const result = PostMensagemRequestSchema.safeParse({
       message: "Quero visitas em Sao Paulo em 2024",
-      ctx: {
-        dashboardId: "turismo-main",
-        currentFilters: { cidade: "Rio de Janeiro" },
-      },
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it("rejeita campos extras", () => {
+    const result = PostMensagemRequestSchema.safeParse({
+      message: "Quero visitas em Sao Paulo em 2024",
+      ctx: {
+        dashboardId: "turismo-main",
+      },
+    });
+
+    expect(result.success).toBe(false);
   });
 
   it("rejeita mensagem vazia", () => {

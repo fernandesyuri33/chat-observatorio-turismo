@@ -21,7 +21,7 @@ import {
   type NormalizedIntent,
   type PolicyConfig,
 } from "@conversational/policy";
-import type { ActionProvider, ResolveContext } from "@conversational/providers";
+import type { ActionProvider } from "@conversational/providers";
 import { explainOnlyFallback } from "./fallback.js";
 import { routeResponse } from "./response-router.js";
 import { logStep, logStepStart, logOutput, logFallback, logInfo } from "./pipeline-logger.js";
@@ -55,7 +55,6 @@ export interface StageRationale {
 
 export interface ResolveRequest {
   message: string;
-  ctx?: ResolveContext;
   /** Turnos anteriores da conversa, repassados ao LLM como contexto de histórico. */
   history?: ConversationTurn[];
   /** Callback opcional para observar a intent normalizada retornada pelo LLM/policy. */
@@ -101,7 +100,6 @@ export async function resolveDashboardAction(
 ): Promise<DashboardAction> {
   const { llm, policyEngine, provider } = deps;
   const config = policyEngine.getConfig();
-  const ctx: ResolveContext = request.ctx ?? {};
 
   let stage1Result: StageRationale["stage1"];
   let stage2Result: StageRationale["stage2"];
@@ -120,7 +118,7 @@ export async function resolveDashboardAction(
   } catch {
     logFallback("etapa1_falha", "fallback_initial_orientation");
     request.onStageRationale?.({});
-    return resolveInitialOrientationAction(provider, ctx);
+    return resolveInitialOrientationAction(provider);
   }
 
   stage1Result = {
@@ -153,7 +151,7 @@ export async function resolveDashboardAction(
     request.onIntentResolved?.(intent);
     request.onStageRationale?.({ stage1: stage1Result });
 
-    const orientationAction = await resolveInitialOrientationAction(provider, ctx);
+    const orientationAction = await resolveInitialOrientationAction(provider);
     return enrichWithFriendlyMessage(
       llm,
       orientationAction,
@@ -176,7 +174,7 @@ export async function resolveDashboardAction(
   } catch {
     logFallback("etapa2_falha", "fallback_initial_orientation");
     request.onStageRationale?.({ stage1: stage1Result });
-    return resolveInitialOrientationAction(provider, ctx);
+    return resolveInitialOrientationAction(provider);
   }
 
   // ── Normalizar extração via PolicyEngine ──────────────────────
@@ -222,7 +220,6 @@ export async function resolveDashboardAction(
     normalizedExtraction,
     config,
     provider,
-    ctx
   );
 
   // ── Etapa 4 — Geração de mensagem amigável (LLM, best-effort) ─
@@ -326,11 +323,10 @@ async function executeDecision(
   extraction: ExtractionResult,
   config: PolicyConfig,
   provider: ActionProvider,
-  ctx: ResolveContext
 ): Promise<DashboardAction> {
   switch (decision.responseType) {
     case "give_initial_orientation":
-      return resolveInitialOrientationAction(provider, ctx);
+      return resolveInitialOrientationAction(provider);
 
     case "give_contextual_orientation":
       return explainOnlyFallback(
@@ -365,23 +361,23 @@ async function executeDecision(
 
       let action: DashboardAction;
       try {
-        action = await provider.generate(intentForProvider, ctx);
+        action = await provider.generate(intentForProvider);
       } catch {
         logFallback("execute_show_provider_falha", "fallback_initial_orientation");
-        return resolveInitialOrientationAction(provider, ctx);
+        return resolveInitialOrientationAction(provider);
       }
 
       const validated = DashboardActionSchema.safeParse(action);
       if (!validated.success) {
         logFallback("execute_show_invalid_action", "fallback_initial_orientation");
-        return resolveInitialOrientationAction(provider, ctx);
+        return resolveInitialOrientationAction(provider);
       }
 
       return validated.data;
     }
 
     default:
-      return resolveInitialOrientationAction(provider, ctx);
+      return resolveInitialOrientationAction(provider);
   }
 }
 

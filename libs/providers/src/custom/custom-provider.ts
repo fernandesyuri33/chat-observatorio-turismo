@@ -1,5 +1,5 @@
 import type { DashboardAction, IntentV1 } from "@conversational/domain";
-import type { ActionProvider, ResolveContext } from "../action-provider.js";
+import type { ActionProvider } from "../action-provider.js";
 
 /**
  * CustomProvider retorna uma ação run_query
@@ -8,10 +8,7 @@ import type { ActionProvider, ResolveContext } from "../action-provider.js";
 export class CustomProvider implements ActionProvider {
   readonly id = "custom";
 
-  async generate(
-    intent: IntentV1,
-    _ctx: ResolveContext
-  ): Promise<DashboardAction> {
+  async generate(intent: IntentV1): Promise<DashboardAction> {
     if (intent.intent === "initial_orientation" || intent.intent === "curiosity_to_action") {
       return {
         type: "explain_only",

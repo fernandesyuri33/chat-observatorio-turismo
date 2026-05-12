@@ -135,15 +135,13 @@ Implementação da rota HTTP da API: `apps/api/src/rotas.ts`.
 Request body:
 ```json
 {
-  "message": "Quero visitas em Sao Paulo em 2024",
-  "ctx": {
-    "dashboardId": "turismo-main",
-    "currentFilters": {
-      "municipio": "Rio de Janeiro",
-      "classificacao": "hospedagem"
-    }
-  }
+  "message": "Quero visitas em Sao Paulo em 2024"
 }
+```
+
+Header opcional:
+```http
+x-conversation-id: <uuid>
 ```
 
 Response body (exemplo):

@@ -4,7 +4,7 @@ import type {
   IntentV1,
 } from "@conversational/domain";
 import type { PolicyConfig } from "@conversational/policy";
-import type { ActionProvider, ResolveContext } from "../action-provider.js";
+import type { ActionProvider } from "../action-provider.js";
 
 /**
  * LookerProvider monta ações open_url usando a URL base do Looker
@@ -15,10 +15,7 @@ export class LookerProvider implements ActionProvider {
 
   constructor(private readonly lookerConfig: PolicyConfig["looker"]) {}
 
-  async generate(
-    intent: IntentV1,
-    _ctx: ResolveContext
-  ): Promise<DashboardAction> {
+  async generate(intent: IntentV1): Promise<DashboardAction> {
     if (intent.intent === "initial_orientation") {
       return {
         type: "explain_only",

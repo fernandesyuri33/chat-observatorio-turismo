@@ -149,8 +149,8 @@ export function App() {
     setIsLoading(true);
 
     try {
-      const payload: ResolveDashboardRequest =
-        PostMensagemRequestSchema.parse({ message: trimmed });
+      const payload: ResolveDashboardRequest = { message: trimmed };
+      PostMensagemRequestSchema.parse(payload);
 
       const response = await fetch(`${apiUrl}/mensagem`, {
         method: "POST",

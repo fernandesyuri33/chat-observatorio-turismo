@@ -249,13 +249,7 @@ POST /mensagem
 
 ```json
 {
-  "message": "Quero ver funcionarios por municipio em Poços de Caldas",
-  "ctx": {
-    "dashboardId": "turismo-main",
-    "currentFilters": {
-      "municipio": "Poços de Caldas"
-    }
-  }
+  "message": "Quero ver funcionarios por municipio em Poços de Caldas"
 }
 ```
 

@@ -5,7 +5,7 @@ import {
   type IntentV1,
   type InformationType,
 } from "@conversational/domain";
-import type { ActionProvider, ResolveContext } from "@conversational/providers";
+import type { ActionProvider } from "@conversational/providers";
 import { explainOnlyFallback } from "./fallback.js";
 
 // ── Labels para orientação contextual ───────────────────────────
@@ -108,7 +108,6 @@ export function buildDefaultInitialOrientationAction(): DashboardAction {
 
 export async function resolveInitialOrientationAction(
   provider: ActionProvider,
-  ctx: ResolveContext
 ): Promise<DashboardAction> {
   const initialOrientationIntent: IntentV1 = {
     intent: "initial_orientation",
@@ -117,7 +116,7 @@ export async function resolveInitialOrientationAction(
   };
 
   try {
-    const action = await provider.generate(initialOrientationIntent, ctx);
+    const action = await provider.generate(initialOrientationIntent);
     const validated = DashboardActionSchema.safeParse(action);
     if (validated.success) {
       return validated.data;

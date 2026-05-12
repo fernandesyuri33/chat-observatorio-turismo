@@ -36,7 +36,6 @@ export async function rotas(app: FastifyInstance) {
 
     const action = await resolveDashboardAction(di, {
       message: parsed.data.message,
-      ctx: parsed.data.ctx,
       history,
       onIntentResolved(intent) {
         resolvedIntentPayload = JSON.stringify(intent);

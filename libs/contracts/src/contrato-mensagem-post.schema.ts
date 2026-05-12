@@ -3,13 +3,7 @@ import { DashboardActionSchema } from "@conversational/domain";
 
 export const PostMensagemRequestSchema = z.object({
   message: z.string().min(1),
-  ctx: z
-    .object({
-      dashboardId: z.string().optional(),
-      currentFilters: z.record(z.any()).optional(),
-    })
-    .optional(),
-});
+}).strict();
 
 const StageClassificationSchema = z.object({
   rationale: z.string().optional(),

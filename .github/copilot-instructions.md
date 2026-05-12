@@ -119,7 +119,7 @@ libs/
 
   providers/                   # Action provider strategies
     src/
-      action-provider.ts       # ActionProvider interface + ResolveContext type
+      action-provider.ts       # ActionProvider interface
       looker/
         looker-provider.ts     # Builds open_url using informationType -> page mapping and params JSON
       custom/
@@ -267,11 +267,7 @@ programmatic override.
 **Request:**
 ```json
 {
-  "message": "string (min 1 char)",
-  "ctx": {                          // optional
-    "dashboardId": "string",        // optional
-    "currentFilters": {}            // optional Record<string, any>
-  }
+  "message": "string (min 1 char)"
 }
 ```
 

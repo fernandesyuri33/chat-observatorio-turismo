@@ -32,7 +32,7 @@
 
 - Não há outros filtros de domínio suportados no pipeline atual. O conjunto permitido é explicitamente limitado a `classificacao` e `municipio` por `ALLOWED_FILTER_KEYS` e pelo próprio schema `IntentV1FiltersSchema`. Base: intent.v1.schema.ts, policy-engine.ts.
 
-- No contrato frontend-backend, filtros não entram como campos estruturados da requisição principal; a entrada formal é `message` e, opcionalmente, `ctx.currentFilters`. Na resposta, filtros podem reaparecer em `rationale.stage2.filters`, em `ask_missing_information.context` e em `apply_filters.filters`, mas o frontend atual envia apenas `{ message }` e não popula `ctx`. Base: contrato em contrato-mensagem-post.schema.ts; envio real em App.tsx; tipo de contexto em action-provider.ts.
+- No contrato frontend-backend, filtros não entram como campos estruturados da requisição principal; a entrada formal é apenas `message`. Na resposta, filtros podem reaparecer em `rationale.stage2.filters`, em `ask_missing_information.context` e em `apply_filters.filters`. O estado `context_only` continua se referindo a mensagens cujo texto traz apenas contexto analítico, não a um `ctx` enviado pelo frontend. Base: contrato em contrato-mensagem-post.schema.ts; envio real em App.tsx; decisão em response-router.ts.
 
 ## 3.6.4 Valores aceitos
 
@@ -171,7 +171,7 @@ POST /mensagem
 
 - `executeDecision` traduz `ResponseDecision` em `DashboardAction`. É a ponte entre decisão abstrata e ação concreta. Base: resolve-dashboard-action.usecase.ts.
 
-- `give_initial_orientation` chama `resolveInitialOrientationAction(provider, ctx)`. O provider recebe um `IntentV1` com `intent: "initial_orientation"`; se falhar ou devolver ação inválida, o sistema usa `buildDefaultInitialOrientationAction()`. Base: response-builder.ts.
+- `give_initial_orientation` chama `resolveInitialOrientationAction(provider)`. O provider recebe um `IntentV1` com `intent: "initial_orientation"`; se falhar ou devolver ação inválida, o sistema usa `buildDefaultInitialOrientationAction()`. Base: response-builder.ts.
 
 - `give_contextual_orientation` vira `explain_only` com mensagem montada por `buildContextualOrientationMessage(filters)` e sugestões montadas por `buildContextualOrientationSuggestions(optionCount)`. Base: response-builder.ts.
 
@@ -179,7 +179,7 @@ POST /mensagem
 
 - `ask_missing_information` vira `ask_missing_information` com `missing`, `context` e sugestões das análises disponíveis. Base: response-builder.ts.
 
-- `execute_show` reconstrói um `IntentV1` com `intent: "show"`, `informationType`, `proposedFilters`, `confidence` e `rationale` da extração e então chama `provider.generate(intentForProvider, ctx)`. Base: resolve-dashboard-action.usecase.ts.
+- `execute_show` reconstrói um `IntentV1` com `intent: "show"`, `informationType`, `proposedFilters`, `confidence` e `rationale` da extração e então chama `provider.generate(intentForProvider)`. Base: resolve-dashboard-action.usecase.ts.
 
 - Os tipos de `DashboardAction` existentes no domínio são cinco: `open_url`, `apply_filters`, `run_query`, `explain_only` e `ask_missing_information`. Base: dashboard-action.schema.ts, testes em domain.spec.ts.
 
@@ -237,7 +237,7 @@ POST /mensagem
 
 - O `LookerProvider` está implementado em looker-provider.ts.
 
-- A entrada esperada pelo provider é um `IntentV1` já normalizado e um `ResolveContext`; no código atual, o contexto é ignorado por `_ctx`. Base: looker-provider.ts, tipo do contexto em action-provider.ts.
+- A entrada esperada pelo provider é um `IntentV1` já normalizado. O provider não recebe contexto estruturado de dashboard vindo do contrato HTTP; filtros e recortes entram apenas via linguagem natural e normalização do pipeline. Base: looker-provider.ts, action-provider.ts, resolve-dashboard-action.usecase.ts.
 
 - A saída principal para `intent: "show"` é uma ação `open_url` com `url`, `title` e `meta` contendo `provider`, `intent` e `informationType`. Para `initial_orientation` e `curiosity_to_action`, o provider devolve `explain_only`, não navegação. Base: looker-provider.ts.
 
@@ -282,7 +282,7 @@ Base: looker-provider.ts.
 
 ## 3.8.5 Aplicação da ação no frontend
 
-- O frontend envia a mensagem via `fetch(`${apiUrl}/mensagem`, { method: "POST", headers, body })`, com `Content-Type: application/json` e `x-conversation-id`. O payload é validado antes do envio por `PostMensagemRequestSchema.parse({ message: trimmed })`. Base: App.tsx, contrato-mensagem-post.schema.ts.
+- O frontend envia a mensagem via `fetch(`${apiUrl}/mensagem`, { method: "POST", headers, body })`, com `Content-Type: application/json` e `x-conversation-id`. O payload enviado contém apenas `{ message }` e é validado antes do envio por `PostMensagemRequestSchema.parse(payload)`. Base: App.tsx, contrato-mensagem-post.schema.ts.
 
 - O frontend recebe o JSON, faz `await response.json()` e valida/tipa a resposta com `PostMensagemResponseSchema.parse(raw)`. Base: App.tsx, contrato-mensagem-post.schema.ts.
 
@@ -310,7 +310,7 @@ Base: looker-provider.ts.
 
 - Existe duplicação de URL base do relatório entre backend e frontend: o provider usa `policyConfig.looker.baseUrl`, enquanto o frontend tem `VITE_LOOKER_EMBED_URL` com fallback hardcoded. Manter esses dois pontos coerentes é trabalho manual. Base: policy.ts, App.tsx, .env.example.
 
-- `ctx.dashboardId` e `ctx.currentFilters` existem no contrato e no tipo `ResolveContext`, mas não são usados pelo frontend atual nem pelo `LookerProvider`. Uso efetivo disso na integração atual: “não identificado no repositório”. Base: contrato-mensagem-post.schema.ts, action-provider.ts, App.tsx, looker-provider.ts.
+- Não existe envio de contexto estruturado de dashboard no contrato HTTP. A integração atual depende de histórico conversacional via Redis, extração de filtros a partir da linguagem natural e serialização dos filtros em `params` pelo provider ativo. Base: contrato-mensagem-post.schema.ts, rotas.ts, resolve-dashboard-action.usecase.ts, looker-provider.ts.
 
 - `apply_filters` existe no domínio e no frontend, mas não há provider atual que o emita. Isso reduz a integração atual, na prática, a `open_url` para navegação Looker e respostas textuais para o restante. Base: dashboard-action.schema.ts, App.tsx, looker-provider.ts, custom-provider.ts.
 
@@ -486,7 +486,7 @@ Base: looker-provider.ts.
 
 3. Os arquivos que merecem mais atenção na escrita são policy.ts, resolve-dashboard-action.usecase.ts, response-router.ts, response-builder.ts, request-state.schema.ts, intent.v1.schema.ts, dashboard-action.schema.ts, looker-provider.ts, App.tsx, rotas.ts, history.service.ts, main.ts, docker-compose.yml e docker-compose.gpu.yml.
 
-4. Os pontos que valem ser tratados como limitação metodológica são: o domínio analítico é fechado em quatro recortes e dois filtros; `municipio` é texto livre e não é validado contra uma lista oficial; a integração com Looker é indireta, baseada em troca de URL e `params`, sem controle interno do `iframe`; o mapeamento de páginas e parâmetros é manual; o histórico é curto, resumido e armazena intent resumida, não a ação final completa; não há tratamento explícito de falha de Redis na rota; o frontend atual não usa `ctx.currentFilters` nem executa `run_query`; e não há testes dedicados para web nem para providers, apenas cobertura indireta via aplicação/API.
+4. Os pontos que valem ser tratados como limitação metodológica são: o domínio analítico é fechado em quatro recortes e dois filtros; `municipio` é texto livre e não é validado contra uma lista oficial; a integração com Looker é indireta, baseada em troca de URL e `params`, sem controle interno do `iframe`; o mapeamento de páginas e parâmetros é manual; o histórico é curto, resumido e armazena intent resumida, não a ação final completa; não há tratamento explícito de falha de Redis na rota; o frontend atual não executa `run_query`; e não há testes dedicados para web nem para providers, apenas cobertura indireta via aplicação/API.
 
 5. Checklist do que transformar em texto acadêmico:
    1. Para 3.6, descrever formalmente os estados, os quatro recortes analíticos, os dois filtros, os valores canônicos de `classificacao`, a ausência de lista canônica de municípios e o comportamento para casos vagos, incompletos ou fora do escopo.

@@ -1,10 +1,5 @@
 import type { DashboardAction, IntentV1 } from "@conversational/domain";
 
-export interface ResolveContext {
-  dashboardId?: string;
-  currentFilters?: Record<string, unknown>;
-}
-
 /**
  * Interface de estratégia para providers de ação.
  * Cada provider possui um id único e pode gerar um DashboardAction
@@ -14,8 +9,5 @@ export interface ResolveContext {
  */
 export interface ActionProvider {
   readonly id: string;
-  generate(
-    intent: IntentV1,
-    ctx: ResolveContext
-  ): Promise<DashboardAction>;
+  generate(intent: IntentV1): Promise<DashboardAction>;
 }
