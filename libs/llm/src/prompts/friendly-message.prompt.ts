@@ -1,7 +1,7 @@
 // ── Prompt de sistema — Etapa 4: Geração de mensagem amigável ──
 // Gera uma mensagem conversacional em pt-BR para acompanhar a ação do dashboard.
 
-import { GRAFICOS_DASHBOARD, type DashboardAction } from "@conversational/domain";
+import type { DashboardAction } from "@conversational/domain";
 
 const INFORMATION_TYPE_LABEL: Record<string, string> = {
   estabelecimentos_por_municipio: "Quantidade de estabelecimentos por município",

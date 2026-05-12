@@ -302,9 +302,13 @@ export class StubLlmAdapter implements LlmPort {
   async generateStructured<T>(
     schema: z.ZodType<T>,
     input: string,
-    _systemPrompt: string,
-    _history?: ConversationTurn[],
+    systemPrompt: string,
+    history?: ConversationTurn[],
   ): Promise<T> {
+    // Keep signature aligned with LlmPort while preserving deterministic behavior.
+    void systemPrompt;
+    void history;
+
     const lower = input.toLowerCase();
     const filters = detectProposedFilters(lower);
 

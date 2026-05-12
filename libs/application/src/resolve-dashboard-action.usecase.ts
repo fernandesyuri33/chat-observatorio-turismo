@@ -101,9 +101,6 @@ export async function resolveDashboardAction(
   const { llm, policyEngine, provider } = deps;
   const config = policyEngine.getConfig();
 
-  let stage1Result: StageRationale["stage1"];
-  let stage2Result: StageRationale["stage2"];
-
   logStepStart(1, "Detecção do estado da requisição");
 
   const requestStatePrompt = buildRequestStatePrompt();
@@ -121,7 +118,7 @@ export async function resolveDashboardAction(
     return resolveInitialOrientationAction(provider);
   }
 
-  stage1Result = {
+  const stage1Result: StageRationale["stage1"] = {
     rationale: requestState.rationale,
     classification: requestState.requestState,
     confidence: requestState.confidence,
@@ -188,7 +185,7 @@ export async function resolveDashboardAction(
     confidence: extraction.confidence,
   });
 
-  stage2Result = {
+  const stage2Result: StageRationale["stage2"] = {
     rationale: extraction.rationale,
     informationType: normalizedExtraction.candidateInformationType ?? undefined,
     filters: { ...normalizedExtraction.proposedFilters },

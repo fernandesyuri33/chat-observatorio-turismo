@@ -382,7 +382,7 @@ Base: looker-provider.ts.
 
 - Instalação de dependências: `pnpm install` no workspace. Base: script e lock do monorepo em package.json, instruções em README.md.
 
-- Execução de desenvolvimento integrada: `pnpm dev`, que executa `nx run-many -t serve -p web api`. Isso sobe web e api. Base: package.json, targets em project.json e project.json.
+- Execução de desenvolvimento integrada: `pnpm dev`, que executa `api` e `web` em paralelo via pnpm workspaces. Isso sobe web e api. Base: package.json, package.json e package.json.
 
 - Execução direta por aplicação: `pnpm -C apps/web dev` inicia Vite; `pnpm -C apps/api dev` inicia `tsx watch src/main.ts`. Base: package.json, package.json.
 
@@ -460,15 +460,15 @@ Base: looker-provider.ts.
 
 ## 3.10.5 Scripts do projeto
 
-- `dev`: no root package.json, executa `nx run-many -t serve -p web api`. Serve para subir web e API em desenvolvimento. Base: package.json, project.json, project.json.
+- `dev`: no root package.json, executa `pnpm -r --parallel --filter api --filter web dev`. Serve para subir web e API em desenvolvimento. Base: package.json.
 
-- `build`: no root package.json, executa `nx run-many -t build -p web api`. Serve para gerar o build das duas aplicações. Base: package.json.
+- `build`: no root package.json, executa `pnpm -r --filter api --filter web build`. Serve para gerar o build das duas aplicações. Base: package.json.
 
-- `typecheck`: no root package.json, executa `nx run-many -t build -p web api domain contracts application policy llm providers`. Na prática, o projeto usa os builds dos projetos como verificação de tipos. Base: package.json.
+- `typecheck`: no root package.json, executa `pnpm -r build`. Na prática, o projeto usa os builds dos projetos como verificação de tipos. Base: package.json.
 
-- `lint`: no root package.json, executa `nx run-many -t lint -p web api domain contracts application policy llm providers`. Serve para rodar ESLint no workspace. Base: package.json.
+- `lint`: no root package.json, executa `pnpm -r lint`. Serve para rodar ESLint no workspace. Base: package.json.
 
-- `test`: no root package.json, executa `nx run-many -t test -p web api domain contracts application policy llm providers`. Serve para rodar as suítes Vitest configuradas por projeto. Base: package.json.
+- `test`: no root package.json, executa `pnpm -r test`. Serve para rodar as suítes Vitest configuradas por projeto. Base: package.json.
 
 - `clean:artifacts`: no root package.json, executa `node tools/clean-artifacts.mjs`. Serve para remover artefatos gerados no workspace. Base: package.json, clean-artifacts.mjs.
 
@@ -476,7 +476,7 @@ Base: looker-provider.ts.
 
 - Outros scripts relevantes do package.json: `dev` usa `vite`; `build` executa `tsc --noEmit -p tsconfig.json && vite build`; `preview` usa `vite preview`; `test` usa `vitest run --passWithNoTests`. Base: package.json.
 
-- Alvo adicional relevante fora de package.json, mas importante para metodologia de validação: `test-real-llm` em project.json, que executa a suíte real com `RUN_REAL_LLM_TESTS=true`.
+- Alvo adicional relevante em package.json, importante para metodologia de validação: `test-real-llm` em package.json, que executa a suíte real com `RUN_REAL_LLM_TESTS=true`.
 
 # Síntese final
 

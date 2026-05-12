@@ -11,6 +11,11 @@
       "default": "./dist/src/index.js"
     }
   },
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "test": "vitest run --passWithNoTests --config vitest.config.ts",
+    "lint": "eslint src --max-warnings=0"
+  },
   "dependencies": {
     "zod": "^3.23.8"
   }

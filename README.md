@@ -1,6 +1,6 @@
 # conversational-looker-dashboard
 
-Monorepo Nx + pnpm para uma webapp conversacional que controla filtros de um relatorio do Looker Studio via iframe.
+Monorepo com pnpm workspaces para uma webapp conversacional que controla filtros de um relatorio do Looker Studio via iframe.
 
 ## Stack
 - `apps/web`: React + Vite + TypeScript
@@ -174,11 +174,11 @@ Response body (fallback):
 ```
 
 ## Scripts
-- `pnpm dev`: `nx run-many -t serve -p web api`
-- `pnpm build`: `nx run-many -t build -p web api`
-- `pnpm typecheck`: `nx run-many -t build -p web api domain contracts application policy llm providers`
-- `pnpm lint`: `nx run-many -t lint -p web api domain contracts application policy llm providers`
-- `pnpm test`: `nx run-many -t test -p web api domain contracts application policy llm providers`
+- `pnpm dev`: executa `api` e `web` em paralelo
+- `pnpm build`: build de `api` e `web`
+- `pnpm typecheck`: compila todos os pacotes do workspace (apps e libs)
+- `pnpm lint`: roda ESLint em todos os pacotes do workspace
+- `pnpm test`: roda Vitest em todos os pacotes do workspace
 
 ## Testes
 - `libs/domain`, `libs/contracts` e `libs/application` possuem testes Vitest para schemas e pipeline.

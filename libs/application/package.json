@@ -11,6 +11,12 @@
       "default": "./dist/src/index.js"
     }
   },
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "test": "vitest run --passWithNoTests --config vitest.config.ts",
+    "test-real-llm": "RUN_REAL_LLM_TESTS=true vitest run --passWithNoTests --config vitest.config.ts tests/application.real-llm.spec.ts",
+    "lint": "eslint src tests --max-warnings=0"
+  },
   "dependencies": {
     "@conversational/domain": "workspace:*",
     "@conversational/policy": "workspace:*",

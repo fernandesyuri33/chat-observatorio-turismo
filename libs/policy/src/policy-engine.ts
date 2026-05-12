@@ -60,13 +60,6 @@ export type NormalizedIntent =
       rationale?: string;
     };
 
-function normalizeText(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
 const INFORMATION_TYPES = new Set<InformationType>([
   "estabelecimentos_por_municipio",
   "funcionarios_por_municipio",

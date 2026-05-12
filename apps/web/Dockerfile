@@ -8,7 +8,7 @@ RUN corepack enable
 WORKDIR /app
 
 # Copia manifests primeiro para reaproveitar a layer de dependências quando só o código-fonte mudar.
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json nx.json tsconfig.base.json ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY libs/contracts/package.json libs/contracts/package.json
 COPY libs/domain/package.json libs/domain/package.json

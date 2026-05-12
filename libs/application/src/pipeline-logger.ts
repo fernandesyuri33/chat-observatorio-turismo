@@ -12,12 +12,6 @@ const VALUE_COLOR = chalk.white;
 const FALLBACK_COLOR = chalk.yellow;
 const ARROW = chalk.yellow("→");
 
-function boxLine(content: string, borderColor: typeof STEP_BORDER): void {
-  const padded = ` ${content}`;
-  const padding = " ".repeat(Math.max(0, BOX_WIDTH - padded.length - 1));
-  console.log(borderColor("│") + STEP_COLOR(padded) + padding + borderColor("│"));
-}
-
 function printBox(
   title: string,
   borderColor: typeof STEP_BORDER,

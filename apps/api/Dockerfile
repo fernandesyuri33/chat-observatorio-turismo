@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Copia primeiro apenas manifests de dependencias para maximizar cache de layers.
 # Se só o código-fonte mudar e os manifests não mudarem, o `pnpm install` é reaproveitado.
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json nx.json tsconfig.base.json ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY apps/api/package.json apps/api/package.json
 COPY libs/domain/package.json libs/domain/package.json
 COPY libs/contracts/package.json libs/contracts/package.json
@@ -25,7 +25,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Compila a API e todas as bibliotecas internas necessárias em runtime.
-RUN pnpm nx run-many -t build -p domain contracts policy llm providers application api
+RUN pnpm -r --filter @conversational/domain --filter @conversational/contracts --filter @conversational/policy --filter @conversational/llm --filter @conversational/providers --filter @conversational/application --filter api build
 
 EXPOSE 3001
 

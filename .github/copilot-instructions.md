@@ -8,7 +8,7 @@
 
 ## 1. Project Overview
 
-**Conversational Looker Dashboard** is an Nx monorepo that turns natural-language
+**Conversational Looker Dashboard** is a pnpm workspaces monorepo that turns natural-language
 user messages into validated, structured dashboard actions. A local LLM (Ollama)
 interprets the user's intent and the pipeline delegates to a single, configured
 action provider (e.g. Looker, custom) that translates the intent into a typed
@@ -50,7 +50,7 @@ action provider (e.g. Looker, custom) that translates the intent into a typed
 
 | Layer | Technology | Version |
 |---|---|---|
-| Monorepo | Nx | 22.x |
+| Monorepo | pnpm workspaces | 9.x |
 | Package manager | pnpm (workspaces) | 9.x |
 | Language | TypeScript (ESNext modules, Bundler moduleResolution) | 5.7+ |
 | API framework | Fastify + @fastify/cors | 4.28 |
@@ -293,18 +293,18 @@ Invalid requests return `400` with `{ error, details }`.
 ## 10. Development Commands
 
 ```bash
-pnpm install              # Install all dependencies
-pnpm dev                  # Start API (tsx watch) + web (Vite) in parallel
-pnpm build                # Build API + web
-pnpm typecheck            # TypeScript compilation check for all projects
-pnpm test                 # Run all tests (Vitest)
-pnpm lint                 # ESLint across all projects
+pnpm install                      # Install all dependencies
+pnpm dev                          # Start API (tsx watch) + web (Vite) in parallel
+pnpm build                        # Build API + web
+pnpm typecheck                    # TypeScript compilation check for all projects
+pnpm test                         # Run all tests (Vitest)
+pnpm lint                         # ESLint across all projects
 
-# Individual project targets via Nx
-npx nx run api:dev        # API dev server (tsx watch, port 3001)
-npx nx run web:dev        # Vite dev server
-npx nx run <lib>:test     # Run tests for a specific library
-npx nx run application:test-real-llm # Run resolveDashboardAction tests against real Ollama LLM
+# Individual project commands
+pnpm -C apps/api dev              # API dev server (tsx watch, port 3001)
+pnpm -C apps/web dev              # Vite dev server
+pnpm -C libs/domain test          # Run tests for a specific library
+pnpm -C libs/application test-real-llm # Run resolveDashboardAction tests against real Ollama LLM
 ```
 
 ### Running tests with the stub adapter

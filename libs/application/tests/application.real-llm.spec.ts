@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe } from "vitest";
 import { PolicyEngine } from "@conversational/policy";
 import { OllamaLlmAdapter } from "@conversational/llm";
 import { LookerProvider, CustomProvider } from "@conversational/providers";
