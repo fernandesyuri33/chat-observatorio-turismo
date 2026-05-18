@@ -5,6 +5,7 @@
     "composite": true,
     "declaration": true,
     "sourceMap": true
+    // Uses ESNext/Bundler from base config
   },
   "include": ["src"],
   "references": [{ "path": "../domain" }]

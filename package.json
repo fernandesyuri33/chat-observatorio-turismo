@@ -5,7 +5,7 @@
   "packageManager": "pnpm@9.12.0",
   "scripts": {
     "dev": "pnpm -r --parallel --filter api --filter web dev",
-    "build": "pnpm -r --filter api --filter web build",
+    "build": "pnpm -r build",
     "typecheck": "pnpm -r build",
     "clean:artifacts": "node tools/clean-artifacts.mjs",
     "lint": "pnpm -r lint",

@@ -295,7 +295,7 @@ Invalid requests return `400` with `{ error, details }`.
 ```bash
 pnpm install                      # Install all dependencies
 pnpm dev                          # Start API (tsx watch) + web (Vite) in parallel
-pnpm build                        # Build API + web
+pnpm build                        # Build all workspace projects
 pnpm typecheck                    # TypeScript compilation check for all projects
 pnpm test                         # Run all tests (Vitest)
 pnpm lint                         # ESLint across all projects

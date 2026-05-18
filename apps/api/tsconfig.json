@@ -1,12 +1,20 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "../..",
+    "rootDir": "src",
     "outDir": "dist",
     "declaration": false,
     "sourceMap": true,
     "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "paths": {
+      "@conversational/domain": ["../../libs/domain/dist/src/index.d.ts"],
+      "@conversational/contracts": ["../../libs/contracts/dist/src/index.d.ts"],
+      "@conversational/application": ["../../libs/application/dist/src/index.d.ts"],
+      "@conversational/policy": ["../../libs/policy/dist/src/index.d.ts"],
+      "@conversational/llm": ["../../libs/llm/dist/src/index.d.ts"],
+      "@conversational/providers": ["../../libs/providers/dist/src/index.d.ts"]
+    }
   },
   "include": ["src"]
 }

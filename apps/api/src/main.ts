@@ -11,7 +11,7 @@ import type { ActionProvider } from "@conversational/providers";
 import type { ResolveDashboardActionDeps } from "@conversational/application";
 
 import { rotas } from "./rotas.js";
-import { policyConfig } from "../config/policy.js";
+import { policyConfig } from "./config/policy.js";
 import { HistoryService } from "./history.service.js";
 
 // ── Inicialização ───────────────────────────────────────────────
