@@ -14,14 +14,13 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
-    "baseUrl": ".",
     "paths": {
-      "@conversational/domain": ["libs/domain/src/index.ts"],
-      "@conversational/contracts": ["libs/contracts/src/index.ts"],
-      "@conversational/application": ["libs/application/src/index.ts"],
-      "@conversational/policy": ["libs/policy/src/index.ts"],
-      "@conversational/llm": ["libs/llm/src/index.ts"],
-      "@conversational/providers": ["libs/providers/src/index.ts"]
+      "@conversational/domain": ["./libs/domain/src/index.ts"],
+      "@conversational/contracts": ["./libs/contracts/src/index.ts"],
+      "@conversational/application": ["./libs/application/src/index.ts"],
+      "@conversational/policy": ["./libs/policy/src/index.ts"],
+      "@conversational/llm": ["./libs/llm/src/index.ts"],
+      "@conversational/providers": ["./libs/providers/src/index.ts"]
     }
   }
 }

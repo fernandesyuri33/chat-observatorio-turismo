@@ -52,7 +52,7 @@ action provider (e.g. Looker, custom) that translates the intent into a typed
 |---|---|---|
 | Monorepo | pnpm workspaces | 9.x |
 | Package manager | pnpm (workspaces) | 9.x |
-| Language | TypeScript (ESNext modules, Bundler moduleResolution) | 5.7+ |
+| Language | TypeScript (ESNext modules, Bundler moduleResolution) | 6.0+ | <!-- Updated: bumped workspace TypeScript to 6.x to support TS6 deprecation controls -->
 | API framework | Fastify + @fastify/cors | 4.28 |
 | Schema validation | Zod | 3.23 |
 | LLM runtime | Ollama (OpenAI-compatible API) | — |
