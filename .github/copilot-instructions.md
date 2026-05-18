@@ -127,16 +127,19 @@ libs/
       index.ts
 ```
 
-### Package aliases (tsconfig paths)
+### Workspace package resolution <!-- Updated: removed tsconfig path aliases -->
 
-| Alias | Path |
-|---|---|
-| `@conversational/domain` | `libs/domain/src/index.ts` |
-| `@conversational/contracts` | `libs/contracts/src/index.ts` |
-| `@conversational/application` | `libs/application/src/index.ts` |
-| `@conversational/policy` | `libs/policy/src/index.ts` |
-| `@conversational/llm` | `libs/llm/src/index.ts` |
-| `@conversational/providers` | `libs/providers/src/index.ts` |
+Internal packages are resolved via pnpm workspace links and each package's
+`package.json` exports/types fields, not `tsconfig` `paths` aliases.
+
+Imports continue using package names:
+
+- `@conversational/domain`
+- `@conversational/contracts`
+- `@conversational/application`
+- `@conversational/policy`
+- `@conversational/llm`
+- `@conversational/providers`
 
 ---
 

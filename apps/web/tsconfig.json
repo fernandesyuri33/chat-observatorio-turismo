@@ -3,7 +3,6 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "types": ["vite/client"]
-    // Uses ESNext/Bundler from base config for Vite
   },
   "include": ["src"]
 }

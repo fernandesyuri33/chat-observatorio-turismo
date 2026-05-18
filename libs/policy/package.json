@@ -17,6 +17,7 @@
     "lint": "eslint src --max-warnings=0"
   },
   "dependencies": {
+    "@conversational/domain": "workspace:*",
     "zod": "^3.23.8"
   }
 }
