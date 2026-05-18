@@ -47,6 +47,11 @@ function formatError(error: unknown): string {
   return String(error);
 }
 
+function isModelNotFoundError(error: unknown): boolean {
+  const message = formatError(error).toLowerCase();
+  return message.includes("model") && message.includes("not found");
+}
+
 // ── Public API ──────────────────────────────────────────────────
 
 /** Box de inicialização do adaptador. */
@@ -73,6 +78,36 @@ export function logLlmRetry(attempt: number, max: number, error: unknown): void 
       "  " +
       chalk.yellow(formatError(error)),
   );
+  if (isModelNotFoundError(error)) {
+    console.log(
+      `  ${KEY_COLOR("dica".padEnd(14))}: ${chalk.yellow(
+        "configure OLLAMA_MODEL para um modelo existente localmente ou execute: ollama pull <modelo>",
+      )}`,
+    );
+  }
+  console.log();
+}
+
+/** Falha de requisição ao modelo (ex.: 404 model not found), sem conteúdo JSON para parsear. */
+export function logLlmRequestError(attempt: number, max: number, error: unknown): void {
+  const REQUEST_BORDER = chalk.red;
+  const REQUEST_TITLE = chalk.redBright.bold;
+  const top = REQUEST_BORDER("┌" + "─".repeat(BOX_WIDTH) + "┐");
+  const bottom = REQUEST_BORDER("└" + "─".repeat(BOX_WIDTH) + "┘");
+  const title = ` LLM — Falha na requisição (tentativa ${attempt}/${max})`;
+  const padding = " ".repeat(Math.max(0, BOX_WIDTH - title.length - 1));
+
+  console.log(top);
+  console.log(REQUEST_BORDER("│") + REQUEST_TITLE(title) + padding + REQUEST_BORDER("│"));
+  console.log(bottom);
+  console.log(`  ${KEY_COLOR("erro".padEnd(14))}: ${chalk.red(formatError(error))}`);
+  if (isModelNotFoundError(error)) {
+    console.log(
+      `  ${KEY_COLOR("dica".padEnd(14))}: ${chalk.yellow(
+        "modelo não encontrado no Ollama local; ajuste OLLAMA_MODEL ou faça pull do modelo esperado",
+      )}`,
+    );
+  }
   console.log();
 }
 
@@ -103,5 +138,12 @@ export function logLlmFailure(durationMs: number, error: unknown): void {
       "  " +
       chalk.red(formatError(error)),
   );
+  if (isModelNotFoundError(error)) {
+    console.log(
+      `  ${KEY_COLOR("dica".padEnd(14))}: ${chalk.yellow(
+        "o endpoint respondeu, mas o modelo configurado não existe localmente",
+      )}`,
+    );
+  }
   console.log();
 }

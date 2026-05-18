@@ -1,14 +1,22 @@
 import OpenAI from "openai";
 import { z } from "zod";
 import type { LlmPort, ConversationTurn } from "./llm.port.js";
-import { logLlmInit, logLlmRequest, logLlmResponse, logLlmRetry, logLlmParseError, logLlmFailure } from "./llm-logger.js";
+import {
+  logLlmInit,
+  logLlmRequest,
+  logLlmResponse,
+  logLlmRetry,
+  logLlmParseError,
+  logLlmRequestError,
+  logLlmFailure,
+} from "./llm-logger.js";
 
 // ── Configuração ────────────────────────────────────────────────
 
 export interface OllamaLlmAdapterConfig {
   /** URL base do Ollama (padrão: env OLLAMA_BASE_URL ou http://localhost:11434/v1) */
   baseURL?: string;
-  /** Identificador do modelo (padrão: env OLLAMA_MODEL ou llama3.1:8b) */
+  /** Identificador do modelo (padrão: env OLLAMA_MODEL ou llama3.2:3b) */
   model?: string;
   /** Chave de API (padrão: env OLLAMA_API_KEY ou "ollama") */
   apiKey?: string;
@@ -51,7 +59,7 @@ export class OllamaLlmAdapter implements LlmPort {
     this.model =
       config.model ??
       process.env["OLLAMA_MODEL"] ??
-      "llama3.1:8b";
+      "llama3.2:3b";
 
     const apiKey =
       config.apiKey ??
@@ -118,7 +126,11 @@ export class OllamaLlmAdapter implements LlmPort {
         return parsed;
       } catch (error) {
         lastError = error;
-        logLlmParseError(attempt, this.maxRetries, raw, error);
+        if (raw) {
+          logLlmParseError(attempt, this.maxRetries, raw, error);
+        } else {
+          logLlmRequestError(attempt, this.maxRetries, error);
+        }
         logLlmRetry(attempt, this.maxRetries, error);
       }
     }
