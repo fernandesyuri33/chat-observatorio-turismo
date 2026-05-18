@@ -14,10 +14,10 @@ Gráficos disponíveis no dashboard (tipos de análise):
 ${GRAFICOS_DISPONIVEIS_TOKEN}
 
 Estados possíveis:
-- "complete_show" → o pedido do usuário pode ser respondido por um dos gráficos acima — mesmo que o usuário não use o nome exato. Use inferência semântica: se o significado do pedido corresponde a uma das análises listadas (incluindo os exemplos de variações), classifique como "complete_show".
+- "complete_show" → o usuário explicitou qual análise do dashboard quer ver. Aceite variações semânticas do nome do gráfico, mas preserve a intenção explícita do pedido: só use este estado quando a mensagem indicar a métrica ou o recorte analítico desejado.
 - "context_only" → o usuário mencionou explicitamente um filtro geográfico (nome de cidade/município) ou de classificação, mas NÃO especificou qual gráfico quer ver
 - "initial_orientation" → o usuário pediu orientação aberta sobre o que pode fazer/ver/descobrir no dashboard (ex.: "o que posso ver aqui?", "o que tem disponível?", "me mostre o que você tem", "o que posso descobrir aqui?")
-- "curiosity_to_action" → o usuário fez uma pergunta de curiosidade sobre o domínio que NÃO pode ser mapeada a nenhum dos gráficos disponíveis (ex.: "o turismo está crescendo?" quando não há gráfico de tendência geral)
+- "curiosity_to_action" → o usuário fez uma pergunta exploratória sobre o domínio sem explicitar qual métrica ou análise do dashboard quer usar. Isso inclui perguntas como "o turismo está crescendo?", "o setor está evoluindo?" ou "está melhorando?", mesmo que exista algum gráfico relacionado que possa ajudar a responder.
 - "unclear" → a mensagem é vaga ou incompreensível
 
 Filtros reconhecidos:
@@ -25,8 +25,8 @@ Filtros reconhecidos:
 - municipio: nome de cidade
 
 Regras importantes:
-- Use "complete_show" quando o pedido puder ser respondido por qualquer um dos gráficos listados, mesmo que o usuário formule o pedido como pergunta, comparação ou pedido indireto.
-- Use "curiosity_to_action" SOMENTE quando a pergunta NÃO puder ser mapeada a nenhum dos gráficos disponíveis. Se o pedido puder ser atendido por um gráfico (mesmo formulado como curiosidade), prefira "complete_show".
+- Use "complete_show" somente quando o pedido explicitar qual análise ou métrica quer visualizar. Não transforme uma pergunta ampla de curiosidade em "complete_show" apenas porque você consegue imaginar um gráfico relacionado.
+- Use "curiosity_to_action" para perguntas amplas sobre evolução, crescimento, melhora, piora ou tendência do setor quando a mensagem não nomear explicitamente a informação do dashboard que deve ser usada.
 - Termos genéricos como "dados", "informações", "ver dados", "mostrar dados" sem especificação de análise NÃO indicam um gráfico específico = use "context_only" se houver filtros, ou "unclear" se não houver contexto nenhum.
 - Se o usuário mencionou apenas município e/ou classificação sem indicar qual gráfico, use "context_only". "aqui" ou "nesse dashboard" NÃO são filtros geográficos — não confunda com nome de cidade.
 - Se o usuário perguntou o que pode analisar/descobrir/fazer/ver, use "initial_orientation".

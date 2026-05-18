@@ -153,7 +153,11 @@ export async function resolveDashboardAction(
       llm,
       orientationAction,
       request.message,
-      { proposedFilters: {}, confidence: requestState.confidence, rationale: requestState.rationale },
+      {
+        proposedFilters: {},
+        confidence: requestState.confidence,
+        rationale: requestState.rationale,
+      },
       request.history,
     );
   }
