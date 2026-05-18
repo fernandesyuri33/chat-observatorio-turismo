@@ -58,6 +58,7 @@ export const policyConfig: PolicyConfig = PolicyConfigSchema.parse({
   looker: {
     baseUrl:
       "https://lookerstudio.google.com/embed/reporting/b4daa6c1-6dae-4006-b4a1-49547a31a856/page/",
-    // ...rest of config
+    paramMap: {},
+    informationTypeMap: {},
   },
 });
