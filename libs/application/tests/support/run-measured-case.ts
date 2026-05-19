@@ -12,6 +12,7 @@ import type { NormalizedIntent } from "@conversational/policy";
 export interface MeasuredCaseExpectation {
   allowedActionTypes?: DashboardAction["type"][];
   forbiddenActionTypes?: DashboardAction["type"][];
+  expectedStage1Classification?: string;
   expectedInformationType?: string;
   expectedFilters?: Record<string, unknown>;
   allowAdditionalFilters?: boolean;
@@ -129,6 +130,15 @@ function evaluateMeasuredCase(
 
   if (!expected) {
     return { passed: true, notes };
+  }
+
+  if (
+    expected.expectedStage1Classification &&
+    result.stage1Classification !== expected.expectedStage1Classification
+  ) {
+    notes.push(
+      `stage1Classification divergente: ${String(result.stage1Classification)} (esperado: ${expected.expectedStage1Classification})`
+    );
   }
 
   if (

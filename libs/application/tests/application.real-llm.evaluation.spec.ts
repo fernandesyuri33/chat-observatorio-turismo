@@ -58,6 +58,7 @@ const fullCommandCases: DatasetCase[] = [
     name: "estabelecimentos por município",
     message: "Mostre estabelecimentos por município",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "estabelecimentos_por_municipio",
       expectNoFilters: true,
@@ -67,6 +68,7 @@ const fullCommandCases: DatasetCase[] = [
     name: "funcionários por município",
     message: "Mostre funcionários por município",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "funcionarios_por_municipio",
       expectNoFilters: true,
@@ -76,6 +78,7 @@ const fullCommandCases: DatasetCase[] = [
     name: "funcionários ao longo do tempo",
     message: "Mostre funcionários ao longo do tempo",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "funcionarios_ao_longo_do_tempo",
       expectNoFilters: true,
@@ -85,6 +88,7 @@ const fullCommandCases: DatasetCase[] = [
     name: "saldo de funcionários ao longo do tempo",
     message: "Mostre saldo de funcionários ao longo do tempo",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
       expectNoFilters: true,
@@ -94,6 +98,7 @@ const fullCommandCases: DatasetCase[] = [
     name: "estabelecimentos de hospedagem por município",
     message: "Mostre estabelecimentos de hospedagem por município",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "estabelecimentos_por_municipio",
       expectedFilters: { classificacao: "hospedagem" },
@@ -103,6 +108,7 @@ const fullCommandCases: DatasetCase[] = [
     name: "funcionários por município em Poços de Caldas",
     message: "Mostre funcionários por município em Poços de Caldas",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "funcionarios_por_municipio",
       expectedFilters: { municipio: "Poços de Caldas" },
@@ -112,6 +118,7 @@ const fullCommandCases: DatasetCase[] = [
     name: "estabelecimentos de alimentação em Pouso Alegre",
     message: "Mostre estabelecimentos de alimentação em Pouso Alegre",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "estabelecimentos_por_municipio",
       expectedFilters: {
@@ -126,22 +133,34 @@ const contextualCases: DatasetCase[] = [
   {
     name: "dados de Poços de Caldas",
     message: "Quero ver dados de Poços de Caldas",
-    expected: { forbiddenActionTypes: ["open_url"] },
+    expected: {
+      expectedStage1Classification: "context_only",
+      forbiddenActionTypes: ["open_url"],
+    },
   },
   {
     name: "interesse em hospedagem",
     message: "Tenho interesse em hospedagem",
-    expected: { forbiddenActionTypes: ["open_url"] },
+    expected: {
+      expectedStage1Classification: "context_only",
+      forbiddenActionTypes: ["open_url"],
+    },
   },
   {
     name: "analisar alimentação",
     message: "Quero analisar alimentação",
-    expected: { forbiddenActionTypes: ["open_url"] },
+    expected: {
+      expectedStage1Classification: "context_only",
+      forbiddenActionTypes: ["open_url"],
+    },
   },
   {
     name: "dados de Pouso Alegre",
     message: "Dados de Pouso Alegre",
-    expected: { forbiddenActionTypes: ["open_url"] },
+    expected: {
+      expectedStage1Classification: "context_only",
+      forbiddenActionTypes: ["open_url"],
+    },
   },
 ];
 
@@ -149,17 +168,26 @@ const initialOrientationCases: DatasetCase[] = [
   {
     name: "o que posso analisar",
     message: "O que posso analisar aqui?",
-    expected: { allowedActionTypes: ["explain_only"] },
+    expected: {
+      expectedStage1Classification: "initial_orientation",
+      allowedActionTypes: ["explain_only"],
+    },
   },
   {
     name: "informações disponíveis",
     message: "Quais informações estão disponíveis?",
-    expected: { allowedActionTypes: ["explain_only"] },
+    expected: {
+      expectedStage1Classification: "initial_orientation",
+      allowedActionTypes: ["explain_only"],
+    },
   },
   {
     name: "como o dashboard ajuda",
     message: "Como esse dashboard pode me ajudar?",
-    expected: { allowedActionTypes: ["explain_only"] },
+    expected: {
+      expectedStage1Classification: "initial_orientation",
+      allowedActionTypes: ["explain_only"],
+    },
   },
 ];
 
@@ -168,6 +196,7 @@ const curiosityCases: DatasetCase[] = [
     name: "turismo de Poços de Caldas está crescendo",
     message: "O turismo de Poços de Caldas está crescendo?",
     expected: {
+      expectedStage1Classification: "curiosity_to_action",
       allowedActionTypes: ["explain_only"],
       expectedSuggestion: "Visualizar a quantidade de funcionários ao longo do tempo",
     },
@@ -175,12 +204,18 @@ const curiosityCases: DatasetCase[] = [
   {
     name: "setor turístico está evoluindo",
     message: "O setor turístico está evoluindo?",
-    expected: { allowedActionTypes: ["explain_only"] },
+    expected: {
+      expectedStage1Classification: "curiosity_to_action",
+      allowedActionTypes: ["explain_only"],
+    },
   },
   {
     name: "avaliar empregos no turismo",
     message: "Como posso avaliar empregos no turismo?",
-    expected: { allowedActionTypes: ["explain_only"] },
+    expected: {
+      expectedStage1Classification: "curiosity_to_action",
+      allowedActionTypes: ["explain_only"],
+    },
   },
 ];
 
@@ -188,27 +223,42 @@ const outOfScopeCases: DatasetCase[] = [
   {
     name: "visitantes por ano",
     message: "Mostre visitantes por ano",
-    expected: { forbiddenActionTypes: ["open_url"] },
+    expected: { 
+      expectedStage1Classification: "unclear",
+      forbiddenActionTypes: ["open_url"] 
+    },
   },
   {
     name: "arrecadação de ISS",
     message: "Quero dados de arrecadação de ISS",
-    expected: { forbiddenActionTypes: ["open_url"] },
+    expected: { 
+      expectedStage1Classification: "unclear",
+      forbiddenActionTypes: ["open_url"] 
+    },
   },
   {
     name: "previsão de demanda turística",
     message: "Mostre previsão de demanda turística",
-    expected: { forbiddenActionTypes: ["open_url"] },
+    expected: { 
+      expectedStage1Classification: "unclear",
+      forbiddenActionTypes: ["open_url"] 
+    },
   },
   {
     name: "turistas estrangeiros por país",
     message: "Compare turistas estrangeiros por país",
-    expected: { forbiddenActionTypes: ["open_url"] },
+    expected: { 
+      expectedStage1Classification: "unclear",
+      forbiddenActionTypes: ["open_url"] 
+    },
   },
   {
     name: "dados de 2024",
     message: "Mostre dados de 2024",
-    expected: { forbiddenActionTypes: ["open_url"] },
+    expected: { 
+      expectedStage1Classification: "unclear",
+      forbiddenActionTypes: ["open_url"] 
+    },
   },
 ];
 
@@ -217,6 +267,7 @@ const repeatedCommandCases: DatasetCase[] = [
     name: "funcionários por município em Poços de Caldas",
     message: "Mostre funcionários por município em Poços de Caldas",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "funcionarios_por_municipio",
       expectedFilters: { municipio: "Poços de Caldas" },
@@ -226,6 +277,7 @@ const repeatedCommandCases: DatasetCase[] = [
     name: "estabelecimentos de hospedagem por município",
     message: "Mostre estabelecimentos de hospedagem por município",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "estabelecimentos_por_municipio",
       expectedFilters: { classificacao: "hospedagem" },
@@ -235,6 +287,7 @@ const repeatedCommandCases: DatasetCase[] = [
     name: "funcionários ao longo do tempo",
     message: "Mostre funcionários ao longo do tempo",
     expected: {
+      expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
       expectedInformationType: "funcionarios_ao_longo_do_tempo",
       expectNoFilters: true,
@@ -243,12 +296,16 @@ const repeatedCommandCases: DatasetCase[] = [
   {
     name: "o que posso analisar aqui",
     message: "O que posso analisar aqui?",
-    expected: { allowedActionTypes: ["explain_only"] },
+    expected: { 
+      expectedStage1Classification: "initial_orientation",
+      allowedActionTypes: ["explain_only"] 
+    },
   },
   {
     name: "turismo de Poços de Caldas está crescendo",
     message: "O turismo de Poços de Caldas está crescendo?",
     expected: {
+      expectedStage1Classification: "curiosity_to_action",
       allowedActionTypes: ["explain_only"],
       expectedSuggestion: "Visualizar a quantidade de funcionários ao longo do tempo",
     },
