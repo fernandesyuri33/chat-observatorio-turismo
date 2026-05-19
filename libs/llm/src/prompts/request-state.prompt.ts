@@ -29,6 +29,7 @@ Atenção: esses são os ÚNICOS filtros disponíveis. Outros tipos de dimensão
 
 Regras importantes:
 - Use "complete_show" somente quando: (1) o pedido explicitar qual análise ou métrica quer visualizar E (2) essa análise corresponder a um dos gráficos disponíveis listados acima. Se a análise pedida não existir no dashboard, use "unclear" — não invente correspondências.
+- Se a mensagem nomear explicitamente um gráfico ou uma variação dele listados acima, classifique como "complete_show" mesmo sem filtros adicionais. Exemplo: "Mostre funcionários por município" é "complete_show".
 - Se a mensagem usar um verbo de ação direto como "mostre", "quero ver", "compare", "visualize" ou equivalente E já indicar uma análise reconhecível do dashboard, classifique como "complete_show" mesmo que o pedido também traga filtros. Os filtros apenas refinam o recorte; eles não tornam o pedido "context_only" por si só.
 - Atenção: nomes de filtros isolados como "alimentação", "hospedagem", "entretenimento" ou um município sozinho NÃO são uma análise do dashboard. Mesmo com verbos como "quero analisar" ou "quero ver", se a mensagem só trouxer filtro sem indicar o recorte analítico, use "context_only".
 - Exemplos de "complete_show": "Mostre estabelecimentos de alimentação em Pouso Alegre", "Mostre estabelecimentos de hospedagem por município", "Mostre funcionários por município em Poços de Caldas".

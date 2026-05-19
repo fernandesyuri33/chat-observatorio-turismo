@@ -213,8 +213,9 @@ const curiosityCases: DatasetCase[] = [
     name: "avaliar empregos no turismo",
     message: "Como posso avaliar empregos no turismo?",
     expected: {
-      expectedStage1Classification: "curiosity_to_action",
-      allowedActionTypes: ["explain_only"],
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
     },
   },
 ];

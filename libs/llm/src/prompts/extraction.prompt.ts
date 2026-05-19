@@ -18,6 +18,34 @@ Filtros disponíveis:
 ${CLASSIFICACAO_TOKEN}
 - municipio: string (nome da cidade)
 
+Casos comuns:
+- "Mostre funcionários por município"
+  {
+    "candidateInformationType": "funcionarios_por_municipio",
+    "proposedFilters": {}
+  }
+- "Mostre funcionários por município em Poços de Caldas"
+  {
+    "candidateInformationType": "funcionarios_por_municipio",
+    "proposedFilters": {
+      "municipio": "Poços de Caldas"
+    }
+  }
+- "Mostre estabelecimentos de alimentação em Pouso Alegre"
+  {
+    "candidateInformationType": "estabelecimentos_por_municipio",
+    "proposedFilters": {
+      "classificacao": "alimentação",
+      "municipio": "Pouso Alegre"
+    }
+  }
+
+Regra de filtros:
+- Quando a mensagem citar qualquer tipo de estabelecimento ou setor que corresponda a uma classificacao permitida, inclua esse valor em "proposedFilters.classificacao".
+- Não substitua um filtro explícito por outro: se a mensagem mencionar classificacao e municipio, capture os dois.
+- Exemplos de menções que devem virar classificacao: alimentação, hospedagem, transportes, comércios e serviços, entretenimento, agências e operadores, restaurantes, bares, hotéis, pousadas.
+- Os exemplos acima são apenas ilustrativos; não copie cidade, município ou qualquer outro valor dos exemplos para pedidos que não o mencionem explicitamente.
+
 Responda **somente** com JSON:
 {
   "candidateInformationType": "<informationType correspondente>",
@@ -30,9 +58,12 @@ Responda **somente** com JSON:
 }
 
 Regras:
-- "candidateInformationType" deve ser preenchido APENAS se o usuário indicou claramente qual análise quer ver.
+- "candidateInformationType" deve ser preenchido sempre que a mensagem corresponder a um gráfico disponível ou a uma variação listada acima.
+- Em pedidos de gráfico claros, não deixe "candidateInformationType" vazio mesmo que não exista nenhum filtro adicional.
 - Se o usuário mencionou apenas filtros sem tipo de análise, omita "candidateInformationType".
+- Se o usuário mencionou mais de um filtro explícito, capture todos eles; não descarte classificacao quando o município também estiver presente.
 - "proposedFilters" deve conter SOMENTE filtros que aparecem explicitamente na mensagem atual OU no histórico da conversa. NUNCA invente, suponha ou infira filtros que não foram mencionados em nenhum momento da conversa.
+- Se a mensagem mencionar apenas uma análise genérica sem cidade, deixe "municipio" vazio.
 - Se nenhum filtro foi mencionado (nem na mensagem atual, nem no histórico), retorne proposedFilters vazio ({}).
 - "confidence" deve refletir quão claro e específico foi o pedido.
 - Sempre responda em português.
