@@ -60,6 +60,7 @@ const fullCommandCases: DatasetCase[] = [
     expected: {
       allowedActionTypes: ["open_url"],
       expectedInformationType: "estabelecimentos_por_municipio",
+      expectNoFilters: true,
     },
   },
   {
@@ -68,6 +69,7 @@ const fullCommandCases: DatasetCase[] = [
     expected: {
       allowedActionTypes: ["open_url"],
       expectedInformationType: "funcionarios_por_municipio",
+      expectNoFilters: true,
     },
   },
   {
@@ -76,6 +78,7 @@ const fullCommandCases: DatasetCase[] = [
     expected: {
       allowedActionTypes: ["open_url"],
       expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectNoFilters: true,
     },
   },
   {
@@ -84,6 +87,7 @@ const fullCommandCases: DatasetCase[] = [
     expected: {
       allowedActionTypes: ["open_url"],
       expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectNoFilters: true,
     },
   },
   {
@@ -233,6 +237,7 @@ const repeatedCommandCases: DatasetCase[] = [
     expected: {
       allowedActionTypes: ["open_url"],
       expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectNoFilters: true,
     },
   },
   {

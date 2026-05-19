@@ -14,6 +14,8 @@ export interface MeasuredCaseExpectation {
   forbiddenActionTypes?: DashboardAction["type"][];
   expectedInformationType?: string;
   expectedFilters?: Record<string, unknown>;
+  allowAdditionalFilters?: boolean;
+  expectNoFilters?: boolean;
   expectedSuggestion?: string;
 }
 
@@ -154,14 +156,33 @@ function evaluateMeasuredCase(
     );
   }
 
-  if (expected.expectedFilters) {
-    const actualFilters = result.filters ?? result.resolvedIntent?.proposedFilters ?? {};
+  const actualFilters = result.filters ?? result.resolvedIntent?.proposedFilters ?? {};
+  const actualFilterEntries = Object.entries(actualFilters).filter(([, value]) => value !== undefined);
 
-    for (const [filterKey, filterValue] of Object.entries(expected.expectedFilters)) {
+  if (expected.expectNoFilters && actualFilterEntries.length > 0) {
+    const unexpectedFilters = Object.fromEntries(actualFilterEntries);
+    notes.push(`filtros inesperados: ${JSON.stringify(unexpectedFilters)}`);
+  }
+
+  if (expected.expectedFilters) {
+    const expectedFilterEntries = Object.entries(expected.expectedFilters).filter(([, value]) => value !== undefined);
+    const expectedFilterKeys = new Set(expectedFilterEntries.map(([key]) => key));
+
+    for (const [filterKey, filterValue] of expectedFilterEntries) {
       if (actualFilters[filterKey] !== filterValue) {
         notes.push(
           `filtro divergente em ${filterKey}: ${String(actualFilters[filterKey])} (esperado: ${String(filterValue)})`
         );
+      }
+    }
+
+    if (!expected.allowAdditionalFilters) {
+      for (const [filterKey, filterValue] of actualFilterEntries) {
+        if (!expectedFilterKeys.has(filterKey)) {
+          notes.push(
+            `filtro inesperado em ${filterKey}: ${String(filterValue)}`
+          );
+        }
       }
     }
   }
