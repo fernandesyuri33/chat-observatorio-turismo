@@ -2,6 +2,7 @@ node_modules
 .nx
 dist
 *.tsbuildinfo
+artifacts
 apps/**/src/**/*.js
 apps/**/src/**/*.js.map
 apps/**/src/**/*.d.ts

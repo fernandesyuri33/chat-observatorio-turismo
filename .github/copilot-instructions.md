@@ -99,6 +99,8 @@ libs/
       schema-registry.ts                   # Version → { schema, parse } registry
       fallback.ts                          # explainOnlyFallback() factory
       index.ts
+    tests/
+      application.real-llm.evaluation.spec.ts # Optional real-LLM evaluation datasets + metrics artifact generation <!-- Updated: added evaluation suite for TCC result collection -->
 
   policy/                      # Policy engine
     src/
@@ -308,6 +310,7 @@ pnpm -C apps/api dev              # API dev server (tsx watch, port 3001)
 pnpm -C apps/web dev              # Vite dev server
 pnpm -C libs/domain test          # Run tests for a specific library
 pnpm -C libs/application test-real-llm # Run resolveDashboardAction tests against real Ollama LLM
+pnpm -C libs/application test-real-llm:evaluation # Run optional real-LLM evaluation datasets and write artifacts/real-llm-results.json <!-- Updated: added evaluation command -->
 ```
 
 ### Running tests with the stub adapter
@@ -320,6 +323,11 @@ For opt-in real LLM integration tests in `libs/application/tests/application.rea
 | Env var | Value | Effect |
 |---|---|---|
 | `RUN_REAL_LLM_TESTS` | `"true"` | Enables `resolveDashboardAction` tests that use `OllamaLlmAdapter` instead of `StubLlmAdapter` | <!-- Updated: opt-in real LLM test suite -->
+
+The optional evaluation suite in `libs/application/tests/application.real-llm.evaluation.spec.ts`
+also depends on `RUN_REAL_LLM_TESTS=true`. It records per-case timing, stage rationale,
+and action metadata to `artifacts/real-llm-results.json`, while also writing a timestamped
+snapshot in the same folder for later model comparisons. <!-- Updated: documented evaluation artifact -->
 
 ---
 

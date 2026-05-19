@@ -130,6 +130,19 @@ describe("routeResponse", () => {
     }
   });
 
+  it("retorna give_initial_orientation para complete_show sem informationType e sem filtros", () => {
+    const decision = routeResponse({
+      requestState: makeRequestState("complete_show"),
+      extraction: makeExtraction({
+        confidence: 0.8,
+      }),
+      config,
+      message: "Mostre dados",
+    });
+
+    expect(decision.responseType).toBe("give_initial_orientation");
+  });
+
   it("retorna give_initial_orientation para complete_show sem extração", () => {
     const decision = routeResponse({
       requestState: makeRequestState("complete_show"),
