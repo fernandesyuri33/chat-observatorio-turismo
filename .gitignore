@@ -9,3 +9,4 @@ apps/**/src/**/*.d.ts
 libs/**/src/**/*.js
 libs/**/src/**/*.js.map
 libs/**/src/**/*.d.ts
+**/*.env
