@@ -323,11 +323,14 @@ For opt-in real LLM integration tests in `libs/application/tests/application.rea
 | Env var | Value | Effect |
 |---|---|---|
 | `RUN_REAL_LLM_TESTS` | `"true"` | Enables `resolveDashboardAction` tests that use `OllamaLlmAdapter` instead of `StubLlmAdapter` | <!-- Updated: opt-in real LLM test suite -->
+| `REAL_LLM_EVAL_DATASET` | dataset id like `"comandos_completos"` | Restricts `application.real-llm.evaluation.spec.ts` to one dataset when running evaluation | <!-- Updated: added dataset filter for real LLM evaluation -->
+| `REAL_LLM_EVAL_CASE` | case name/message substring like `"Pouso Alegre"` | Restricts `application.real-llm.evaluation.spec.ts` to matching cases within the selected dataset(s) | <!-- Updated: added case filter for real LLM evaluation -->
 
 The optional evaluation suite in `libs/application/tests/application.real-llm.evaluation.spec.ts`
 also depends on `RUN_REAL_LLM_TESTS=true`. It records per-case timing, stage rationale,
 and action metadata to `artifacts/real-llm-results.json`, while also writing a timestamped
-snapshot in the same folder for later model comparisons. <!-- Updated: documented evaluation artifact -->
+snapshot in the same folder for later model comparisons. `REAL_LLM_EVAL_CASE` does not apply to
+the fixed multi-turn scenario, which remains an all-or-nothing dataset. <!-- Updated: documented evaluation artifact and filters -->
 
 ---
 

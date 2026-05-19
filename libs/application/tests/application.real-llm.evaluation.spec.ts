@@ -19,12 +19,39 @@ const runRealLlmTests = process.env["RUN_REAL_LLM_TESTS"] === "true";
 const describeRealLlm = runRealLlmTests ? describe : describe.skip;
 const datasetTimeout = 600_000;
 const repetitionTimeout = 1_200_000;
+const datasetFilter = process.env["REAL_LLM_EVAL_DATASET"]?.trim().toLocaleLowerCase("pt-BR");
+const caseFilter = process.env["REAL_LLM_EVAL_CASE"]?.trim().toLocaleLowerCase("pt-BR");
 
 type DatasetCase = {
   name: string;
   message: string;
   expected?: MeasuredCaseExpectation;
 };
+
+function matchesCaseFilter(testCase: DatasetCase): boolean {
+  if (!caseFilter) {
+    return true;
+  }
+
+  return testCase.name.toLocaleLowerCase("pt-BR").includes(caseFilter)
+    || testCase.message.toLocaleLowerCase("pt-BR").includes(caseFilter);
+}
+
+function shouldRunDataset(dataset: string): boolean {
+  if (!datasetFilter) {
+    return true;
+  }
+
+  return dataset.toLocaleLowerCase("pt-BR") === datasetFilter;
+}
+
+function selectCases(dataset: string, cases: DatasetCase[]): DatasetCase[] {
+  if (!shouldRunDataset(dataset)) {
+    return [];
+  }
+
+  return cases.filter(matchesCaseFilter);
+}
 
 const fullCommandCases: DatasetCase[] = [
   {
@@ -223,6 +250,14 @@ const repeatedCommandCases: DatasetCase[] = [
   },
 ];
 
+const selectedFullCommandCases = selectCases("comandos_completos", fullCommandCases);
+const selectedContextualCases = selectCases("contextuais", contextualCases);
+const selectedInitialOrientationCases = selectCases("orientacao_inicial", initialOrientationCases);
+const selectedCuriosityCases = selectCases("curiosidades", curiosityCases);
+const selectedOutOfScopeCases = selectCases("fora_de_escopo", outOfScopeCases);
+const selectedRepeatedCommandCases = selectCases("repeticao", repeatedCommandCases);
+const shouldRunMultiturn = shouldRunDataset("multiturno") && !caseFilter;
+
 describeRealLlm("resolveDashboardAction (avaliação com LLM real)", () => {
   const collectedResults: MeasuredCaseResult[] = [];
 
@@ -272,42 +307,50 @@ describeRealLlm("resolveDashboardAction (avaliação com LLM real)", () => {
     return history;
   }
 
-  it("mede o dataset de comandos completos", async () => {
-    const results = await measureDataset("comandos_completos", fullCommandCases);
+  const itFullCommand = selectedFullCommandCases.length > 0 ? it : it.skip;
+  const itContextual = selectedContextualCases.length > 0 ? it : it.skip;
+  const itInitialOrientation = selectedInitialOrientationCases.length > 0 ? it : it.skip;
+  const itCuriosity = selectedCuriosityCases.length > 0 ? it : it.skip;
+  const itOutOfScope = selectedOutOfScopeCases.length > 0 ? it : it.skip;
+  const itMultiturn = shouldRunMultiturn ? it : it.skip;
+  const itRepeated = selectedRepeatedCommandCases.length > 0 ? it : it.skip;
 
-    expect(results).toHaveLength(fullCommandCases.length);
+  itFullCommand("mede o dataset de comandos completos", async () => {
+    const results = await measureDataset("comandos_completos", selectedFullCommandCases);
+
+    expect(results).toHaveLength(selectedFullCommandCases.length);
     expect(results.every((result) => result.elapsedMs >= 0)).toBe(true);
   }, datasetTimeout);
 
-  it("mede o dataset de comandos contextuais", async () => {
-    const results = await measureDataset("contextuais", contextualCases);
+  itContextual("mede o dataset de comandos contextuais", async () => {
+    const results = await measureDataset("contextuais", selectedContextualCases);
 
-    expect(results).toHaveLength(contextualCases.length);
+    expect(results).toHaveLength(selectedContextualCases.length);
     expect(results.every((result) => result.actionType.length > 0)).toBe(true);
   }, datasetTimeout);
 
-  it("mede o dataset de orientação inicial", async () => {
-    const results = await measureDataset("orientacao_inicial", initialOrientationCases);
+  itInitialOrientation("mede o dataset de orientação inicial", async () => {
+    const results = await measureDataset("orientacao_inicial", selectedInitialOrientationCases);
 
-    expect(results).toHaveLength(initialOrientationCases.length);
+    expect(results).toHaveLength(selectedInitialOrientationCases.length);
     expect(results.every((result) => typeof result.stage1Classification === "string")).toBe(true);
   }, datasetTimeout);
 
-  it("mede o dataset de curiosidades", async () => {
-    const results = await measureDataset("curiosidades", curiosityCases);
+  itCuriosity("mede o dataset de curiosidades", async () => {
+    const results = await measureDataset("curiosidades", selectedCuriosityCases);
 
-    expect(results).toHaveLength(curiosityCases.length);
+    expect(results).toHaveLength(selectedCuriosityCases.length);
     expect(results.every((result) => result.actionType.length > 0)).toBe(true);
   }, datasetTimeout);
 
-  it("mede o dataset fora de escopo", async () => {
-    const results = await measureDataset("fora_de_escopo", outOfScopeCases);
+  itOutOfScope("mede o dataset fora de escopo", async () => {
+    const results = await measureDataset("fora_de_escopo", selectedOutOfScopeCases);
 
-    expect(results).toHaveLength(outOfScopeCases.length);
+    expect(results).toHaveLength(selectedOutOfScopeCases.length);
     expect(results.every((result) => result.elapsedMs >= 0)).toBe(true);
   }, datasetTimeout);
 
-  it("mede cenários de múltiplos turnos com histórico", async () => {
+  itMultiturn("mede cenários de múltiplos turnos com histórico", async () => {
     const firstScenarioDeps = buildDeps();
     const firstTurn = await runMeasuredCase({
       dataset: "multiturno",
@@ -370,10 +413,10 @@ describeRealLlm("resolveDashboardAction (avaliação com LLM real)", () => {
     expect([firstTurn, secondTurn, thirdTurn, fourthTurn]).toHaveLength(4);
   }, datasetTimeout);
 
-  it("mede repetição dos comandos principais", async () => {
+  itRepeated("mede repetição dos comandos principais", async () => {
     const repeatedResults: MeasuredCaseResult[] = [];
 
-    for (const testCase of repeatedCommandCases) {
+    for (const testCase of selectedRepeatedCommandCases) {
       for (let runIndex = 1; runIndex <= 3; runIndex += 1) {
         const result = await runMeasuredCase({
           dataset: "repeticao",
@@ -387,7 +430,7 @@ describeRealLlm("resolveDashboardAction (avaliação com LLM real)", () => {
       }
     }
 
-    expect(repeatedResults).toHaveLength(repeatedCommandCases.length * 3);
+    expect(repeatedResults).toHaveLength(selectedRepeatedCommandCases.length * 3);
   }, repetitionTimeout);
 
   it("gera o artefato JSON e imprime um resumo tabular", async () => {
