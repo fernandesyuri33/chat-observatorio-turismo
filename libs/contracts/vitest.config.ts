@@ -11,6 +11,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["libs/contracts/tests/**/*.spec.ts"],
+    include: ["tests/**/*.spec.ts"],
   },
 });

@@ -8,7 +8,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["libs/llm/src/**/*.spec.ts"],
+    include: ["src/**/*.spec.ts"],
     globals: true,
     environment: "node",
   }

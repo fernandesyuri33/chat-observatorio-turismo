@@ -144,6 +144,20 @@ describe("IntentV1Schema", () => {
     }
   });
 
+  it("normaliza classificacao sem acento antes de validar", () => {
+    const result = IntentV1Schema.safeParse({
+      intent: "show",
+      informationType: "funcionarios_por_municipio",
+      proposedFilters: { classificacao: "alimentacao", municipio: "Poços de Caldas" },
+      confidence: 0.8,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.proposedFilters.classificacao).toBe("alimentação");
+    }
+  });
+
   it("rejeita confidence > 1", () => {
     const result = IntentV1Schema.safeParse({
       intent: "show",
@@ -301,6 +315,20 @@ describe("ExtractionResultSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.candidateInformationType).toBe("funcionarios_por_municipio");
+    }
+  });
+
+  it("normaliza classificacao sem acento durante o parse da extração", () => {
+    const result = ExtractionResultSchema.safeParse({
+      candidateInformationType: "estabelecimentos_por_municipio",
+      proposedFilters: { classificacao: "alimentacao", municipio: "Poços de Caldas" },
+      confidence: 0.85,
+      rationale: "Teste",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.proposedFilters.classificacao).toBe("alimentação");
     }
   });
 

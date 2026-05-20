@@ -29,8 +29,45 @@ export const ClassificacaoSchema = z.enum([
   "agencias e operadores",
 ]);
 
+const CLASSIFICACAO_VARIANTS: Record<string, z.infer<typeof ClassificacaoSchema>> = {
+  alimentação: "alimentação",
+  alimentacao: "alimentação",
+  transportes: "transportes",
+  transporte: "transportes",
+  "comércios e serviços": "comércios e serviços",
+  "comercios e servicos": "comércios e serviços",
+  "comercios e serviços": "comércios e serviços",
+  "comércios e servicos": "comércios e serviços",
+  comercios: "comércios e serviços",
+  hospedagem: "hospedagem",
+  entretenimento: "entretenimento",
+  "agencias e operadores": "agencias e operadores",
+  "agências e operadores": "agencias e operadores",
+  "Agências e Operadores": "agencias e operadores",
+};
+
+const normalizeClassificacaoValue = (value: unknown): unknown => {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmedValue = value.trim();
+  if (trimmedValue.length === 0) {
+    return trimmedValue;
+  }
+
+  return (
+    CLASSIFICACAO_VARIANTS[trimmedValue] ??
+    CLASSIFICACAO_VARIANTS[trimmedValue.toLowerCase()] ??
+    trimmedValue
+  );
+};
+
 export const IntentV1FiltersSchema = z.object({
-  classificacao: ignoreBlankString(ClassificacaoSchema.nullable().optional()),
+  classificacao: z.preprocess(
+    normalizeClassificacaoValue,
+    ignoreBlankString(ClassificacaoSchema.nullable().optional())
+  ),
   municipio: ignoreBlankString(z.string().min(1).nullable().optional()),
 });
 
