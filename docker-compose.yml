@@ -33,11 +33,11 @@ services:
     environment:
       OLLAMA_HOST: "ollama:11434"
       # Usa o mesmo modelo configurado para a API.
-      OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2:8b}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-gemma3:4b}"
     volumes:
       - ollama_data:/root/.ollama
     # A imagem ja possui entrypoint `ollama`; aqui passamos apenas o subcomando.
-    command: ["pull", "${OLLAMA_MODEL:-llama3.2:8b}"]
+    command: ["pull", "${OLLAMA_MODEL:-gemma3:4b}"]
 
   # API Fastify (porta 3001) com Ollama real como padrao.
   api:
@@ -51,7 +51,7 @@ services:
       HOST: "0.0.0.0"
       # Configuracao do adaptador Ollama (OpenAI-compatible API).
       OLLAMA_BASE_URL: "http://ollama:11434/v1"
-      OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2:8b}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-gemma3:4b}"
       OLLAMA_API_KEY: "ollama"
       # Redis para histórico de conversa.
       REDIS_URL: "redis://redis:6379"

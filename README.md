@@ -45,7 +45,7 @@ Variaveis obrigatorias para desenvolvimento:
 ```
 REDIS_URL=redis://localhost:6379
 OLLAMA_BASE_URL=http://localhost:11434/v1
-OLLAMA_MODEL=llama3.2:8b
+OLLAMA_MODEL=gemma3:4b
 ```
 
 4. Rodar em dev
@@ -98,7 +98,7 @@ Com isso:
 
 A API usa a rede interna do Compose em `http://ollama:11434/v1`.
 
-Por padrao, o modelo usado e `llama3.2:8b`.
+Por padrao, o modelo usado e `gemma3:4b`.
 Para sobrescrever sem editar o compose:
 
 ```

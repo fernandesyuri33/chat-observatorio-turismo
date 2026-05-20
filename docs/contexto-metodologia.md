@@ -420,7 +420,7 @@ Base: looker-provider.ts.
 
 - `OLLAMA_BASE_URL`: usada em ollama-llm.adapter.ts e definida no Compose em docker-compose.yml. Valor esperado ou default em código: `http://localhost:11434/v1`. Exemplo em .env.example: `http://localhost:11434/v1`. Impacto: endpoint HTTP compatível com OpenAI usado pelo adapter real.
 
-- `OLLAMA_MODEL`: usada em ollama-llm.adapter.ts, docker-compose.yml, README.md, .env.example e no arquivo local .env do repositório. Há divergência entre fontes: default em código `llama3.1:8b`, exemplo/Compose `llama3.2:8b`, .env local `llama3.2:3b`. Impacto: escolhe o modelo executado pelo Ollama e também o modelo baixado por `ollama-init`. Para a metodologia, a versão exata do modelo precisa de confirmação manual.
+- `OLLAMA_MODEL`: usada em ollama-llm.adapter.ts, docker-compose.yml, README.md, .env.example e no arquivo local .env do repositório. Há divergência entre fontes: default em código `llama3.1:8b`, exemplo/Compose `gemma3:4b`, .env local `gemma3:4b`. Impacto: escolhe o modelo executado pelo Ollama e também o modelo baixado por `ollama-init`. Para a metodologia, a versão exata do modelo precisa de confirmação manual.
 
 - `OLLAMA_API_KEY`: usada em ollama-llm.adapter.ts, docker-compose.yml e .env.example. Valor esperado/default: `ollama`. Impacto: autenticação do cliente OpenAI contra o endpoint compatível do Ollama.
 
