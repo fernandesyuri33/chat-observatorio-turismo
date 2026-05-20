@@ -11,6 +11,15 @@ export const INFORMATION_TYPE_VALUES = [
 
 export const InformationTypeSchema = z.enum(INFORMATION_TYPE_VALUES);
 
+const ignoreBlankString = <T>(schema: z.ZodType<T>) =>
+  z.preprocess((value) => {
+    if (typeof value === "string" && value.trim().length === 0) {
+      return undefined;
+    }
+
+    return value;
+  }, schema);
+
 export const ClassificacaoSchema = z.enum([
   "alimentação",
   "transportes",
@@ -21,8 +30,8 @@ export const ClassificacaoSchema = z.enum([
 ]);
 
 export const IntentV1FiltersSchema = z.object({
-  classificacao: ClassificacaoSchema.nullable().optional(),
-  municipio: z.string().min(1).nullable().optional(),
+  classificacao: ignoreBlankString(ClassificacaoSchema.nullable().optional()),
+  municipio: ignoreBlankString(z.string().min(1).nullable().optional()),
 });
 
 const IntentV1BaseSchema = z.object({

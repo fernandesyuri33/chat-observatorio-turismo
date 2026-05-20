@@ -130,6 +130,20 @@ describe("IntentV1Schema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("ignora filtros com string vazia", () => {
+    const result = IntentV1Schema.safeParse({
+      intent: "show",
+      informationType: "funcionarios_por_municipio",
+      proposedFilters: { municipio: "", classificacao: "" },
+      confidence: 0.8,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.proposedFilters).toEqual({});
+    }
+  });
+
   it("rejeita confidence > 1", () => {
     const result = IntentV1Schema.safeParse({
       intent: "show",
