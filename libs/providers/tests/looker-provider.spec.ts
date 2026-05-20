@@ -109,7 +109,7 @@ describe("LookerProvider", () => {
       expect(url.pathname).toContain("/page/p_estabelecimentos");
       expect(params).toEqual({
         "ds19.p_municipio": "Poços de Caldas",
-        "ds19.p_classificacao": "hospedagem",
+        "ds19.p_classificacao": "Hospedagem",
       });
     }
   });

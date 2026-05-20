@@ -180,7 +180,7 @@ export function runResolveDashboardActionSharedSuite(
     if (result.type === "open_url") {
       const { url, params } = parseUrlAndParams(result.url);
       expect(url.pathname).toContain("/page/p_estabelecimentos");
-      expect(params).toEqual({ "ds19.p_classificacao": "hospedagem" });
+      expect(params).toEqual({ "ds19.p_classificacao": "Hospedagem" });
       assertOptionalFriendlyMessage(result);
     }
   }, timeout);
@@ -196,7 +196,7 @@ export function runResolveDashboardActionSharedSuite(
       const { url, params } = parseUrlAndParams(result.url);
       expect(url.pathname).toContain("/page/p_estabelecimentos");
       expect(params).toEqual({
-        "ds19.p_classificacao": "alimentação",
+        "ds19.p_classificacao": "Alimentação",
         "ds19.p_municipio": "Poços de Caldas",
       });
       assertOptionalFriendlyMessage(result);

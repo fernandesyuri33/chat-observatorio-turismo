@@ -6,6 +6,16 @@ import type {
 import type { PolicyConfig } from "@conversational/policy";
 import type { ActionProvider } from "../action-provider.js";
 
+const LOOKER_CLASSIFICACAO_VALUE_MAP: Record<string, string> = {
+  "alimentação": "Alimentação",
+  "transportes": "Transportes",
+  "comércios e serviços": "Comércios e Serviços",
+  "hospedagem": "Hospedagem",
+  "entretenimento": "Entretenimento",
+  "agencias e operadores": "Agências e Operadores",
+  "agências e operadores": "Agências e Operadores",
+};
+
 /**
  * LookerProvider monta ações open_url usando a URL base do Looker
  * e o mapeamento de parâmetros da configuração de política.
@@ -69,7 +79,7 @@ export class LookerProvider implements ActionProvider {
     for (const [filterKey, filterValue] of Object.entries(intent.proposedFilters)) {
       const paramName = paramMap[filterKey] ?? filterKey;
       if (filterValue !== undefined && filterValue !== null) {
-        mappedParams[paramName] = filterValue;
+        mappedParams[paramName] = this.normalizeFilterValueForUrl(filterKey, filterValue);
       }
     }
 
@@ -102,6 +112,14 @@ export class LookerProvider implements ActionProvider {
       ...this.lookerConfig.paramMap,
       ...(scopedParamMap ?? {}),
     };
+  }
+
+  private normalizeFilterValueForUrl(filterKey: string, filterValue: unknown): unknown {
+    if (filterKey !== "classificacao" || typeof filterValue !== "string") {
+      return filterValue;
+    }
+
+    return LOOKER_CLASSIFICACAO_VALUE_MAP[filterValue] ?? filterValue;
   }
 
   private resolveUrlForInformationType(informationType?: InformationType): URL {

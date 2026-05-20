@@ -42,7 +42,7 @@ describe("PolicyEngine", () => {
         municipio: "Poços de Caldas",
         ano: "2024",
         classificacao: "hospedagem",
-      },
+      } as never,
       confidence: 0.8,
     });
 
@@ -62,7 +62,7 @@ describe("PolicyEngine", () => {
     const result = engine.normalizeExtraction({
       proposedFilters: {
         classificação: "hospedagem",
-      },
+      } as never,
       confidence: 0.8,
     });
 
@@ -71,12 +71,31 @@ describe("PolicyEngine", () => {
     });
   });
 
+  it("normaliza valor de classificação via sinônimos", () => {
+    const engine = new PolicyEngine(buildPolicyConfig({
+      synonyms: {
+        alimentacao: "alimentação",
+      },
+    }));
+
+    const result = engine.normalizeExtraction({
+      proposedFilters: {
+        classificacao: "alimentacao" as never,
+      },
+      confidence: 0.8,
+    });
+
+    expect(result.proposedFilters).toEqual({
+      classificacao: "alimentação",
+    });
+  });
+
   it("descarta classificação inválida", () => {
     const engine = new PolicyEngine(buildPolicyConfig());
 
     const result = engine.normalizeExtraction({
       proposedFilters: {
-        classificacao: "praias",
+        classificacao: "praias" as never,
       },
       confidence: 0.8,
     });

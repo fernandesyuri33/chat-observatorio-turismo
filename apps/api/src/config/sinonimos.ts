@@ -1,6 +1,13 @@
 export const synonyms = {
   "classificação": "classificacao",
   classificacao: "classificacao",
+  alimentacao: "alimentação",
+  transporte: "transportes",
+  comercios: "comércios e serviços",
+  "comercios e servicos": "comércios e serviços",
+  "comercios e serviços": "comércios e serviços",
+  "comércios e servicos": "comércios e serviços",
+  "agências e operadores": "agencias e operadores",
   "estabelecimentos por municipio": "estabelecimentos_por_municipio",
   "estabelecimentos por município": "estabelecimentos_por_municipio",
   "funcionarios por municipio": "funcionarios_por_municipio",
