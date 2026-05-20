@@ -310,7 +310,7 @@ pnpm -C apps/api dev              # API dev server (tsx watch, port 3001)
 pnpm -C apps/web dev              # Vite dev server
 pnpm -C libs/domain test          # Run tests for a specific library
 pnpm -C libs/application test-real-llm # Run resolveDashboardAction tests against real Ollama LLM
-pnpm -C libs/application test-real-llm:evaluation # Run optional real-LLM evaluation datasets and write artifacts/real-llm-results.json <!-- Updated: added evaluation command -->
+pnpm test-real-llm:evaluation      # Run optional real-LLM evaluation datasets and write artifacts/real-llm-results.json (loads .env from repo root) <!-- Updated: enforce root entrypoint for evaluation env loading -->
 ```
 
 ### Running tests with the stub adapter
@@ -330,7 +330,8 @@ The optional evaluation suite in `libs/application/tests/application.real-llm.ev
 also depends on `RUN_REAL_LLM_TESTS=true`. It records per-case timing, stage rationale,
 and action metadata to `artifacts/real-llm-results.json`, while also writing a timestamped
 snapshot in the same folder for later model comparisons. `REAL_LLM_EVAL_CASE` does not apply to
-the fixed multi-turn scenario, which remains an all-or-nothing dataset. <!-- Updated: documented evaluation artifact and filters -->
+the fixed multi-turn scenario, which remains an all-or-nothing dataset.
+Always run this suite through the root script `pnpm test-real-llm:evaluation`, since this entrypoint loads `.env` before delegating to `libs/application`. <!-- Updated: documented evaluation artifact and enforced root entrypoint -->
 
 ---
 
