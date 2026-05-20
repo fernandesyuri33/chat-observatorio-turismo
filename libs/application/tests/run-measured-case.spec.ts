@@ -24,7 +24,7 @@ const sampleResults: MeasuredCaseResult[] = [
     notes: [],
     action: {
       type: "open_url",
-      url: "https://lookerstudio.google.com/embed/reporting/abc123/page/p_funcionarios_municipio",
+      url: "https://datastudio.google.com/embed/reporting/abc123/page/p_funcionarios_municipio",
     },
     actionSummary: {
       pathname: "/embed/reporting/abc123/page/p_funcionarios_municipio",

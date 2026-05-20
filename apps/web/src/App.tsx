@@ -93,7 +93,7 @@ const DEFAULT_SUGGESTIONS = ["O que posso descobrir aqui?"];
 const apiUrl = import.meta.env["VITE_API_URL"] ?? "http://localhost:3001";
 const baseEmbedUrl =
   import.meta.env["VITE_LOOKER_EMBED_URL"] ??
-  "https://lookerstudio.google.com/embed/reporting/b4daa6c1-6dae-4006-b4a1-49547a31a856/page/p_3niel4jewd";
+  "https://datastudio.google.com/embed/reporting/70b05460-31ac-47ad-87e0-d7201ca27609/page/p_3niel4jewd";
 
 type ChatMessage = {
   id: string;

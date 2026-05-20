@@ -32,7 +32,7 @@ const testPolicyConfig: PolicyConfig = {
     },
   ],
   looker: {
-    baseUrl: "https://lookerstudio.google.com/embed/reporting/abc123/page/p_1",
+    baseUrl: "https://datastudio.google.com/embed/reporting/abc123/page/p_1",
     paramMap: {
       classificacao: "classification",
       municipio: "city",

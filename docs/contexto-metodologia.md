@@ -432,7 +432,7 @@ Base: looker-provider.ts.
 
 - `VITE_API_URL`: usada em App.tsx, em .env.example, em Dockerfile e no build args de docker-compose.yml. Valor esperado/default: `http://localhost:3001`. Impacto: endpoint que o frontend usa para `POST /mensagem`.
 
-- `VITE_LOOKER_EMBED_URL`: usada em App.tsx, .env.example e Dockerfile. Exemplo: `https://lookerstudio.google.com/embed/reporting/your-report-id/page/p_1`. Impacto: URL inicial do `iframe`. Observação: o Compose atual não passa esse argumento no build do `web`, então o container depende do fallback hardcoded do frontend, a menos que o build seja ajustado manualmente.
+- `VITE_LOOKER_EMBED_URL`: usada em App.tsx, .env.example e Dockerfile. Exemplo: `https://datastudio.google.com/embed/reporting/your-report-id/page/p_1`. Impacto: URL inicial do `iframe`. Observação: o Compose atual não passa esse argumento no build do `web`, então o container depende do fallback hardcoded do frontend, a menos que o build seja ajustado manualmente.
 
 - `RUN_REAL_LLM_TESTS`: usada em application.real-llm.spec.ts e ativada pelo target `test-real-llm` em project.json. Valor esperado: `"true"`. Impacto: habilita a suíte de testes de integração com LLM real.
 

@@ -57,8 +57,13 @@ export const policyConfig: PolicyConfig = PolicyConfigSchema.parse({
   ],
   looker: {
     baseUrl:
-      "https://lookerstudio.google.com/embed/reporting/b4daa6c1-6dae-4006-b4a1-49547a31a856/page/",
+      "https://datastudio.google.com/embed/reporting/70b05460-31ac-47ad-87e0-d7201ca27609/page/",
     paramMap: {},
-    informationTypeMap: {},
+    informationTypeMap: {
+      estabelecimentos_por_municipio: "p_3niel4jewd",
+      funcionarios_por_municipio: "p_joj1sbkewd",
+      funcionarios_ao_longo_do_tempo: "p_nv1avgkewd",
+      saldo_funcionarios_ao_longo_do_tempo: "p_fnowokk6wd",
+    },
   },
 });
