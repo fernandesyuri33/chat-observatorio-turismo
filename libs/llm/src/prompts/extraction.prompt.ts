@@ -78,6 +78,8 @@ Regras:
 - Se o usuário mencionou apenas filtros sem tipo de análise, omita "candidateInformationType".
 - Se o usuário mencionou mais de um filtro explícito, capture todos eles; não descarte classificacao quando o município também estiver presente.
 - "proposedFilters" deve conter SOMENTE filtros que aparecem explicitamente na mensagem atual OU no histórico da conversa. NUNCA invente, suponha ou infira filtros que não foram mencionados em nenhum momento da conversa.
+- "proposedFilters" deve conter SOMENTE filtros que aparecem explicitamente na mensagem atual OU no histórico da conversa. NUNCA invente, suponha ou infira filtros que não foram mencionados em nenhum momento da conversa.
+- Herança de informationType por continuação: quando a mensagem atual menciona apenas filtros (classificacao ou municipio) sem especificar um novo tipo de análise, E o histórico mostra que o assistente acabou de exibir uma análise (ex.: histórico contém "O assistente entendeu que o usuário quis ver: Quantidade de funcionários por município..."), herde o candidateInformationType dessa análise anterior. Não reclassifique o tipo de análise com base apenas no filtro mencionado. Exemplo: se o histórico mostra "funcionarios_por_municipio" e a mensagem atual é "Agora de hospedagem", use candidateInformationType: "funcionarios_por_municipio" (herdado) e proposedFilters: { classificacao: "hospedagem" } — não mude para "estabelecimentos_por_municipio" só porque "hospedagem" pode remeter a estabelecimentos.
 - Se a mensagem mencionar apenas uma análise genérica sem cidade, deixe "municipio" vazio.
 - Se nenhum filtro foi mencionado (nem na mensagem atual, nem no histórico), retorne proposedFilters vazio ({}).
 - "confidence" deve refletir quão claro e específico foi o pedido.
