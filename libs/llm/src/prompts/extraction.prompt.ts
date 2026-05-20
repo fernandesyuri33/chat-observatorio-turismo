@@ -39,9 +39,24 @@ Casos comuns:
       "municipio": "Pouso Alegre"
     }
   }
+- "Mostre estabelecimentos de hospedagem por município"
+  {
+    "candidateInformationType": "estabelecimentos_por_municipio",
+    "proposedFilters": {
+      "classificacao": "hospedagem"
+    }
+  }
+- "Como posso avaliar empregos no turismo?"
+  {
+    "candidateInformationType": "funcionarios_por_municipio",
+    "proposedFilters": {}
+  }
 
 Regra de filtros:
 - Quando a mensagem citar qualquer tipo de estabelecimento ou setor que corresponda a uma classificacao permitida, inclua esse valor em "proposedFilters.classificacao".
+- Quando a mensagem citar hospedagem, hotéis, pousadas ou outra variação do setor de hospedagem, sempre preencha "proposedFilters.classificacao" com "hospedagem" quando o pedido estiver falando de estabelecimentos ou de recorte por setor.
+- Regra obrigatória: se a mensagem for algo como "Mostre estabelecimentos de hospedagem por município", o JSON de saída deve conter exatamente "proposedFilters.classificacao": "hospedagem". Não omita esse filtro quando o setor estiver explícito.
+- Quando a mensagem falar de empregos, trabalho, contratação, vagas ou mão de obra no turismo, trate isso como um pedido de funcionários e use o tipo de informação "funcionarios_por_municipio" (ou "funcionarios_ao_longo_do_tempo" se a mensagem explicitamente falar de evolução no tempo).
 - Não substitua um filtro explícito por outro: se a mensagem mencionar classificacao e municipio, capture os dois.
 - Exemplos de menções que devem virar classificacao: alimentação, hospedagem, transportes, comércios e serviços, entretenimento, agências e operadores, restaurantes, bares, hotéis, pousadas.
 - Os exemplos acima são apenas ilustrativos; não copie cidade, município ou qualquer outro valor dos exemplos para pedidos que não o mencionem explicitamente.

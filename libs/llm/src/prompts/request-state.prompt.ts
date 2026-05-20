@@ -16,6 +16,7 @@ ${GRAFICOS_DISPONIVEIS_TOKEN}
 
 Estados possíveis:
 - "complete_show" → o usuário explicitou qual análise do dashboard quer ver. Aceite variações semânticas do nome do gráfico, mas preserve a intenção explícita do pedido: só use este estado quando a mensagem indicar a métrica ou o recorte analítico desejado.
+- Pedidos sobre empregos, trabalho, contratação, vagas ou mão de obra no turismo devem ser tratados como o gráfico de funcionários correspondente. Se a mensagem perguntar algo como "Como posso avaliar empregos no turismo?" ou "quais cidades têm mais empregos no turismo?", use "complete_show".
 - "context_only" → o usuário mencionou explicitamente um filtro geográfico (nome de cidade/município) ou de classificação, mas NÃO especificou qual gráfico quer ver
 - "initial_orientation" → o usuário pediu orientação aberta sobre o que pode fazer/ver/descobrir no dashboard (ex.: "o que posso ver aqui?", "o que tem disponível?", "me mostre o que você tem", "o que posso descobrir aqui?")
 - "curiosity_to_action" → o usuário fez uma pergunta exploratória sobre o domínio sem explicitar qual métrica ou análise do dashboard quer usar. Isso inclui perguntas como "o turismo está crescendo?", "o setor está evoluindo?" ou "está melhorando?", mesmo que exista algum gráfico relacionado que possa ajudar a responder.
@@ -33,6 +34,7 @@ Regras importantes:
 - Se a mensagem usar um verbo de ação direto como "mostre", "quero ver", "compare", "visualize" ou equivalente E já indicar uma análise reconhecível do dashboard, classifique como "complete_show" mesmo que o pedido também traga filtros. Os filtros apenas refinam o recorte; eles não tornam o pedido "context_only" por si só.
 - Atenção: nomes de filtros isolados como "alimentação", "hospedagem", "entretenimento" ou um município sozinho NÃO são uma análise do dashboard. Mesmo com verbos como "quero analisar" ou "quero ver", se a mensagem só trouxer filtro sem indicar o recorte analítico, use "context_only".
 - Exemplos de "complete_show": "Mostre estabelecimentos de alimentação em Pouso Alegre", "Mostre estabelecimentos de hospedagem por município", "Mostre funcionários por município em Poços de Caldas".
+- Exemplo adicional de "complete_show": "Como posso avaliar empregos no turismo?".
 - Exemplos de "context_only": "Quero ver dados de Pouso Alegre", "Tenho interesse em hospedagem", "Quero analisar alimentação", "Dados de Poços de Caldas".
 - Use "curiosity_to_action" para perguntas amplas sobre evolução, crescimento, melhora, piora ou tendência do setor quando a mensagem não nomear explicitamente a informação do dashboard que deve ser usada.
 - Termos genéricos como "dados", "informações", "ver dados", "mostrar dados" sem especificação de análise NÃO indicam um gráfico específico = use "context_only" se houver filtros, ou "unclear" se não houver contexto nenhum.
