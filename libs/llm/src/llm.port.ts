@@ -9,6 +9,9 @@ export interface ConversationTurn {
   content: string;
 }
 
+// Schemas com preprocess transformam entrada arbitrária em uma saída tipada.
+export type StructuredSchema<T> = z.ZodType<T, z.ZodTypeDef, unknown>;
+
 /**
  * Interface de porta para qualquer adaptador de LLM.
  * `generateStructured` envia uma string de entrada e espera
@@ -21,7 +24,7 @@ export interface ConversationTurn {
  */
 export interface LlmPort {
   generateStructured<T>(
-    schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+    schema: StructuredSchema<T>,
     input: string,
     systemPrompt: string,
     history?: ConversationTurn[],

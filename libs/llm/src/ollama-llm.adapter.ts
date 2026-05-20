@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { z } from "zod";
-import type { LlmPort, ConversationTurn } from "./llm.port.js";
+import type { LlmPort, ConversationTurn, StructuredSchema } from "./llm.port.js";
 import {
   logLlmInit,
   logLlmRequest,
@@ -78,7 +78,7 @@ export class OllamaLlmAdapter implements LlmPort {
   }
 
   async generateStructured<T>(
-    schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+    schema: StructuredSchema<T>,
     input: string,
     systemPrompt: string,
     history?: ConversationTurn[],

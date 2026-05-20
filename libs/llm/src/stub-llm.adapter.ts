@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { LlmPort, ConversationTurn } from "./llm.port.js";
+import type { LlmPort, ConversationTurn, StructuredSchema } from "./llm.port.js";
 
 // ── Keyword detection helpers (shared across schema dispatch) ───
 
@@ -300,7 +300,7 @@ function buildIntentV1Response(lower: string, filters: Record<string, unknown>):
  */
 export class StubLlmAdapter implements LlmPort {
   async generateStructured<T>(
-    schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+    schema: StructuredSchema<T>,
     input: string,
     systemPrompt: string,
     history?: ConversationTurn[],
