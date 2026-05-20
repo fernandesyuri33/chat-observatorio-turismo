@@ -17,8 +17,8 @@ import {
 
 const runRealLlmTests = process.env["RUN_REAL_LLM_TESTS"] === "true";
 const describeRealLlm = runRealLlmTests ? describe : describe.skip;
-const datasetTimeout = 600_000;
-const repetitionTimeout = 1_200_000;
+const datasetTimeout = 1_200_000;
+const repetitionTimeout = 2_400_000;
 const datasetFilter = process.env["REAL_LLM_EVAL_DATASET"]?.trim().toLocaleLowerCase("pt-BR");
 const caseFilter = process.env["REAL_LLM_EVAL_CASE"]?.trim().toLocaleLowerCase("pt-BR");
 
@@ -54,8 +54,9 @@ function selectCases(dataset: string, cases: DatasetCase[]): DatasetCase[] {
 }
 
 const fullCommandCases: DatasetCase[] = [
+  // ===== estabelecimentos_por_municipio =====
   {
-    name: "estabelecimentos por município",
+    name: "estabelecimentos por município - sem filtros (v1)",
     message: "Mostre estabelecimentos por município",
     expected: {
       expectedStage1Classification: "complete_show",
@@ -65,37 +66,57 @@ const fullCommandCases: DatasetCase[] = [
     },
   },
   {
-    name: "funcionários por município",
-    message: "Mostre funcionários por município",
+    name: "estabelecimentos por município - sem filtros (v2)",
+    message: "Quero ver todos os estabelecimentos por município",
     expected: {
       expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
-      expectedInformationType: "funcionarios_por_municipio",
+      expectedInformationType: "estabelecimentos_por_municipio",
       expectNoFilters: true,
     },
   },
   {
-    name: "funcionários ao longo do tempo",
-    message: "Mostre funcionários ao longo do tempo",
+    name: "estabelecimentos por município - sem filtros (v3)",
+    message: "Exiba os estabelecimentos distribuídos por município",
     expected: {
       expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
-      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedInformationType: "estabelecimentos_por_municipio",
       expectNoFilters: true,
     },
   },
   {
-    name: "saldo de funcionários ao longo do tempo",
-    message: "Mostre saldo de funcionários ao longo do tempo",
+    name: "estabelecimentos de alimentação por município (v1)",
+    message: "Mostre estabelecimentos de alimentação por município",
     expected: {
       expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
-      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
-      expectNoFilters: true,
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { classificacao: "alimentação" },
     },
   },
   {
-    name: "estabelecimentos de hospedagem por município",
+    name: "estabelecimentos de alimentação por município (v2)",
+    message: "Quero ver onde estão os restaurantes e bares por cidade",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { classificacao: "alimentação" },
+    },
+  },
+  {
+    name: "estabelecimentos de alimentação por município (v3)",
+    message: "Dados de estabelecimentos de alimentação distribuídos nos municípios",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { classificacao: "alimentação" },
+    },
+  },
+  {
+    name: "estabelecimentos de hospedagem por município (v1)",
     message: "Mostre estabelecimentos de hospedagem por município",
     expected: {
       expectedStage1Classification: "complete_show",
@@ -105,17 +126,133 @@ const fullCommandCases: DatasetCase[] = [
     },
   },
   {
-    name: "funcionários por município em Poços de Caldas",
-    message: "Mostre funcionários por município em Poços de Caldas",
+    name: "estabelecimentos de hospedagem por município (v2)",
+    message: "Quantos hotéis e pousadas tem em cada cidade?",
     expected: {
       expectedStage1Classification: "complete_show",
       allowedActionTypes: ["open_url"],
-      expectedInformationType: "funcionarios_por_municipio",
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { classificacao: "hospedagem" },
+    },
+  },
+  {
+    name: "estabelecimentos de hospedagem por município (v3)",
+    message: "Me mostra onde estão as hospedarias distribuídas por município",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { classificacao: "hospedagem" },
+    },
+  },
+  {
+    name: "estabelecimentos de transportes por município (v1)",
+    message: "Mostre estabelecimentos de transportes por município",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { classificacao: "transportes" },
+    },
+  },
+  {
+    name: "estabelecimentos de transportes por município (v2)",
+    message: "Quantas empresas de transporte atuam em cada município?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { classificacao: "transportes" },
+    },
+  },
+  {
+    name: "estabelecimentos em Poços de Caldas (v1)",
+    message: "Mostre estabelecimentos em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
       expectedFilters: { municipio: "Poços de Caldas" },
     },
   },
   {
-    name: "estabelecimentos de alimentação em Pouso Alegre",
+    name: "estabelecimentos em Poços de Caldas (v2)",
+    message: "Quero saber quais negócios tem em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { municipio: "Poços de Caldas" },
+    },
+  },
+  {
+    name: "estabelecimentos em Pouso Alegre (v1)",
+    message: "Mostre estabelecimentos em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { municipio: "Pouso Alegre" },
+    },
+  },
+  {
+    name: "estabelecimentos em Pouso Alegre (v2)",
+    message: "Me mostra os negócios de Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { municipio: "Pouso Alegre" },
+    },
+  },
+  {
+    name: "estabelecimentos em Divinópolis (v1)",
+    message: "Mostre estabelecimentos em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { municipio: "Divinópolis" },
+    },
+  },
+  {
+    name: "estabelecimentos em Divinópolis (v2)",
+    message: "Dados de estabelecimentos em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { municipio: "Divinópolis" },
+    },
+  },
+  {
+    name: "estabelecimentos de alimentação em Poços de Caldas (v1)",
+    message: "Mostre estabelecimentos de alimentação em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de alimentação em Poços de Caldas (v2)",
+    message: "Quantos restaurantes tem em Poços de Caldas?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de alimentação em Pouso Alegre (v1)",
     message: "Mostre estabelecimentos de alimentação em Pouso Alegre",
     expected: {
       expectedStage1Classification: "complete_show",
@@ -124,6 +261,1017 @@ const fullCommandCases: DatasetCase[] = [
       expectedFilters: {
         classificacao: "alimentação",
         municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de alimentação em Pouso Alegre (v2)",
+    message: "Me mostra onde comer em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de alimentação em Divinópolis (v1)",
+    message: "Mostre estabelecimentos de alimentação em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de alimentação em Divinópolis (v2)",
+    message: "Dados de restaurantes e bares em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de hospedagem em Poços de Caldas (v1)",
+    message: "Mostre estabelecimentos de hospedagem em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de hospedagem em Poços de Caldas (v2)",
+    message: "Onde ficar em Poços de Caldas? Quantas opções têm?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de hospedagem em Pouso Alegre (v1)",
+    message: "Mostre estabelecimentos de hospedagem em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de hospedagem em Pouso Alegre (v2)",
+    message: "Hotéis e pousadas em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de hospedagem em Divinópolis (v1)",
+    message: "Mostre estabelecimentos de hospedagem em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de hospedagem em Divinópolis (v2)",
+    message: "Hospedarias em Divinópolis - lista completa",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de transportes em Poços de Caldas (v1)",
+    message: "Mostre estabelecimentos de transportes em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de transportes em Poços de Caldas (v2)",
+    message: "Transporte e logística em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de transportes em Pouso Alegre (v1)",
+    message: "Mostre estabelecimentos de transportes em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de transportes em Pouso Alegre (v2)",
+    message: "Empresas de transporte em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de transportes em Divinópolis (v1)",
+    message: "Mostre estabelecimentos de transportes em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "estabelecimentos de transportes em Divinópolis (v2)",
+    message: "Transportadoras e logística em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+
+  // ===== funcionarios_por_municipio =====
+  {
+    name: "funcionários por município - sem filtros (v1)",
+    message: "Mostre funcionários por município",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectNoFilters: true,
+    },
+  },
+  {
+    name: "funcionários por município - sem filtros (v2)",
+    message: "Quantos funcionários trabalham em cada cidade?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectNoFilters: true,
+    },
+  },
+  {
+    name: "funcionários de alimentação por município (v1)",
+    message: "Mostre funcionários de alimentação por município",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { classificacao: "alimentação" },
+    },
+  },
+  {
+    name: "funcionários de alimentação por município (v2)",
+    message: "Quantos funcionários o setor de alimentação tem em cada município?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { classificacao: "alimentação" },
+    },
+  },
+  {
+    name: "funcionários de hospedagem por município (v1)",
+    message: "Mostre funcionários de hospedagem por município",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { classificacao: "hospedagem" },
+    },
+  },
+  {
+    name: "funcionários de hospedagem por município (v2)",
+    message: "Mão de obra no setor hoteleiro por cidade",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { classificacao: "hospedagem" },
+    },
+  },
+  {
+    name: "funcionários de transportes por município (v1)",
+    message: "Mostre funcionários de transportes por município",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { classificacao: "transportes" },
+    },
+  },
+  {
+    name: "funcionários de transportes por município (v2)",
+    message: "Empregos em transportes por cidade",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { classificacao: "transportes" },
+    },
+  },
+  {
+    name: "funcionários em Poços de Caldas (v1)",
+    message: "Mostre funcionários em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { municipio: "Poços de Caldas" },
+    },
+  },
+  {
+    name: "funcionários em Poços de Caldas (v2)",
+    message: "Quantas pessoas trabalham em Poços de Caldas?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { municipio: "Poços de Caldas" },
+    },
+  },
+  {
+    name: "funcionários em Pouso Alegre (v1)",
+    message: "Mostre funcionários em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { municipio: "Pouso Alegre" },
+    },
+  },
+  {
+    name: "funcionários em Pouso Alegre (v2)",
+    message: "Dados de emprego em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { municipio: "Pouso Alegre" },
+    },
+  },
+  {
+    name: "funcionários em Divinópolis (v1)",
+    message: "Mostre funcionários em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { municipio: "Divinópolis" },
+    },
+  },
+  {
+    name: "funcionários em Divinópolis (v2)",
+    message: "Força de trabalho em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { municipio: "Divinópolis" },
+    },
+  },
+  {
+    name: "funcionários de alimentação em Poços de Caldas (v1)",
+    message: "Mostre funcionários de alimentação em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "funcionários de alimentação em Poços de Caldas (v2)",
+    message: "Pessoal que trabalha com alimentação em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "funcionários de alimentação em Pouso Alegre (v1)",
+    message: "Mostre funcionários de alimentação em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "funcionários de alimentação em Pouso Alegre (v2)",
+    message: "Empregos em restaurantes e bares - Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "funcionários de alimentação em Divinópolis (v1)",
+    message: "Mostre funcionários de alimentação em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "funcionários de alimentação em Divinópolis (v2)",
+    message: "Setor alimentício - empregos em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "funcionários de hospedagem em Poços de Caldas (v1)",
+    message: "Mostre funcionários de hospedagem em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "funcionários de hospedagem em Poços de Caldas (v2)",
+    message: "Quantos trabalham na hotelaria em Poços de Caldas?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "funcionários de hospedagem em Pouso Alegre (v1)",
+    message: "Mostre funcionários de hospedagem em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "funcionários de hospedagem em Pouso Alegre (v2)",
+    message: "Hotéis e pousadas - mercado de trabalho em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "funcionários de hospedagem em Divinópolis (v1)",
+    message: "Mostre funcionários de hospedagem em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "funcionários de hospedagem em Divinópolis (v2)",
+    message: "Empregos na hospedagem - Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "funcionários de transportes em Poços de Caldas (v1)",
+    message: "Mostre funcionários de transportes em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "funcionários de transportes em Poços de Caldas (v2)",
+    message: "Trabalho no transporte - Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "funcionários de transportes em Pouso Alegre (v1)",
+    message: "Mostre funcionários de transportes em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "funcionários de transportes em Pouso Alegre (v2)",
+    message: "Logística e transportes - empregos em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "funcionários de transportes em Divinópolis (v1)",
+    message: "Mostre funcionários de transportes em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "funcionários de transportes em Divinópolis (v2)",
+    message: "Setor de transporte - força de trabalho em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+
+  // ===== funcionarios_ao_longo_do_tempo =====
+  {
+    name: "funcionários ao longo do tempo - sem filtros (v1)",
+    message: "Mostre funcionários ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectNoFilters: true,
+    },
+  },
+  {
+    name: "funcionários ao longo do tempo - sem filtros (v2)",
+    message: "Como o emprego evoluiu ao longo dos anos?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectNoFilters: true,
+    },
+  },
+  {
+    name: "funcionários de alimentação ao longo do tempo (v1)",
+    message: "Mostre funcionários de alimentação ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "alimentação" },
+    },
+  },
+  {
+    name: "funcionários de alimentação ao longo do tempo (v2)",
+    message: "Evolução do setor de alimentação nos últimos anos",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "alimentação" },
+    },
+  },
+  {
+    name: "funcionários de hospedagem ao longo do tempo (v1)",
+    message: "Mostre funcionários de hospedagem ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "hospedagem" },
+    },
+  },
+  {
+    name: "funcionários de hospedagem ao longo do tempo (v2)",
+    message: "Como cresceu o turismo (mercado hoteleiro) ao longo do tempo?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "hospedagem" },
+    },
+  },
+  {
+    name: "funcionários de transportes ao longo do tempo (v1)",
+    message: "Mostre funcionários de transportes ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "transportes" },
+    },
+  },
+  {
+    name: "funcionários de transportes ao longo do tempo (v2)",
+    message: "Tendência de empregos em transporte ao longo dos anos",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "transportes" },
+    },
+  },
+  {
+    name: "funcionários em Poços de Caldas ao longo do tempo (v1)",
+    message: "Mostre funcionários em Poços de Caldas ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Poços de Caldas" },
+    },
+  },
+  {
+    name: "funcionários em Poços de Caldas ao longo do tempo (v2)",
+    message: "Evolução do emprego em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Poços de Caldas" },
+    },
+  },
+  {
+    name: "funcionários em Pouso Alegre ao longo do tempo (v1)",
+    message: "Mostre funcionários em Pouso Alegre ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Pouso Alegre" },
+    },
+  },
+  {
+    name: "funcionários em Pouso Alegre ao longo do tempo (v2)",
+    message: "Série histórica de emprego em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Pouso Alegre" },
+    },
+  },
+  {
+    name: "funcionários em Divinópolis ao longo do tempo (v1)",
+    message: "Mostre funcionários em Divinópolis ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Divinópolis" },
+    },
+  },
+  {
+    name: "funcionários em Divinópolis ao longo do tempo (v2)",
+    message: "Crescimento de empregos em Divinópolis - série temporal",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Divinópolis" },
+    },
+  },
+  {
+    name: "funcionários de alimentação em Poços de Caldas ao longo do tempo (v1)",
+    message: "Mostre funcionários de alimentação em Poços de Caldas ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "funcionários de alimentação em Poços de Caldas ao longo do tempo (v2)",
+    message: "Como evoluiu o setor de alimentação em Poços de Caldas?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "funcionários de hospedagem em Pouso Alegre ao longo do tempo (v1)",
+    message: "Mostre funcionários de hospedagem em Pouso Alegre ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "funcionários de hospedagem em Pouso Alegre ao longo do tempo (v2)",
+    message: "Crescimento do turismo em Pouso Alegre - série histórica",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "funcionários de transportes em Divinópolis ao longo do tempo (v1)",
+    message: "Mostre funcionários de transportes em Divinópolis ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "funcionários de transportes em Divinópolis ao longo do tempo (v2)",
+    message: "Trajetória de empregos em transporte - Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+
+  // ===== saldo_funcionarios_ao_longo_do_tempo =====
+  {
+    name: "saldo de funcionários ao longo do tempo - sem filtros (v1)",
+    message: "Mostre saldo de funcionários ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectNoFilters: true,
+    },
+  },
+  {
+    name: "saldo de funcionários ao longo do tempo - sem filtros (v2)",
+    message: "Qual foi o saldo de criação de empregos ao longo dos anos?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectNoFilters: true,
+    },
+  },
+  {
+    name: "saldo de funcionários de alimentação ao longo do tempo (v1)",
+    message: "Mostre saldo de funcionários de alimentação ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "alimentação" },
+    },
+  },
+  {
+    name: "saldo de funcionários de alimentação ao longo do tempo (v2)",
+    message: "Balanço de empregos no setor de alimentação",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "alimentação" },
+    },
+  },
+  {
+    name: "saldo de funcionários de hospedagem ao longo do tempo (v1)",
+    message: "Mostre saldo de funcionários de hospedagem ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "hospedagem" },
+    },
+  },
+  {
+    name: "saldo de funcionários de hospedagem ao longo do tempo (v2)",
+    message: "Quantos empregos foram criados no turismo?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "hospedagem" },
+    },
+  },
+  {
+    name: "saldo de funcionários de transportes ao longo do tempo (v1)",
+    message: "Mostre saldo de funcionários de transportes ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "transportes" },
+    },
+  },
+  {
+    name: "saldo de funcionários de transportes ao longo do tempo (v2)",
+    message: "Empregos ganhos ou perdidos em transportes?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "transportes" },
+    },
+  },
+  {
+    name: "saldo de funcionários em Poços de Caldas ao longo do tempo (v1)",
+    message: "Mostre saldo de funcionários em Poços de Caldas ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Poços de Caldas" },
+    },
+  },
+  {
+    name: "saldo de funcionários em Poços de Caldas ao longo do tempo (v2)",
+    message: "Balanço de empregos em Poços de Caldas",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Poços de Caldas" },
+    },
+  },
+  {
+    name: "saldo de funcionários em Pouso Alegre ao longo do tempo (v1)",
+    message: "Mostre saldo de funcionários em Pouso Alegre ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Pouso Alegre" },
+    },
+  },
+  {
+    name: "saldo de funcionários em Pouso Alegre ao longo do tempo (v2)",
+    message: "Saldo de novos empregos em Pouso Alegre",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Pouso Alegre" },
+    },
+  },
+  {
+    name: "saldo de funcionários em Divinópolis ao longo do tempo (v1)",
+    message: "Mostre saldo de funcionários em Divinópolis ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Divinópolis" },
+    },
+  },
+  {
+    name: "saldo de funcionários em Divinópolis ao longo do tempo (v2)",
+    message: "Variação de empregos em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Divinópolis" },
+    },
+  },
+  {
+    name: "saldo de funcionários de alimentação em Poços de Caldas ao longo do tempo (v1)",
+    message: "Mostre saldo de funcionários de alimentação em Poços de Caldas ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "saldo de funcionários de alimentação em Poços de Caldas ao longo do tempo (v2)",
+    message: "O setor de alimentação cresceu em Poços de Caldas?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "alimentação",
+        municipio: "Poços de Caldas",
+      },
+    },
+  },
+  {
+    name: "saldo de funcionários de hospedagem em Pouso Alegre ao longo do tempo (v1)",
+    message: "Mostre saldo de funcionários de hospedagem em Pouso Alegre ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "saldo de funcionários de hospedagem em Pouso Alegre ao longo do tempo (v2)",
+    message: "Turismo está gerando mais empregos em Pouso Alegre?",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Pouso Alegre",
+      },
+    },
+  },
+  {
+    name: "saldo de funcionários de transportes em Divinópolis ao longo do tempo (v1)",
+    message: "Mostre saldo de funcionários de transportes em Divinópolis ao longo do tempo",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Divinópolis",
+      },
+    },
+  },
+  {
+    name: "saldo de funcionários de transportes em Divinópolis ao longo do tempo (v2)",
+    message: "Mercado de transporte - saldo de empregos em Divinópolis",
+    expected: {
+      expectedStage1Classification: "complete_show",
+      allowedActionTypes: ["open_url"],
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: {
+        classificacao: "transportes",
+        municipio: "Divinópolis",
       },
     },
   },
