@@ -6,6 +6,19 @@ import { PolicyEngine, type PolicyConfig } from "@conversational/policy";
 import { StubLlmAdapter, type ConversationTurn } from "@conversational/llm";
 import { LookerProvider } from "@conversational/providers";
 
+function parseUrlAndParams(urlString: string): {
+  url: URL;
+  params: Record<string, unknown> | null;
+} {
+  const url = new URL(urlString);
+  const rawParams = url.searchParams.get("params");
+
+  return {
+    url,
+    params: rawParams ? JSON.parse(rawParams) as Record<string, unknown> : null,
+  };
+}
+
 const testPolicyConfig: PolicyConfig = {
   minConfidence: 0.5,
   synonyms: {
@@ -33,9 +46,24 @@ const testPolicyConfig: PolicyConfig = {
   ],
   looker: {
     baseUrl: "https://datastudio.google.com/embed/reporting/abc123/page/p_1",
-    paramMap: {
-      classificacao: "classification",
-      municipio: "city",
+    paramMap: {},
+    paramMapByInformationType: {
+      estabelecimentos_por_municipio: {
+        municipio: "ds19.p_municipio",
+        classificacao: "ds19.p_classificacao",
+      },
+      funcionarios_por_municipio: {
+        municipio: "ds17.p_municipio",
+        classificacao: "ds17.p_classificacao",
+      },
+      funcionarios_ao_longo_do_tempo: {
+        municipio: "ds18.p_municipio",
+        classificacao: "ds18.p_classificacao",
+      },
+      saldo_funcionarios_ao_longo_do_tempo: {
+        municipio: "ds20.p_municipio",
+        classificacao: "ds20.p_classificacao",
+      },
     },
     informationTypeMap: {
       estabelecimentos_por_municipio: "p_estabelecimentos",
@@ -150,6 +178,29 @@ describe("POST /mensagem", () => {
     expect(body.action.suggestions).toEqual([
       "Visualizar a quantidade de funcionários ao longo do tempo",
     ]);
+  });
+
+  it("retorna open_url com params do Looker mapeados por recorte", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/mensagem",
+      payload: {
+        message: "Mostre funcionários por município em Poços de Caldas",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const body = response.json();
+    expect(body.action.type).toBe("open_url");
+
+    if (body.action.type === "open_url") {
+      const { url, params } = parseUrlAndParams(body.action.url);
+      expect(url.pathname).toContain("/page/p_funcionarios_municipio");
+      expect(params).toEqual({
+        "ds17.p_municipio": "Poços de Caldas",
+      });
+    }
   });
 
   it("usa e persiste histórico quando recebe x-conversation-id", async () => {

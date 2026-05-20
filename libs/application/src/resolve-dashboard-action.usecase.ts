@@ -9,12 +9,13 @@ import {
   type ExtractionResult,
   type ResponseDecision,
 } from "@conversational/domain";
-import type { LlmPort, ConversationTurn } from "@conversational/llm";
 import {
   buildRequestStatePrompt,
   buildExtractionPrompt,
   buildFriendlyMessagePrompt,
   buildFriendlyMessageInput,
+  type LlmPort,
+  type ConversationTurn,
 } from "@conversational/llm";
 import {
   PolicyEngine,
@@ -69,7 +70,7 @@ export interface ResolveRequest {
  *
  * O pipeline opera em **3 etapas sequenciais**, cada uma com responsabilidade isolada:
  *
- * ### Etapa 1 — Request State Detection (LLM)
+    extraction = await llm.generateStructured<ExtractionResult>(
  * Classifica a mensagem do usuário em um dos estados de pedido
  * (`complete_show`, `context_only`, `initial_orientation`, `curiosity_to_action`, `unclear`).
  * Pedidos de orientação inicial ou mensagens vagas (`unclear`) fazem short-circuit
@@ -106,7 +107,7 @@ export async function resolveDashboardAction(
   const requestStatePrompt = buildRequestStatePrompt();
   let requestState: RequestStateResult;
   try {
-    requestState = await llm.generateStructured(
+    requestState = await llm.generateStructured<RequestStateResult>(
       RequestStateResultSchema,
       request.message,
       requestStatePrompt,
@@ -166,7 +167,7 @@ export async function resolveDashboardAction(
 
   let extraction: ExtractionResult;
   try {
-    extraction = await llm.generateStructured(
+    extraction = await llm.generateStructured<ExtractionResult>(
       ExtractionResultSchema,
       request.message,
       buildExtractionPrompt(),
@@ -246,12 +247,7 @@ export async function resolveDashboardAction(
 
 // ── Helpers internos ────────────────────────────────────────────
 
-type StrictIntentFilters = {
-  classificacao?: ExtractionResult["proposedFilters"]["classificacao"] extends infer C
-    ? Exclude<C, null>
-    : never;
-  municipio?: string;
-};
+type StrictIntentFilters = NormalizedIntent["proposedFilters"];
 
 /**
  * Converte proposedFilters do ExtractionResult (que pode conter null via Zod)
@@ -260,10 +256,17 @@ type StrictIntentFilters = {
 function stripNullFilters(
   filters: ExtractionResult["proposedFilters"]
 ): StrictIntentFilters {
-  return {
-    classificacao: filters.classificacao ?? undefined,
-    municipio: filters.municipio ?? undefined,
-  };
+  const normalizedFilters: StrictIntentFilters = {};
+
+  if (filters.classificacao !== null && filters.classificacao !== undefined) {
+    normalizedFilters.classificacao = filters.classificacao;
+  }
+
+  if (filters.municipio !== null && filters.municipio !== undefined) {
+    normalizedFilters.municipio = filters.municipio;
+  }
+
+  return normalizedFilters;
 }
 
 /**

@@ -26,9 +26,9 @@
 
 ## 3.6.3 Filtros suportados
 
-- `classificacao`: nome interno do filtro. No provider Looker, é serializado como `classification` via `paramMap`. O tipo esperado é enum textual com os valores de `ClassificacaoSchema`; no schema de filtros ele aparece como opcional e anulável. É validado por `IntentV1FiltersSchema` e preservado na normalização apenas se estiver no conjunto `CLASSIFICACOES`. Base: intent.v1.schema.ts, policy-engine.ts, policy.ts, looker-provider.ts.
+- `classificacao`: nome interno do filtro. No provider Looker, ele é traduzido para nomes diferentes conforme o `informationType` resolvido na policy (`paramMapByInformationType`). No ambiente atual, por exemplo, vira `ds19.p_classificacao` em `estabelecimentos_por_municipio`, `ds17.p_classificacao` em `funcionarios_por_municipio`, `ds18.p_classificacao` em `funcionarios_ao_longo_do_tempo` e `ds20.p_classificacao` em `saldo_funcionarios_ao_longo_do_tempo`. O tipo esperado é enum textual com os valores de `ClassificacaoSchema`; no schema de filtros ele aparece como opcional e anulável. É validado por `IntentV1FiltersSchema` e preservado na normalização apenas se estiver no conjunto `CLASSIFICACOES`. Base: intent.v1.schema.ts, policy-engine.ts, policy.ts, looker-provider.ts.
 
-- `municipio`: nome interno do filtro. No provider Looker, é serializado como `city` via `paramMap`. O tipo esperado é `string` não vazia, opcional e anulável no schema, e é preservado na normalização quando for `string` com comprimento maior que zero. Não há lista canônica de municípios no código. Base: intent.v1.schema.ts, policy-engine.ts, policy.ts, looker-provider.ts.
+- `municipio`: nome interno do filtro. No provider Looker, ele também é traduzido conforme o `informationType` resolvido na policy (`paramMapByInformationType`): `ds19.p_municipio`, `ds17.p_municipio`, `ds18.p_municipio` ou `ds20.p_municipio`, dependendo da página do Looker. O tipo esperado é `string` não vazia, opcional e anulável no schema, e é preservado na normalização quando for `string` com comprimento maior que zero. Não há lista canônica de municípios no código. Base: intent.v1.schema.ts, policy-engine.ts, policy.ts, looker-provider.ts.
 
 - Não há outros filtros de domínio suportados no pipeline atual. O conjunto permitido é explicitamente limitado a `classificacao` e `municipio` por `ALLOWED_FILTER_KEYS` e pelo próprio schema `IntentV1FiltersSchema`. Base: intent.v1.schema.ts, policy-engine.ts.
 
@@ -246,7 +246,8 @@ POST /mensagem
 ```text
 url = new URL(looker.baseUrl)
 url = resolveUrlForInformationType(informationType)
-mappedParams = remap(intent.proposedFilters, looker.paramMap)
+paramMap = resolveParamMap(informationType)
+mappedParams = remap(intent.proposedFilters, paramMap)
 if mappedParams não vazio:
   url.searchParams.set("params", JSON.stringify(mappedParams))
 return open_url(url.toString())
@@ -256,7 +257,7 @@ Base: looker-provider.ts.
 
 - `resolveUrlForInformationType` usa `looker.baseUrl` e `looker.informationTypeMap`. Se o mapeamento for uma URL absoluta, ela é usada diretamente. Se começar com `/`, o `pathname` é substituído. Caso contrário, a função remove o trecho final `/page/...` da base e reconstrói o caminho como `/page/<mappedPage>`. Base: looker-provider.ts.
 
-- A `baseUrl`, o `informationTypeMap` e o `paramMap` vêm da configuração validada em `policyConfig`. Base: policy.ts, schema em policy-config.schema.ts.
+- A `baseUrl`, o `informationTypeMap`, o `paramMapByInformationType` e o `paramMap` de fallback vêm da configuração validada em `policyConfig`. Base: policy.ts, schema em policy-config.schema.ts.
 
 ## 3.8.3 Mapeamento de páginas
 
@@ -272,11 +273,15 @@ Base: looker-provider.ts.
 
 ## 3.8.4 Mapeamento de parâmetros
 
-- `classificacao -> classification`. Base: policy.ts, looker-provider.ts.
+- `estabelecimentos_por_municipio`: `municipio -> ds19.p_municipio` e `classificacao -> ds19.p_classificacao`. Base: policy.ts, looker-provider.ts.
 
-- `municipio -> city`. Base: policy.ts, looker-provider.ts.
+- `funcionarios_por_municipio`: `municipio -> ds17.p_municipio` e `classificacao -> ds17.p_classificacao`. Base: policy.ts, looker-provider.ts.
 
-- Os filtros não viram parâmetros query separados. O provider monta um objeto JSON `mappedParams` e o serializa inteiro no parâmetro `params`. Padrão resultante: `...?params=<JSON URL-encoded>`. Base: looker-provider.ts.
+- `funcionarios_ao_longo_do_tempo`: `municipio -> ds18.p_municipio` e `classificacao -> ds18.p_classificacao`. Base: policy.ts, looker-provider.ts.
+
+- `saldo_funcionarios_ao_longo_do_tempo`: `municipio -> ds20.p_municipio` e `classificacao -> ds20.p_classificacao`. Base: policy.ts, looker-provider.ts.
+
+- Os filtros não viram parâmetros query separados. O provider monta um objeto JSON `mappedParams` e o serializa inteiro no parâmetro `params`. Padrão resultante: `...?params=<JSON URL-encoded>`. Apenas os filtros realmente presentes em `intent.proposedFilters` entram nesse objeto. Base: looker-provider.ts.
 
 - Se não houver filtros, o parâmetro `params` simplesmente não é adicionado à URL. Base: looker-provider.ts.
 

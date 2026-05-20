@@ -59,6 +59,24 @@ export const policyConfig: PolicyConfig = PolicyConfigSchema.parse({
     baseUrl:
       "https://datastudio.google.com/embed/reporting/70b05460-31ac-47ad-87e0-d7201ca27609/page/",
     paramMap: {},
+    paramMapByInformationType: {
+      estabelecimentos_por_municipio: {
+        municipio: "ds19.p_municipio",
+        classificacao: "ds19.p_classificacao",
+      },
+      funcionarios_por_municipio: {
+        municipio: "ds17.p_municipio",
+        classificacao: "ds17.p_classificacao",
+      },
+      funcionarios_ao_longo_do_tempo: {
+        municipio: "ds18.p_municipio",
+        classificacao: "ds18.p_classificacao",
+      },
+      saldo_funcionarios_ao_longo_do_tempo: {
+        municipio: "ds20.p_municipio",
+        classificacao: "ds20.p_classificacao",
+      },
+    },
     informationTypeMap: {
       estabelecimentos_por_municipio: "p_3niel4jewd",
       funcionarios_por_municipio: "p_joj1sbkewd",

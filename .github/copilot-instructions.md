@@ -237,7 +237,8 @@ At **every** failure point the pipeline returns an `explain_only` fallback
 | `history.ttlSeconds` | Redis TTL for each conversation history key in seconds (default: `1800`) | <!-- Updated: configurable Redis expiration --> |
 | `curiosityFaq` | Configurable FAQ-style examples used to deterministically validate and answer `curiosity_to_action` intents (`questionExamples[]`, `response`, `suggestion`, `informationType`) | <!-- Updated: added deterministic curiosity mapping config --> |
 | `looker.baseUrl` | Looker Studio embed URL (with report/page path) |
-| `looker.paramMap` | Maps canonical filter keys → keys used inside the `params` JSON payload |
+| `looker.paramMap` | Optional global fallback mapping for canonical filter keys inside the `params` JSON payload |
+| `looker.paramMapByInformationType` | Primary mapping of canonical filter keys → Looker Studio parameter names for each `informationType` (`ds17.*`, `ds18.*`, `ds19.*`, `ds20.*`) | <!-- Updated: filter params now vary by information type --> |
 | `looker.informationTypeMap` | Maps `informationType` values → Looker page path/id (or full URL) <!-- Updated: page mapping by information type --> |
 
 Policy normalization is strict by default: unknown filter keys are removed before provider execution. <!-- Updated: strict behavior is now fixed, no mode switch -->

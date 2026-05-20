@@ -7,11 +7,32 @@ const POLICY_INFORMATION_TYPE_VALUES = [
   "estabelecimentos_por_municipio",
 ] as const;
 
+const LOOKER_FILTER_KEY_VALUES = ["municipio", "classificacao"] as const;
+
 const CuriosityFaqEntrySchema = z.object({
   questionExamples: z.array(z.string().min(1)).min(1),
   response: z.string().min(1),
   suggestion: z.string().min(1),
   informationType: z.enum(POLICY_INFORMATION_TYPE_VALUES),
+});
+
+const LookerParamMapSchema = z.object({
+  municipio: z.string().min(1).optional(),
+  classificacao: z.string().min(1).optional(),
+});
+
+const LookerParamMapByInformationTypeSchema = z.object({
+  funcionarios_ao_longo_do_tempo: LookerParamMapSchema.optional(),
+  saldo_funcionarios_ao_longo_do_tempo: LookerParamMapSchema.optional(),
+  funcionarios_por_municipio: LookerParamMapSchema.optional(),
+  estabelecimentos_por_municipio: LookerParamMapSchema.optional(),
+});
+
+const LookerInformationTypeMapSchema = z.object({
+  funcionarios_ao_longo_do_tempo: z.string().min(1),
+  saldo_funcionarios_ao_longo_do_tempo: z.string().min(1),
+  funcionarios_por_municipio: z.string().min(1),
+  estabelecimentos_por_municipio: z.string().min(1),
 });
 
 // ── Schema Zod de configuração de política ──────────────────────
@@ -35,8 +56,9 @@ export const PolicyConfigSchema = z.object({
   curiosityFaq: z.array(CuriosityFaqEntrySchema).optional(),
   looker: z.object({
     baseUrl: z.string().url(),
-    paramMap: z.record(z.string()),
-    informationTypeMap: z.record(z.string()),
+    paramMap: z.record(z.enum(LOOKER_FILTER_KEY_VALUES), z.string()).default({}),
+    paramMapByInformationType: LookerParamMapByInformationTypeSchema.optional(),
+    informationTypeMap: LookerInformationTypeMapSchema,
   }),
 });
 

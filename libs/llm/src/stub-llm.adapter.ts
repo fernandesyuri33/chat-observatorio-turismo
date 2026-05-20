@@ -300,7 +300,7 @@ function buildIntentV1Response(lower: string, filters: Record<string, unknown>):
  */
 export class StubLlmAdapter implements LlmPort {
   async generateStructured<T>(
-    schema: z.ZodType<T>,
+    schema: z.ZodType<T, z.ZodTypeDef, unknown>,
     input: string,
     systemPrompt: string,
     history?: ConversationTurn[],

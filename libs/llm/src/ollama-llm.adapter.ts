@@ -78,7 +78,7 @@ export class OllamaLlmAdapter implements LlmPort {
   }
 
   async generateStructured<T>(
-    schema: z.ZodType<T>,
+    schema: z.ZodType<T, z.ZodTypeDef, unknown>,
     input: string,
     systemPrompt: string,
     history?: ConversationTurn[],

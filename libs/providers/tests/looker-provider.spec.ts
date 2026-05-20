@@ -5,9 +5,24 @@ import type { IntentV1 } from "@conversational/domain";
 
 const lookerConfig: PolicyConfig["looker"] = {
   baseUrl: "https://datastudio.google.com/embed/reporting/abc123/page/p_1",
-  paramMap: {
-    classificacao: "classification",
-    municipio: "city",
+  paramMap: {},
+  paramMapByInformationType: {
+    estabelecimentos_por_municipio: {
+      municipio: "ds19.p_municipio",
+      classificacao: "ds19.p_classificacao",
+    },
+    funcionarios_por_municipio: {
+      municipio: "ds17.p_municipio",
+      classificacao: "ds17.p_classificacao",
+    },
+    funcionarios_ao_longo_do_tempo: {
+      municipio: "ds18.p_municipio",
+      classificacao: "ds18.p_classificacao",
+    },
+    saldo_funcionarios_ao_longo_do_tempo: {
+      municipio: "ds20.p_municipio",
+      classificacao: "ds20.p_classificacao",
+    },
   },
   informationTypeMap: {
     estabelecimentos_por_municipio: "p_estabelecimentos",
@@ -93,8 +108,26 @@ describe("LookerProvider", () => {
       const { url, params } = parseUrlAndParams(action.url);
       expect(url.pathname).toContain("/page/p_estabelecimentos");
       expect(params).toEqual({
-        city: "Poços de Caldas",
-        classification: "hospedagem",
+        "ds19.p_municipio": "Poços de Caldas",
+        "ds19.p_classificacao": "hospedagem",
+      });
+    }
+  });
+
+  it("serializa apenas o filtro informado para o recorte atual", async () => {
+    const action = await provider.generate(buildShowIntent({
+      informationType: "funcionarios_por_municipio",
+      proposedFilters: {
+        municipio: "Pouso Alegre",
+      },
+    }));
+
+    expect(action.type).toBe("open_url");
+    if (action.type === "open_url") {
+      const { url, params } = parseUrlAndParams(action.url);
+      expect(url.pathname).toContain("/page/p_funcionarios_municipio");
+      expect(params).toEqual({
+        "ds17.p_municipio": "Pouso Alegre",
       });
     }
   });

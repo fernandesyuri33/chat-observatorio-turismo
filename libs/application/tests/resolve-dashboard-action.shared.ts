@@ -83,9 +83,24 @@ export const baseTestPolicyConfig: PolicyConfig = {
   ],
   looker: {
     baseUrl: "https://datastudio.google.com/embed/reporting/abc123/page/p_1",
-    paramMap: {
-      classificacao: "classification",
-      municipio: "city",
+    paramMap: {},
+    paramMapByInformationType: {
+      estabelecimentos_por_municipio: {
+        municipio: "ds19.p_municipio",
+        classificacao: "ds19.p_classificacao",
+      },
+      funcionarios_por_municipio: {
+        municipio: "ds17.p_municipio",
+        classificacao: "ds17.p_classificacao",
+      },
+      funcionarios_ao_longo_do_tempo: {
+        municipio: "ds18.p_municipio",
+        classificacao: "ds18.p_classificacao",
+      },
+      saldo_funcionarios_ao_longo_do_tempo: {
+        municipio: "ds20.p_municipio",
+        classificacao: "ds20.p_classificacao",
+      },
     },
     informationTypeMap: {
       estabelecimentos_por_municipio: "p_estabelecimentos",
@@ -117,7 +132,7 @@ export function runResolveDashboardActionSharedSuite(
     if (result.type === "open_url") {
       const { url, params } = parseUrlAndParams(result.url);
       expect(url.pathname).toContain("/page/p_funcionarios_municipio");
-      expect(params).toEqual({ city: "Pouso Alegre" });
+      expect(params).toEqual({ "ds17.p_municipio": "Pouso Alegre" });
       assertOptionalFriendlyMessage(result);
     }
   }, timeout);
@@ -150,7 +165,7 @@ export function runResolveDashboardActionSharedSuite(
     if (result.type === "open_url") {
       const { url, params } = parseUrlAndParams(result.url);
       expect(url.pathname).toContain("/page/p_funcionarios_municipio");
-      expect(params).toEqual({ city: "Poços de Caldas" });
+      expect(params).toEqual({ "ds17.p_municipio": "Poços de Caldas" });
       assertOptionalFriendlyMessage(result);
     }
   }, timeout);
@@ -165,7 +180,7 @@ export function runResolveDashboardActionSharedSuite(
     if (result.type === "open_url") {
       const { url, params } = parseUrlAndParams(result.url);
       expect(url.pathname).toContain("/page/p_estabelecimentos");
-      expect(params).toEqual({ classification: "hospedagem" });
+      expect(params).toEqual({ "ds19.p_classificacao": "hospedagem" });
       assertOptionalFriendlyMessage(result);
     }
   }, timeout);
@@ -181,8 +196,8 @@ export function runResolveDashboardActionSharedSuite(
       const { url, params } = parseUrlAndParams(result.url);
       expect(url.pathname).toContain("/page/p_estabelecimentos");
       expect(params).toEqual({
-        classification: "alimentação",
-        city: "Poços de Caldas",
+        "ds19.p_classificacao": "alimentação",
+        "ds19.p_municipio": "Poços de Caldas",
       });
       assertOptionalFriendlyMessage(result);
     }

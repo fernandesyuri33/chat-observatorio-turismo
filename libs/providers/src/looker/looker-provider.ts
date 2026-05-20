@@ -8,7 +8,7 @@ import type { ActionProvider } from "../action-provider.js";
 
 /**
  * LookerProvider monta ações open_url usando a URL base do Looker
- * e o paramMap da configuração de política.
+ * e o mapeamento de parâmetros da configuração de política.
  */
 export class LookerProvider implements ActionProvider {
   readonly id = "looker";
@@ -60,11 +60,14 @@ export class LookerProvider implements ActionProvider {
       saldo_funcionarios_ao_longo_do_tempo: "Saldo de funcionários ao longo do tempo",
     };
 
+    const currentInformationType = intent.intent === "show" ? intent.informationType : undefined;
+    const paramMap = this.resolveParamMap(currentInformationType);
+
     const mappedParams: Record<string, unknown> = {};
 
-    // Mapeia proposedFilters via paramMap e serializa como objeto JSON em "params"
+    // Mapeia proposedFilters para os nomes esperados pelo Looker Studio.
     for (const [filterKey, filterValue] of Object.entries(intent.proposedFilters)) {
-      const paramName = this.lookerConfig.paramMap[filterKey] ?? filterKey;
+      const paramName = paramMap[filterKey] ?? filterKey;
       if (filterValue !== undefined && filterValue !== null) {
         mappedParams[paramName] = filterValue;
       }
@@ -87,6 +90,17 @@ export class LookerProvider implements ActionProvider {
         intent: intent.intent,
         informationType: intent.informationType,
       },
+    };
+  }
+
+  private resolveParamMap(informationType?: InformationType): Record<string, string> {
+    const scopedParamMap = informationType
+      ? this.lookerConfig.paramMapByInformationType?.[informationType]
+      : undefined;
+
+    return {
+      ...this.lookerConfig.paramMap,
+      ...(scopedParamMap ?? {}),
     };
   }
 

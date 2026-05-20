@@ -232,7 +232,8 @@ No estado atual do repositório, essa configuração define:
 - `history.ttlSeconds: 1800`
 - FAQ de curiosidades para perguntas como evolução do turismo, empregos e estabelecimentos
 - `looker.baseUrl` apontando para o relatório embedado
-- `looker.paramMap` com mapeamento de `classificacao -> classification` e `municipio -> city`
+- `looker.paramMapByInformationType` com o mapeamento de `municipio` e `classificacao` para os parâmetros `ds19.*`, `ds17.*`, `ds18.*` e `ds20.*` de cada recorte do Looker
+- `looker.paramMap` mantido como fallback global opcional para compatibilidade
 - `looker.informationTypeMap` com o mapeamento de cada recorte para a página correspondente do Looker
 
 Essa configuração é validada com Zod antes de ser usada.
