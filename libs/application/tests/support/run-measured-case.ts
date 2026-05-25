@@ -111,6 +111,10 @@ function summarizeAction(action: DashboardAction): Record<string, unknown> {
         message: action.message,
         meta: action.meta,
       };
+    default: {
+      const exhaustiveCheck: never = action;
+      throw new Error(`Unsupported action type: ${String(exhaustiveCheck)}`);
+    }
   }
 }
 

@@ -22,7 +22,6 @@ O sistema não tenta responder qualquer pergunta aberta. Ele é orientado a tran
 - aplicar filtros estruturados;
 - executar uma query customizada, quando um provider alternativo estiver ativo;
 - orientar o usuário quando a mensagem ainda estiver vaga;
-- pedir informação faltante quando houver contexto parcial;
 - converter perguntas exploratórias em sugestões de recorte analítico.
 
 O foco está menos em "chat livre" e mais em "interpretação de intenção para navegação e análise".
@@ -136,7 +135,6 @@ As decisões possíveis incluem:
 - dar orientação inicial;
 - dar orientação contextual;
 - executar uma visualização;
-- pedir informação faltante;
 - converter curiosidade em sugestão objetiva.
 
 ### Etapa 4: geração de mensagem amigável
@@ -145,7 +143,7 @@ Depois que a ação é decidida, o sistema faz uma chamada best-effort ao LLM pa
 
 ## 7. Tipos de ação retornados ao frontend
 
-O domínio define uma união discriminada chamada `DashboardAction`, com cinco variantes.
+O domínio define uma união discriminada chamada `DashboardAction`, com quatro variantes.
 
 ### `open_url`
 

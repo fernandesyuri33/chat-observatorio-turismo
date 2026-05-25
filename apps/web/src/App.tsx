@@ -224,12 +224,8 @@ export function App() {
     <div className="app">
       <header className="hero">
         <div>
-          <p className="eyebrow">Looker Studio Conversacional</p>
+          <p className="eyebrow">Observatório Regional do Turismo Caminhos Gerais</p>
           <h1>Dashboard conversacional</h1>
-          <p>
-            Controle filtros do Looker Studio usando linguagem natural e veja a explicacao das
-            acoes aplicadas.
-          </p>
         </div>
       </header>
 
