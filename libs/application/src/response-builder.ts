@@ -48,33 +48,6 @@ export function buildContextualOrientationSuggestions(
     .map((informationType) => INFORMATION_TYPE_LABEL[informationType]);
 }
 
-/**
- * Constrói uma ação ask_missing_information com sugestões dos tipos de análise disponíveis.
- */
-export function buildAskMissingInformationAction(
-  missing: string[],
-  filters: ContextualOrientationFilters,
-  optionCount: number
-): DashboardAction {
-  const filterContext = filters.municipio
-    ? ` para ${filters.municipio}`
-    : filters.classificacao
-      ? ` para ${filters.classificacao}`
-      : "";
-
-  const context: Record<string, string> = {};
-  if (filters.classificacao) context["classificacao"] = filters.classificacao;
-  if (filters.municipio) context["municipio"] = filters.municipio;
-
-  return {
-    type: "ask_missing_information",
-    message: `Entendi o contexto${filterContext}, mas preciso saber qual análise você quer ver. Escolha uma das opções:`,
-    suggestions: buildContextualOrientationSuggestions(optionCount),
-    missing,
-    context: Object.keys(context).length > 0 ? context : undefined,
-  };
-}
-
 // ── Builders de ação ────────────────────────────────────────────
 
 export interface CuriosityFaqData {

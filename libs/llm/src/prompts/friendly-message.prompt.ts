@@ -16,7 +16,6 @@ export interface FriendlyMessageContext {
   informationType?: string;
   filters?: Record<string, unknown>;
   suggestions?: string[];
-  missing?: string[];
   originalMessage?: string;
 }
 
@@ -38,7 +37,6 @@ Regras:
 - Adapte o tom ao tipo de ação:
   - Para visualizações ("open_url"): entusiasmo leve, indique que o gráfico está sendo exibido.
   - Para orientação ("explain_only"): tom acolhedor e prestativo.
-  - Para pedir informação faltante ("ask_missing_information"): tom gentil, explique o que precisa saber.
   - Para filtros ("apply_filters"): confirme o que foi aplicado de forma natural.
   - Para consultas ("run_query"): explique o que está sendo executado.
 - Mantenha coerência com a mensagem original do usuário.
@@ -72,10 +70,6 @@ export function buildFriendlyMessageInput(ctx: FriendlyMessageContext): string {
     if (filterParts.length > 0) {
       parts.push(`Filtros aplicados: ${filterParts.join(", ")}`);
     }
-  }
-
-  if (ctx.missing && ctx.missing.length > 0) {
-    parts.push(`Informações faltantes: ${ctx.missing.join(", ")}`);
   }
 
   if (ctx.suggestions && ctx.suggestions.length > 0) {

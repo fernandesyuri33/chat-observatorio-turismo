@@ -155,9 +155,9 @@ Imports continue using package names:
 | `apply_filters` | `filters: Record<string, string\|number\|boolean\|string[]>`, `target?: "dashboard"\|"chart"\|"table"`, `message?: string`, `meta?: Record` |
 | `run_query` | `function: string`, `args: Record`, `message?: string`, `meta?: Record` |
 | `explain_only` | `message: string`, `suggestions: string[]`, `meta?: Record` |
-| `ask_missing_information` | `message: string`, `suggestions: string[]`, `missing: string[]`, `context?: Record<string, string\|number\|boolean>`, `meta?: Record` | <!-- Updated: added message field to open_url, apply_filters, run_query for Stage 4 friendly messages -->
+<!-- Updated: removed missing-info action type to simplify response surface -->
 
-Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion`).
+Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion` com 4 variantes).
 
 ### IntentV1 (LLM structured output)
 
@@ -214,10 +214,10 @@ There is no intent-to-provider routing step — the single active provider
 
 **Stage 4 (friendly message)** operates in **best-effort** mode: if the LLM call
 fails, the original action is returned unchanged. The `message` field is injected
-into all action types. For `explain_only` and `ask_missing_information`, it
-overwrites the template message. For `open_url`, `apply_filters`, and `run_query`,
-it adds a new `message` field. The frontend prefers `message` over type-specific
-fallbacks (`title`, `JSON.stringify(filters)`, etc.).
+into all action types. For `explain_only`, it overwrites the template message.
+For `open_url`, `apply_filters`, and `run_query`, it adds a new `message` field.
+The frontend prefers `message` over type-specific fallbacks (`title`,
+`JSON.stringify(filters)`, etc.).
 
 At **every** failure point the pipeline returns an `explain_only` fallback
 (never throws to the HTTP layer).

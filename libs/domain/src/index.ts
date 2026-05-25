@@ -4,13 +4,11 @@ export {
   ApplyFiltersActionSchema,
   RunQueryActionSchema,
   ExplainOnlyActionSchema,
-  AskMissingInformationActionSchema,
   type DashboardAction,
   type OpenUrlAction,
   type ApplyFiltersAction,
   type RunQueryAction,
   type ExplainOnlyAction,
-  type AskMissingInformationAction,
 } from "./dashboard-action.schema.js";
 
 export {
@@ -45,7 +43,6 @@ export {
   ResponseDecisionSchema,
   type ResponseDecision,
   type ExecuteShowDecision,
-  type AskMissingInformationDecision,
   type GiveInitialOrientationDecision,
   type GiveContextualOrientationDecision,
   type ConvertCuriosityToActionDecision,

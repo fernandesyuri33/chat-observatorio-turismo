@@ -9,12 +9,6 @@ const ExecuteShowDecisionSchema = z.object({
   filters: IntentV1FiltersSchema,
 });
 
-const AskMissingInformationDecisionSchema = z.object({
-  responseType: z.literal("ask_missing_information"),
-  missing: z.array(z.string()),
-  context: IntentV1FiltersSchema,
-});
-
 const GiveInitialOrientationDecisionSchema = z.object({
   responseType: z.literal("give_initial_orientation"),
 });
@@ -37,7 +31,6 @@ const ConvertCuriosityToActionDecisionSchema = z.object({
  */
 export const ResponseDecisionSchema = z.discriminatedUnion("responseType", [
   ExecuteShowDecisionSchema,
-  AskMissingInformationDecisionSchema,
   GiveInitialOrientationDecisionSchema,
   GiveContextualOrientationDecisionSchema,
   ConvertCuriosityToActionDecisionSchema,
@@ -45,7 +38,6 @@ export const ResponseDecisionSchema = z.discriminatedUnion("responseType", [
 
 export type ResponseDecision = z.infer<typeof ResponseDecisionSchema>;
 export type ExecuteShowDecision = z.infer<typeof ExecuteShowDecisionSchema>;
-export type AskMissingInformationDecision = z.infer<typeof AskMissingInformationDecisionSchema>;
 export type GiveInitialOrientationDecision = z.infer<typeof GiveInitialOrientationDecisionSchema>;
 export type GiveContextualOrientationDecision = z.infer<typeof GiveContextualOrientationDecisionSchema>;
 export type ConvertCuriosityToActionDecision = z.infer<typeof ConvertCuriosityToActionDecisionSchema>;

@@ -105,14 +105,6 @@ function summarizeAction(action: DashboardAction): Record<string, unknown> {
         message: action.message,
         meta: action.meta,
       };
-    case "ask_missing_information":
-      return {
-        missing: action.missing,
-        context: action.context,
-        suggestions: action.suggestions,
-        message: action.message,
-        meta: action.meta,
-      };
     case "explain_only":
       return {
         suggestions: action.suggestions,

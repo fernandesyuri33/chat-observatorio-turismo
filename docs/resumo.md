@@ -168,10 +168,6 @@ Usada pelo provider customizado. Representa a intenção de executar uma funçã
 
 Usada quando o sistema quer orientar, sugerir ou responder sem acionar uma navegação direta.
 
-### `ask_missing_information`
-
-Usada quando a mensagem já contém parte do contexto, mas falta uma informação obrigatória para completar a ação.
-
 ## 8. Modelo de provider único
 
 O sistema suporta múltiplos providers registrados, mas opera com apenas um provider ativo por vez.

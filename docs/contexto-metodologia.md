@@ -2,7 +2,7 @@
 
 ## 3.6.1 Estados da solicitação
 
-- `complete_show`: indica que a mensagem já aponta para um recorte analítico executável por um dos gráficos disponíveis. É produzido na Etapa 1 por `llm.generateStructured(RequestStateResultSchema, ..., buildRequestStatePrompt())`. Na decisão final, pode levar a `execute_show`, `ask_missing_information` ou `give_initial_orientation`, dependendo de `candidateInformationType`, presença de filtros e `minConfidence`. Exemplo inferível: “Mostre funcionários por município em Pouso Alegre”. Base: `REQUEST_STATE_VALUES`, `RequestStateSchema`, `RequestStateResultSchema` em request-state.schema.ts; prompt em request-state.prompt.ts; uso em `resolveDashboardAction` em resolve-dashboard-action.usecase.ts; decisão em `routeResponse` em response-router.ts; testes em response-router.spec.ts e domain.spec.ts.
+- `complete_show`: indica que a mensagem já aponta para um recorte analítico executável por um dos gráficos disponíveis. É produzido na Etapa 1 por `llm.generateStructured(RequestStateResultSchema, ..., buildRequestStatePrompt())`. Na decisão final, pode levar a `execute_show`, `give_contextual_orientation` ou `give_initial_orientation`, dependendo de `candidateInformationType`, presença de filtros e `minConfidence`. Exemplo inferível: “Mostre funcionários por município em Pouso Alegre”. Base: `REQUEST_STATE_VALUES`, `RequestStateSchema`, `RequestStateResultSchema` em request-state.schema.ts; prompt em request-state.prompt.ts; uso em `resolveDashboardAction` em resolve-dashboard-action.usecase.ts; decisão em `routeResponse` em response-router.ts; testes em response-router.spec.ts e domain.spec.ts.
 
 - `context_only`: indica que o usuário informou apenas contexto de filtro, sem especificar qual análise quer ver. É produzido na Etapa 1. Na decisão final, leva a `give_contextual_orientation`, que depois vira uma ação `explain_only` com sugestões de análises possíveis. Exemplo inferível: “Quero ver dados de Poços de Caldas”. Base: request-state.schema.ts, request-state.prompt.ts, response-router.ts, response-builder.ts; testes em resolve-dashboard-action.shared.ts, response-router.spec.ts e rotas.spec.ts.
 
@@ -32,7 +32,7 @@
 
 - Não há outros filtros de domínio suportados no pipeline atual. O conjunto permitido é explicitamente limitado a `classificacao` e `municipio` por `ALLOWED_FILTER_KEYS` e pelo próprio schema `IntentV1FiltersSchema`. Base: intent.v1.schema.ts, policy-engine.ts.
 
-- No contrato frontend-backend, filtros não entram como campos estruturados da requisição principal; a entrada formal é apenas `message`. Na resposta, filtros podem reaparecer em `rationale.stage2.filters`, em `ask_missing_information.context` e em `apply_filters.filters`. O estado `context_only` continua se referindo a mensagens cujo texto traz apenas contexto analítico, não a um `ctx` enviado pelo frontend. Base: contrato em contrato-mensagem-post.schema.ts; envio real em App.tsx; decisão em response-router.ts.
+- No contrato frontend-backend, filtros não entram como campos estruturados da requisição principal; a entrada formal é apenas `message`. Na resposta, filtros podem reaparecer em `rationale.stage2.filters`, em `apply_filters.filters`. O estado `context_only` continua se referindo a mensagens cujo texto traz apenas contexto analítico, não a um `ctx` enviado pelo frontend. Base: contrato em contrato-mensagem-post.schema.ts; envio real em App.tsx; decisão em response-router.ts.
 
 ## 3.6.4 Valores aceitos
 
@@ -60,7 +60,7 @@
 
 - Tipos de informação não suportados não têm tratamento como quinto ou sexto `informationType`; o conjunto é fechado em quatro valores. Se a LLM devolver um tipo inválido em `candidateInformationType`, a validação de schema da Etapa 2 falha e o caso de uso retorna orientação inicial. Base: intent.v1.schema.ts, extraction-result.schema.ts, resolve-dashboard-action.usecase.ts.
 
-- Solicitações sem informação suficiente são tratadas de dois modos. Se o usuário só deu contexto de filtro, o estado vira `context_only` e a resposta é orientação contextual. Se a classificação foi `complete_show` mas faltou `informationType` e há filtros, o sistema retorna `ask_missing_information`. Base: response-router.ts, response-builder.ts, testes em response-router.spec.ts.
+- Solicitações sem informação suficiente são tratadas de dois modos. Se o usuário só deu contexto de filtro, o estado vira `context_only` e a resposta é orientação contextual. Se a classificação foi `complete_show` mas faltou `informationType` e há filtros, o sistema também retorna orientação contextual. Base: response-router.ts, response-builder.ts, testes em response-router.spec.ts.
 
 - Pedidos por dados que não existem no domínio atual, como métricas de visitas ou filtro de ano, estão fora do escopo do código vigente: não há `informationType`, filtro nem `paramMap` para isso. O exemplo de README.md com “visitas” e “2024” não corresponde ao modelo atual e não deve ser usado como fonte principal da metodologia. Base: ausência em intent.v1.schema.ts e policy.ts; exemplo divergente em README.md.
 
@@ -95,7 +95,7 @@ POST /mensagem
 
 - A decisão sem LLM fica em `routeResponse`. Base: response-router.ts.
 
-- A tradução de decisão para `DashboardAction` fica em `executeDecision`, `resolveInitialOrientationAction`, `buildAskMissingInformationAction`, `buildCuriosityToAction` e builders correlatos. Base: resolve-dashboard-action.usecase.ts, response-builder.ts.
+- A tradução de decisão para `DashboardAction` fica em `executeDecision`, `resolveInitialOrientationAction`, `buildCuriosityToAction` e builders correlatos. Base: resolve-dashboard-action.usecase.ts, response-builder.ts.
 
 - O provider ativo é injetado em main.ts a partir de `activeProvider`. Base: main.ts, policy.ts.
 
@@ -161,7 +161,7 @@ POST /mensagem
 
 - `complete_show` com `candidateInformationType` válido leva a `execute_show`. Base: response-router.ts, teste em response-router.spec.ts.
 
-- `complete_show` sem `candidateInformationType`, mas com filtros, leva a `ask_missing_information` com `missing: ["informationType"]`. Base: response-router.ts, teste em response-router.spec.ts.
+- `complete_show` sem `candidateInformationType`, mas com filtros, leva a `give_contextual_orientation`. Base: response-router.ts, teste em response-router.spec.ts.
 
 - `complete_show` sem `candidateInformationType` e sem filtros leva a `give_initial_orientation`. Base: response-router.ts.
 
@@ -177,13 +177,13 @@ POST /mensagem
 
 - `convert_curiosity_to_action` vira `explain_only` com `message`, `suggestions` e `meta.curiosityToAction`. Base: response-builder.ts.
 
-- `ask_missing_information` vira `ask_missing_information` com `missing`, `context` e sugestões das análises disponíveis. Base: response-builder.ts.
+- `give_contextual_orientation` vira `explain_only` com sugestões das análises disponíveis. Base: response-builder.ts.
 
 - `execute_show` reconstrói um `IntentV1` com `intent: "show"`, `informationType`, `proposedFilters`, `confidence` e `rationale` da extração e então chama `provider.generate(intentForProvider)`. Base: resolve-dashboard-action.usecase.ts.
 
-- Os tipos de `DashboardAction` existentes no domínio são cinco: `open_url`, `apply_filters`, `run_query`, `explain_only` e `ask_missing_information`. Base: dashboard-action.schema.ts, testes em domain.spec.ts.
+- Os tipos de `DashboardAction` existentes no domínio são quatro: `open_url`, `apply_filters`, `run_query` e `explain_only`. Base: dashboard-action.schema.ts, testes em domain.spec.ts.
 
-- Na integração atual com `activeProvider: "looker"`, os tipos efetivamente usados são `open_url`, `explain_only` e `ask_missing_information`. `run_query` só aparece quando o provider ativo é `custom`. `apply_filters` existe no schema e no frontend, mas “não identificado no repositório” nenhum provider atual que o emita. Base: policy.ts, main.ts, looker-provider.ts, custom-provider.ts, App.tsx.
+- Na integração atual com `activeProvider: "looker"`, os tipos efetivamente usados são `open_url` e `explain_only`. `run_query` só aparece quando o provider ativo é `custom`. `apply_filters` existe no schema e no frontend, mas “não identificado no repositório” nenhum provider atual que o emita. Base: policy.ts, main.ts, looker-provider.ts, custom-provider.ts, App.tsx.
 
 - O provider ativo é escolhido em main.ts pelo valor `policyConfig.activeProvider`. O registro atual contém `looker` e `custom`; se o id configurado não existir, a API lança erro na inicialização. Base: main.ts, policy.ts.
 
@@ -195,7 +195,7 @@ POST /mensagem
 
 - O modo é `best-effort`: se a geração falhar, a ação original é devolvida sem alteração. Base: `enrichWithFriendlyMessage` em resolve-dashboard-action.usecase.ts.
 
-- Quando funciona, essa etapa sempre sobrescreve ou injeta o campo `message` na ação final. Para `explain_only` e `ask_missing_information`, isso substitui a mensagem anterior; para `open_url`, `apply_filters` e `run_query`, isso adiciona uma mensagem. Base: resolve-dashboard-action.usecase.ts, dashboard-action.schema.ts.
+- Quando funciona, essa etapa sempre sobrescreve ou injeta o campo `message` na ação final. Para `explain_only`, isso substitui a mensagem anterior; para `open_url`, `apply_filters` e `run_query`, isso adiciona uma mensagem. Base: resolve-dashboard-action.usecase.ts, dashboard-action.schema.ts.
 
 - O contexto enviado para a Etapa 4 inclui `userMessage`, `actionType`, `informationType` do `meta` quando a ação é `open_url`, filtros extraídos, sugestões, campos faltantes e a mensagem original do sistema. Base: friendly-message.prompt.ts.
 
@@ -209,7 +209,7 @@ POST /mensagem
 
 - Filtro desconhecido: é descartado na normalização e não chega ao provider. Base: policy-engine.ts.
 
-- Informação faltante: quando há contexto de filtros mas falta qual análise mostrar, o sistema produz `ask_missing_information`; quando há apenas contexto solto, produz orientação contextual. Base: response-router.ts, response-builder.ts.
+- Informação faltante: quando há contexto de filtros mas falta qual análise mostrar, o sistema produz orientação contextual (`explain_only`); quando há apenas contexto solto, produz orientação contextual. Base: response-router.ts, response-builder.ts.
 
 - Provider sem suporte: se `activeProvider` apontar para um id ausente do `providerRegistry`, a API nem inicia. No repositório atual, os dois providers implementam todos os intents modelados. Base: main.ts, action-provider.ts, looker-provider.ts, custom-provider.ts.
 
@@ -297,7 +297,7 @@ Base: looker-provider.ts.
 
 - Para `run_query`, o frontend também não executa nada além de exibir a mensagem `message ?? "Executando: <function>"`. Não há executor concreto de `run_query` no cliente. Base: App.tsx, custom-provider.ts.
 
-- Para `explain_only` e `ask_missing_information`, o frontend atualiza as `suggestion chips` com `data.action.suggestions` e escreve a `message` no chat. Base: App.tsx.
+- Para `explain_only`, o frontend atualiza as `suggestion chips` com `data.action.suggestions` e escreve a `message` no chat. Base: App.tsx.
 
 - O componente `ActionPanel` exibe `rationale.stage1`, `rationale.stage2`, o tipo da última ação e o JSON completo de `lastAction`. Isso torna visíveis classificação, confiança, `informationType` e filtros extraídos. Base: App.tsx.
 

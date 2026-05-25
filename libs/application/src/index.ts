@@ -18,7 +18,6 @@ export {
   buildContextualOrientationMessage,
   buildContextualOrientationSuggestions,
   buildCuriosityToAction,
-  buildAskMissingInformationAction,
   buildDefaultInitialOrientationAction,
   resolveInitialOrientationAction,
 } from "./response-builder.js";

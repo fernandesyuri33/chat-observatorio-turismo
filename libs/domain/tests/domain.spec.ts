@@ -84,39 +84,6 @@ describe("DashboardActionSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("aceita uma ação ask_missing_information válida", () => {
-    const result = DashboardActionSchema.safeParse({
-      type: "ask_missing_information",
-      message: "Preciso saber qual análise você quer ver.",
-      suggestions: ["Estabelecimentos por município"],
-      missing: ["informationType"],
-      context: { municipio: "Pouso Alegre" },
-    });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.type).toBe("ask_missing_information");
-    }
-  });
-
-  it("aceita ask_missing_information sem context", () => {
-    const result = DashboardActionSchema.safeParse({
-      type: "ask_missing_information",
-      message: "Qual análise você quer ver?",
-      suggestions: [],
-      missing: ["informationType"],
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejeita ask_missing_information sem missing", () => {
-    const result = DashboardActionSchema.safeParse({
-      type: "ask_missing_information",
-      message: "Qual análise?",
-      suggestions: [],
-      // faltando missing
-    });
-    expect(result.success).toBe(false);
-  });
 });
 
 describe("IntentV1Schema", () => {
@@ -367,15 +334,6 @@ describe("ResponseDecisionSchema", () => {
       responseType: "execute_show",
       informationType: "funcionarios_por_municipio",
       filters: { municipio: "Pouso Alegre" },
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("aceita ask_missing_information válido", () => {
-    const result = ResponseDecisionSchema.safeParse({
-      responseType: "ask_missing_information",
-      missing: ["informationType"],
-      context: { municipio: "Pouso Alegre" },
     });
     expect(result.success).toBe(true);
   });

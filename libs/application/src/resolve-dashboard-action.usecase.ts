@@ -30,7 +30,6 @@ import {
   buildContextualOrientationMessage,
   buildContextualOrientationSuggestions,
   buildCuriosityToAction,
-  buildAskMissingInformationAction,
   resolveInitialOrientationAction,
 } from "./response-builder.js";
 
@@ -347,13 +346,6 @@ async function executeDecision(
         informationType: decision.faqInformationType,
       });
 
-    case "ask_missing_information":
-      return buildAskMissingInformationAction(
-        decision.missing,
-        decision.context,
-        config.fallback.contextualOrientationOptionCount
-      );
-
     case "execute_show": {
       const intentForProvider: IntentV1 = {
         intent: "show",
@@ -411,7 +403,6 @@ async function enrichWithFriendlyMessage(
       informationType,
       filters: extraction.proposedFilters as Record<string, unknown>,
       suggestions: "suggestions" in action ? (action as { suggestions?: string[] }).suggestions : undefined,
-      missing: "missing" in action ? (action as { missing?: string[] }).missing : undefined,
       originalMessage,
     });
 

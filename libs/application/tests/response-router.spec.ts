@@ -114,7 +114,7 @@ describe("routeResponse", () => {
     expect(decision.responseType).toBe("give_initial_orientation");
   });
 
-  it("retorna ask_missing_information para complete_show sem informationType mas com filtros", () => {
+  it("retorna give_contextual_orientation para complete_show sem informationType mas com filtros", () => {
     const decision = routeResponse({
       requestState: makeRequestState("complete_show"),
       extraction: makeExtraction({
@@ -124,9 +124,9 @@ describe("routeResponse", () => {
       config,
       message: "Mostre dados de Pouso Alegre",
     });
-    expect(decision.responseType).toBe("ask_missing_information");
-    if (decision.responseType === "ask_missing_information") {
-      expect(decision.missing).toContain("informationType");
+    expect(decision.responseType).toBe("give_contextual_orientation");
+    if (decision.responseType === "give_contextual_orientation") {
+      expect(decision.filters.municipio).toBe("Pouso Alegre");
     }
   });
 

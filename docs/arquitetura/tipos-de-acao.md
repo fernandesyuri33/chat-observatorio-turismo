@@ -17,12 +17,5 @@ classDiagram
         mensagem: string
     }
 
-    class PedirInformacaoFaltante {
-        tipo: "ask_missing_information"
-        mensagem: string
-        camposFaltantes: string[]
-    }
-
     AcaoDashboard <|-- AbrirUrl
     AcaoDashboard <|-- ApenasExplicar
-    AcaoDashboard <|-- PedirInformacaoFaltante

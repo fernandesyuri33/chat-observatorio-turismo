@@ -49,7 +49,7 @@ export function routeResponse(params: RouteResponseParams): ResponseDecision {
     return { responseType: "give_initial_orientation" };
   }
 
-  // ── Context only → orientação contextual ou ask missing
+  // ── Context only → orientação contextual
   if (state === "context_only") {
     const filters = extraction?.proposedFilters ?? {};
     return {
@@ -74,7 +74,7 @@ export function routeResponse(params: RouteResponseParams): ResponseDecision {
       };
     }
 
-    // Complete show sem informationType → pedir informação faltante
+    // Complete show sem informationType e com filtros → orientação contextual
     const filters = extraction.proposedFilters;
     const hasFilters = Object.keys(filters).some(
       (key) => filters[key as keyof typeof filters] !== undefined
@@ -82,9 +82,8 @@ export function routeResponse(params: RouteResponseParams): ResponseDecision {
 
     if (hasFilters) {
       return {
-        responseType: "ask_missing_information",
-        missing: ["informationType"],
-        context: filters,
+        responseType: "give_contextual_orientation",
+        filters,
       };
     }
 
