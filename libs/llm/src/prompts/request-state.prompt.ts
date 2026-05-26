@@ -1,7 +1,7 @@
 // ── Prompt de sistema — Etapa 1: Request State Detection ────────
 // Classifica o estado do pedido do usuário sem extrair dados estruturados.
 
-import { GRAFICOS_DASHBOARD } from "@conversational/domain";
+import { GRAFICOS_DASHBOARD, ClassificacaoSchema } from "@conversational/domain";
 
 const CLASSIFICACAO_PLACEHOLDER_TOKEN = "__CLASSIFICACAO_OPTIONS__";
 const GRAFICOS_DISPONIVEIS_TOKEN = "__GRAFICOS_DISPONIVEIS__";
@@ -66,5 +66,10 @@ export function buildRequestStatePrompt(): string {
     const variacoesList = g.variacoes.map((v) => `  - "${v}"`).join("\n");
     return `- ${g.descricao}\n  Exemplos de pedidos que correspondem a este gráfico:\n${variacoesList}`;
   }).join("\n");
-  return REQUEST_STATE_PROMPT.replace(GRAFICOS_DISPONIVEIS_TOKEN, bullets);
+
+  const classificacaoList = ClassificacaoSchema.options.join(" | ");
+
+  return REQUEST_STATE_PROMPT
+    .replace(GRAFICOS_DISPONIVEIS_TOKEN, bullets)
+    .replace(CLASSIFICACAO_PLACEHOLDER_TOKEN, classificacaoList);
 }
