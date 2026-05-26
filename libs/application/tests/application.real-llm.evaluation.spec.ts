@@ -17,8 +17,8 @@ import {
 
 const runRealLlmTests = process.env["RUN_REAL_LLM_TESTS"] === "true";
 const describeRealLlm = runRealLlmTests ? describe : describe.skip;
-const datasetTimeout = 1_200_000;
-const repetitionTimeout = 2_400_000;
+const datasetTimeout = 28_800_000;
+const repetitionTimeout = 28_800_000;
 const datasetFilter = process.env["REAL_LLM_EVAL_DATASET"]?.trim().toLocaleLowerCase("pt-BR");
 const caseFilter = process.env["REAL_LLM_EVAL_CASE"]?.trim().toLocaleLowerCase("pt-BR");
 
