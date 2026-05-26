@@ -33,15 +33,6 @@ describe("DashboardActionSchema", () => {
     }
   });
 
-  it("aceita uma ação apply_filters válida", () => {
-    const result = DashboardActionSchema.safeParse({
-      type: "apply_filters",
-      filters: { cidade: "Sao Paulo", ano: "2024" },
-      target: "dashboard",
-    });
-    expect(result.success).toBe(true);
-  });
-
   it("aceita uma ação run_query válida", () => {
     const result = DashboardActionSchema.safeParse({
       type: "run_query",

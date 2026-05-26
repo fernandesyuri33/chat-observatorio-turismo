@@ -37,7 +37,6 @@ Regras:
 - Adapte o tom ao tipo de ação:
   - Para visualizações ("open_url"): entusiasmo leve, indique que o gráfico está sendo exibido.
   - Para orientação ("explain_only"): tom acolhedor e prestativo.
-  - Para filtros ("apply_filters"): confirme o que foi aplicado de forma natural.
   - Para consultas ("run_query"): explique o que está sendo executado.
 - Mantenha coerência com a mensagem original do usuário.
 

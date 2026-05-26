@@ -143,7 +143,7 @@ Depois que a ação é decidida, o sistema faz uma chamada best-effort ao LLM pa
 
 ## 7. Tipos de ação retornados ao frontend
 
-O domínio define uma união discriminada chamada `DashboardAction`, com quatro variantes.
+O domínio define uma união discriminada chamada `DashboardAction`, com três variantes.
 
 ### `open_url`
 
@@ -153,10 +153,6 @@ Usada principalmente pelo provider Looker. Contém:
 - `title` opcional;
 - `message` opcional;
 - `meta` opcional.
-
-### `apply_filters`
-
-Representa aplicação de filtros estruturados em algum alvo da UI.
 
 ### `run_query`
 

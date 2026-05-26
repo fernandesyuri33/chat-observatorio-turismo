@@ -191,9 +191,6 @@ export function App() {
         case "open_url":
           assistantText = data.action.message ?? data.action.title ?? `Abrindo: ${data.action.url}`;
           break;
-        case "apply_filters":
-          assistantText = data.action.message ?? `Filtros aplicados: ${JSON.stringify(data.action.filters)}`;
-          break;
         case "run_query":
           assistantText = data.action.message ?? `Executando: ${data.action.function}`;
           break;

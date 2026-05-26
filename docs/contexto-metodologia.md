@@ -32,7 +32,7 @@
 
 - Não há outros filtros de domínio suportados no pipeline atual. O conjunto permitido é explicitamente limitado a `classificacao` e `municipio` por `ALLOWED_FILTER_KEYS` e pelo próprio schema `IntentV1FiltersSchema`. Base: intent.v1.schema.ts, policy-engine.ts.
 
-- No contrato frontend-backend, filtros não entram como campos estruturados da requisição principal; a entrada formal é apenas `message`. Na resposta, filtros podem reaparecer em `rationale.stage2.filters`, em `apply_filters.filters`. O estado `context_only` continua se referindo a mensagens cujo texto traz apenas contexto analítico, não a um `ctx` enviado pelo frontend. Base: contrato em contrato-mensagem-post.schema.ts; envio real em App.tsx; decisão em response-router.ts.
+- No contrato frontend-backend, filtros não entram como campos estruturados da requisição principal; a entrada formal é apenas `message`. Na resposta, filtros podem reaparecer em `rationale.stage2.filters` e no `params` embutido em ações `open_url`. O estado `context_only` continua se referindo a mensagens cujo texto traz apenas contexto analítico, não a um `ctx` enviado pelo frontend. Base: contrato em contrato-mensagem-post.schema.ts; envio real em App.tsx; decisão em response-router.ts.
 
 ## 3.6.4 Valores aceitos
 
@@ -181,9 +181,9 @@ POST /mensagem
 
 - `execute_show` reconstrói um `IntentV1` com `intent: "show"`, `informationType`, `proposedFilters`, `confidence` e `rationale` da extração e então chama `provider.generate(intentForProvider)`. Base: resolve-dashboard-action.usecase.ts.
 
-- Os tipos de `DashboardAction` existentes no domínio são quatro: `open_url`, `apply_filters`, `run_query` e `explain_only`. Base: dashboard-action.schema.ts, testes em domain.spec.ts.
+- Os tipos de `DashboardAction` existentes no domínio são três: `open_url`, `run_query` e `explain_only`. Base: dashboard-action.schema.ts, testes em domain.spec.ts.
 
-- Na integração atual com `activeProvider: "looker"`, os tipos efetivamente usados são `open_url` e `explain_only`. `run_query` só aparece quando o provider ativo é `custom`. `apply_filters` existe no schema e no frontend, mas “não identificado no repositório” nenhum provider atual que o emita. Base: policy.ts, main.ts, looker-provider.ts, custom-provider.ts, App.tsx.
+- Na integração atual com `activeProvider: "looker"`, os tipos efetivamente usados são `open_url` e `explain_only`. `run_query` só aparece quando o provider ativo é `custom`. Base: policy.ts, main.ts, looker-provider.ts, custom-provider.ts, App.tsx.
 
 - O provider ativo é escolhido em main.ts pelo valor `policyConfig.activeProvider`. O registro atual contém `looker` e `custom`; se o id configurado não existir, a API lança erro na inicialização. Base: main.ts, policy.ts.
 
@@ -195,7 +195,7 @@ POST /mensagem
 
 - O modo é `best-effort`: se a geração falhar, a ação original é devolvida sem alteração. Base: `enrichWithFriendlyMessage` em resolve-dashboard-action.usecase.ts.
 
-- Quando funciona, essa etapa sempre sobrescreve ou injeta o campo `message` na ação final. Para `explain_only`, isso substitui a mensagem anterior; para `open_url`, `apply_filters` e `run_query`, isso adiciona uma mensagem. Base: resolve-dashboard-action.usecase.ts, dashboard-action.schema.ts.
+- Quando funciona, essa etapa sempre sobrescreve ou injeta o campo `message` na ação final. Para `explain_only`, isso substitui a mensagem anterior; para `open_url` e `run_query`, isso adiciona uma mensagem. Base: resolve-dashboard-action.usecase.ts, dashboard-action.schema.ts.
 
 - O contexto enviado para a Etapa 4 inclui `userMessage`, `actionType`, `informationType` do `meta` quando a ação é `open_url`, filtros extraídos, sugestões, campos faltantes e a mensagem original do sistema. Base: friendly-message.prompt.ts.
 
@@ -293,8 +293,6 @@ Base: looker-provider.ts.
 
 - Para `open_url`, o frontend atualiza o `iframe` com `setEmbedUrl(data.action.url)` e monta a fala do assistente por `message ?? title ?? "Abrindo: <url>"`. Base: App.tsx.
 
-- Para `apply_filters`, o frontend não altera o `iframe`; ele apenas mostra uma mensagem textual usando `message ?? JSON.stringify(filters)`. Base: App.tsx.
-
 - Para `run_query`, o frontend também não executa nada além de exibir a mensagem `message ?? "Executando: <function>"`. Não há executor concreto de `run_query` no cliente. Base: App.tsx, custom-provider.ts.
 
 - Para `explain_only`, o frontend atualiza as `suggestion chips` com `data.action.suggestions` e escreve a `message` no chat. Base: App.tsx.
@@ -317,7 +315,7 @@ Base: looker-provider.ts.
 
 - Não existe envio de contexto estruturado de dashboard no contrato HTTP. A integração atual depende de histórico conversacional via Redis, extração de filtros a partir da linguagem natural e serialização dos filtros em `params` pelo provider ativo. Base: contrato-mensagem-post.schema.ts, rotas.ts, resolve-dashboard-action.usecase.ts, looker-provider.ts.
 
-- `apply_filters` existe no domínio e no frontend, mas não há provider atual que o emita. Isso reduz a integração atual, na prática, a `open_url` para navegação Looker e respostas textuais para o restante. Base: dashboard-action.schema.ts, App.tsx, looker-provider.ts, custom-provider.ts.
+- O domínio atual não inclui `apply_filters`. Na prática, a integração fica centrada em `open_url` para navegação Looker e em respostas textuais para os demais casos. Base: dashboard-action.schema.ts, App.tsx, looker-provider.ts, custom-provider.ts.
 
 # 3.9 Histórico conversacional
 
@@ -487,7 +485,7 @@ Base: looker-provider.ts.
 
 1. Estão bem claras no código e podem ser escritas com segurança na metodologia: os cinco estados da solicitação, os quatro `informationType`, os dois filtros suportados, o fluxo `rotas -> resolveDashboardAction -> routeResponse -> provider`, o uso do `LookerProvider` via `open_url`, o `conversationId` em `localStorage` e header `x-conversation-id`, o armazenamento do histórico em Redis com chave `history:{conversationId}`, o limite de contexto por turno e o TTL de 1800 segundos. Esses pontos estão sustentados por código e por testes em resolve-dashboard-action.shared.ts, response-router.spec.ts, curiosity-matcher.spec.ts, rotas.spec.ts, domain.spec.ts, contracts.spec.ts e history-summarizer.spec.ts. Os testes selecionados que executei passaram sem falhas reportadas.
 
-2. Dependem de confirmação manual ou merecem cautela por divergência interna: a versão exata do modelo Ollama usada na prática, porque há conflito entre código, exemplos e .env; a exposição do Ollama para o host no Docker Compose, porque o README afirma `localhost:11434` e o compose versionado não expõe essa porta; a descrição do histórico do assistente, porque o comentário do `HistoryService` fala em JSON bruto, mas a rota persiste resumo textual; o papel operacional de `INTENT_SCHEMA_VERSION`, porque o registry existe, mas não está ligado ao fluxo principal atual; e qualquer menção a `apply_filters` como comportamento real da integração Looker, porque esse tipo existe no domínio, mas não é emitido pelos providers ativos.
+2. Dependem de confirmação manual ou merecem cautela por divergência interna: a versão exata do modelo Ollama usada na prática, porque há conflito entre código, exemplos e .env; a exposição do Ollama para o host no Docker Compose, porque o README afirma `localhost:11434` e o compose versionado não expõe essa porta; a descrição do histórico do assistente, porque o comentário do `HistoryService` fala em JSON bruto, mas a rota persiste resumo textual; o papel operacional de `INTENT_SCHEMA_VERSION`, porque o registry existe, mas não está ligado ao fluxo principal atual; e qualquer menção a `apply_filters` como comportamento real da integração, porque esse tipo foi removido do domínio.
 
 3. Os arquivos que merecem mais atenção na escrita são policy.ts, resolve-dashboard-action.usecase.ts, response-router.ts, response-builder.ts, request-state.schema.ts, intent.v1.schema.ts, dashboard-action.schema.ts, looker-provider.ts, App.tsx, rotas.ts, history.service.ts, main.ts, docker-compose.yml e docker-compose.gpu.yml.
 

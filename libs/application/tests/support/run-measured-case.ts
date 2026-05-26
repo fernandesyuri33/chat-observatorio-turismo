@@ -98,13 +98,6 @@ function summarizeAction(action: DashboardAction): Record<string, unknown> {
         message: action.message,
         meta: action.meta,
       };
-    case "apply_filters":
-      return {
-        filters: action.filters,
-        target: action.target,
-        message: action.message,
-        meta: action.meta,
-      };
     case "explain_only":
       return {
         suggestions: action.suggestions,

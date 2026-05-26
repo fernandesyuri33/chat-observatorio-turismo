@@ -148,12 +148,9 @@ Response body (exemplo):
 ```json
 {
   "action": {
-    "type": "apply_filters",
-    "filters": {
-      "municipio": "Sao Paulo",
-      "classificacao": "hospedagem"
-    },
-    "target": "dashboard"
+    "type": "open_url",
+    "url": "https://datastudio.google.com/embed/reporting/70b05460-31ac-47ad-87e0-d7201ca27609/page/p_3niel4jewd?params=%7B%22ds18.municipio%22%3A%22Sao%20Paulo%22%2C%22ds18.classificacao%22%3A%22Hospedagem%22%7D",
+    "title": "Looker: Funcionários por município"
   }
 }
 ```

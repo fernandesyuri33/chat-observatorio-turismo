@@ -10,18 +10,6 @@ export const OpenUrlActionSchema = z.object({
   meta: z.record(z.any()).optional(),
 });
 
-export const ApplyFiltersActionSchema = z.object({
-  type: z.literal("apply_filters"),
-  filters: z.record(
-    z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])
-  ),
-  target: z
-    .enum(["dashboard", "chart", "table"])
-    .optional(),
-  message: z.string().optional(),
-  meta: z.record(z.any()).optional(),
-});
-
 export const RunQueryActionSchema = z.object({
   type: z.literal("run_query"),
   function: z.string(),
@@ -39,13 +27,11 @@ export const ExplainOnlyActionSchema = z.object({
 
 export const DashboardActionSchema = z.discriminatedUnion("type", [
   OpenUrlActionSchema,
-  ApplyFiltersActionSchema,
   RunQueryActionSchema,
   ExplainOnlyActionSchema,
 ]);
 
 export type DashboardAction = z.infer<typeof DashboardActionSchema>;
 export type OpenUrlAction = z.infer<typeof OpenUrlActionSchema>;
-export type ApplyFiltersAction = z.infer<typeof ApplyFiltersActionSchema>;
 export type RunQueryAction = z.infer<typeof RunQueryActionSchema>;
 export type ExplainOnlyAction = z.infer<typeof ExplainOnlyActionSchema>;

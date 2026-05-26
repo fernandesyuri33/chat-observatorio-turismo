@@ -1,12 +1,10 @@
 export {
   DashboardActionSchema,
   OpenUrlActionSchema,
-  ApplyFiltersActionSchema,
   RunQueryActionSchema,
   ExplainOnlyActionSchema,
   type DashboardAction,
   type OpenUrlAction,
-  type ApplyFiltersAction,
   type RunQueryAction,
   type ExplainOnlyAction,
 } from "./dashboard-action.schema.js";

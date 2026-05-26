@@ -83,7 +83,7 @@ apps/
 libs/
   domain/                      # Pure domain types — zero infra deps
     src/
-      dashboard-action.schema.ts   # DashboardAction discriminated union (5 variants) — all variants support optional `message` <!-- Updated: added message field to open_url, apply_filters, run_query for Stage 4 friendly messages -->
+      dashboard-action.schema.ts   # DashboardAction discriminated union (3 variants) — all variants support optional `message` when applicable <!-- Updated: removed apply_filters variant and kept message support for open_url/run_query -->
       friendly-message.schema.ts   # FriendlyMessageSchema — Stage 4 LLM output schema <!-- Updated: added for AI-generated friendly messages -->
       intent.v1.schema.ts          # IntentV1 — versioned LLM structured output schema
       index.ts                     # Barrel export
@@ -152,12 +152,11 @@ Imports continue using package names:
 | Variant | Key fields |
 |---|---|
 | `open_url` | `url: string (URL)`, `title?: string`, `message?: string`, `meta?: Record` |
-| `apply_filters` | `filters: Record<string, string\|number\|boolean\|string[]>`, `target?: "dashboard"\|"chart"\|"table"`, `message?: string`, `meta?: Record` |
 | `run_query` | `function: string`, `args: Record`, `message?: string`, `meta?: Record` |
 | `explain_only` | `message: string`, `suggestions: string[]`, `meta?: Record` |
 <!-- Updated: removed missing-info action type to simplify response surface -->
 
-Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion` com 4 variantes).
+Schema: `DashboardActionSchema` (Zod `z.discriminatedUnion` com 3 variantes). <!-- Updated: removed apply_filters -->
 
 ### IntentV1 (LLM structured output)
 
@@ -215,9 +214,9 @@ There is no intent-to-provider routing step — the single active provider
 **Stage 4 (friendly message)** operates in **best-effort** mode: if the LLM call
 fails, the original action is returned unchanged. The `message` field is injected
 into all action types. For `explain_only`, it overwrites the template message.
-For `open_url`, `apply_filters`, and `run_query`, it adds a new `message` field.
+For `open_url` and `run_query`, it adds a new `message` field.
 The frontend prefers `message` over type-specific fallbacks (`title`,
-`JSON.stringify(filters)`, etc.).
+`function`, etc.).
 
 At **every** failure point the pipeline returns an `explain_only` fallback
 (never throws to the HTTP layer).
