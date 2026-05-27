@@ -10,7 +10,8 @@
     "clean:artifacts": "node tools/clean-artifacts.mjs",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
-    "test-real-llm:evaluation": "bash -lc 'set -a; source .env; set +a; pnpm -C libs/application test-real-llm:evaluation'"
+    "test-real-llm:evaluation": "bash -lc 'set -a; source .env; set +a; pnpm -C libs/application test-real-llm:evaluation'",
+    "test-real-llm:evaluation:quick": "bash -lc 'set -a; source .env; set +a; pnpm -C libs/application test-real-llm:evaluation:quick'"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

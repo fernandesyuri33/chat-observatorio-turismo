@@ -311,6 +311,7 @@ pnpm -C apps/web dev              # Vite dev server
 pnpm -C libs/domain test          # Run tests for a specific library
 pnpm -C libs/application test-real-llm # Run resolveDashboardAction tests against real Ollama LLM
 pnpm test-real-llm:evaluation      # Run optional real-LLM evaluation datasets and write artifacts/real-llm-results.json (loads .env from repo root) <!-- Updated: enforce root entrypoint for evaluation env loading -->
+pnpm test-real-llm:evaluation-quick # Run a quick subset (10%) of each real-LLM evaluation dataset using the same evaluation suite <!-- Updated: added quick evaluation command -->
 ```
 
 ### Running tests with the stub adapter
@@ -325,6 +326,7 @@ For opt-in real LLM integration tests in `libs/application/tests/application.rea
 | `RUN_REAL_LLM_TESTS` | `"true"` | Enables `resolveDashboardAction` tests that use `OllamaLlmAdapter` instead of `StubLlmAdapter` | <!-- Updated: opt-in real LLM test suite -->
 | `REAL_LLM_EVAL_DATASET` | dataset id like `"comandos_completos"` | Restricts `application.real-llm.evaluation.spec.ts` to one dataset when running evaluation | <!-- Updated: added dataset filter for real LLM evaluation -->
 | `REAL_LLM_EVAL_CASE` | case name/message substring like `"Pouso Alegre"` | Restricts `application.real-llm.evaluation.spec.ts` to matching cases within the selected dataset(s) | <!-- Updated: added case filter for real LLM evaluation -->
+| `REAL_LLM_EVAL_PERCENTAGE` | number from `0` to `100` (e.g. `10`, `25`) | Runs only the first N% of each array-based dataset in `application.real-llm.evaluation.spec.ts`; `multiturno` remains integral due to fixed turn chain | <!-- Updated: added percentage-based sampling for evaluation reuse -->
 
 The optional evaluation suite in `libs/application/tests/application.real-llm.evaluation.spec.ts`
 also depends on `RUN_REAL_LLM_TESTS=true`. It records per-case timing, stage rationale,
@@ -332,6 +334,7 @@ and action metadata to `artifacts/real-llm-results.json`, while also writing a t
 snapshot in the same folder for later model comparisons. `REAL_LLM_EVAL_CASE` does not apply to
 the fixed multi-turn scenario, which remains an all-or-nothing dataset.
 Always run this suite through the root script `pnpm test-real-llm:evaluation`, since this entrypoint loads `.env` before delegating to `libs/application`. <!-- Updated: documented evaluation artifact and enforced root entrypoint -->
+For faster smoke runs, use `pnpm test-real-llm:evaluation-quick` (equivalent to setting `REAL_LLM_EVAL_PERCENTAGE=10`), while keeping the same test file and assertions. <!-- Updated: documented quick subset flow without test duplication -->
 
 ---
 

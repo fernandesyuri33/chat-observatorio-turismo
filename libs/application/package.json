@@ -16,6 +16,7 @@
     "test": "vitest run --passWithNoTests --config vitest.config.ts",
     "test-real-llm": "RUN_REAL_LLM_TESTS=true vitest run --passWithNoTests --config vitest.config.ts tests/application.real-llm.spec.ts",
     "test-real-llm:evaluation": "RUN_REAL_LLM_TESTS=true vitest run --passWithNoTests --config vitest.config.ts tests/application.real-llm.evaluation.spec.ts",
+    "test-real-llm:evaluation:quick": "REAL_LLM_EVAL_PERCENTAGE=10 RUN_REAL_LLM_TESTS=true vitest run --passWithNoTests --config vitest.config.ts tests/application.real-llm.evaluation.spec.ts",
     "lint": "eslint src tests --max-warnings=0"
   },
   "dependencies": {

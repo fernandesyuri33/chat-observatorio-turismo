@@ -21,6 +21,7 @@ const datasetTimeout = 28_800_000;
 const repetitionTimeout = 28_800_000;
 const datasetFilter = process.env["REAL_LLM_EVAL_DATASET"]?.trim().toLocaleLowerCase("pt-BR");
 const caseFilter = process.env["REAL_LLM_EVAL_CASE"]?.trim().toLocaleLowerCase("pt-BR");
+const percentageFilter = parseEvalPercentage(process.env["REAL_LLM_EVAL_PERCENTAGE"]?.trim());
 
 type DatasetCase = {
   name: string;
@@ -51,6 +52,40 @@ function selectCases(dataset: string, cases: DatasetCase[]): DatasetCase[] {
   }
 
   return cases.filter(matchesCaseFilter);
+}
+
+function parseEvalPercentage(rawValue: string | undefined): number | undefined {
+  if (!rawValue) {
+    return undefined;
+  }
+
+  const normalizedValue = rawValue.replace(",", ".");
+  const parsedValue = Number(normalizedValue);
+
+  if (!Number.isFinite(parsedValue)) {
+    throw new Error("REAL_LLM_EVAL_PERCENTAGE deve ser um número válido entre 0 e 100.");
+  }
+
+  if (parsedValue < 0 || parsedValue > 100) {
+    throw new Error("REAL_LLM_EVAL_PERCENTAGE deve estar no intervalo de 0 a 100.");
+  }
+
+  return parsedValue;
+}
+
+function selectCasesByPercentage(dataset: string, cases: DatasetCase[]): DatasetCase[] {
+  const selectedCases = selectCases(dataset, cases);
+
+  if (percentageFilter === undefined) {
+    return selectedCases;
+  }
+
+  if (percentageFilter === 0 || selectedCases.length === 0) {
+    return [];
+  }
+
+  const selectedCount = Math.ceil((selectedCases.length * percentageFilter) / 100);
+  return selectedCases.slice(0, selectedCount);
 }
 
 const fullCommandCases: DatasetCase[] = [
@@ -1732,12 +1767,13 @@ assertMinimumDatasetCases("curiosidades", curiosityCasesExpanded);
 assertMinimumDatasetCases("fora_de_escopo", outOfScopeCasesExpanded);
 assertMinimumDatasetCases("repeticao", repeatedCommandCasesExpanded);
 
-const selectedFullCommandCases = selectCases("comandos_completos", fullCommandCases);
-const selectedContextualCases = selectCases("contextuais", contextualCasesExpanded);
-const selectedInitialOrientationCases = selectCases("orientacao_inicial", initialOrientationCasesExpanded);
-const selectedCuriosityCases = selectCases("curiosidades", curiosityCasesExpanded);
-const selectedOutOfScopeCases = selectCases("fora_de_escopo", outOfScopeCasesExpanded);
-const selectedRepeatedCommandCases = selectCases("repeticao", repeatedCommandCasesExpanded);
+const selectedFullCommandCases = selectCasesByPercentage("comandos_completos", fullCommandCases);
+const selectedContextualCases = selectCasesByPercentage("contextuais", contextualCasesExpanded);
+const selectedInitialOrientationCases = selectCasesByPercentage("orientacao_inicial", initialOrientationCasesExpanded);
+const selectedCuriosityCases = selectCasesByPercentage("curiosidades", curiosityCasesExpanded);
+const selectedOutOfScopeCases = selectCasesByPercentage("fora_de_escopo", outOfScopeCasesExpanded);
+const selectedRepeatedCommandCases = selectCasesByPercentage("repeticao", repeatedCommandCasesExpanded);
+// Multiturno permanece integral por ser um cenário encadeado fixo.
 const shouldRunMultiturn = shouldRunDataset("multiturno") && !caseFilter;
 
 describeRealLlm("resolveDashboardAction (avaliação com LLM real)", () => {
