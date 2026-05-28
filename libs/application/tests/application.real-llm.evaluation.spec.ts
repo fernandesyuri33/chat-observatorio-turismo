@@ -29,6 +29,18 @@ type DatasetCase = {
   expected?: MeasuredCaseExpectation;
 };
 
+type MultiTurnDatasetCase = DatasetCase & {
+  history: ConversationTurn[];
+};
+
+type HistoryResolvedIntent = {
+  intent: "show";
+  informationType: string;
+  proposedFilters: Record<string, unknown>;
+  confidence?: number;
+  rationale?: string;
+};
+
 function matchesCaseFilter(testCase: DatasetCase): boolean {
   if (!caseFilter) {
     return true;
@@ -46,7 +58,7 @@ function shouldRunDataset(dataset: string): boolean {
   return dataset.toLocaleLowerCase("pt-BR") === datasetFilter;
 }
 
-function selectCases(dataset: string, cases: DatasetCase[]): DatasetCase[] {
+function selectCases<T extends DatasetCase>(dataset: string, cases: T[]): T[] {
   if (!shouldRunDataset(dataset)) {
     return [];
   }
@@ -73,7 +85,7 @@ function parseEvalPercentage(rawValue: string | undefined): number | undefined {
   return parsedValue;
 }
 
-function selectCasesByPercentage(dataset: string, cases: DatasetCase[]): DatasetCase[] {
+function selectCasesByPercentage<T extends DatasetCase>(dataset: string, cases: T[]): T[] {
   const selectedCases = selectCases(dataset, cases);
 
   if (percentageFilter === undefined) {
@@ -86,6 +98,45 @@ function selectCasesByPercentage(dataset: string, cases: DatasetCase[]): Dataset
 
   const selectedCount = Math.ceil((selectedCases.length * percentageFilter) / 100);
   return selectedCases.slice(0, selectedCount);
+}
+
+function createConversationHistory(
+  previousMessage: string,
+  resolvedIntent: HistoryResolvedIntent,
+): ConversationTurn[] {
+  return [
+    { role: "user", content: previousMessage },
+    {
+      role: "assistant",
+      content: summarizeAssistantTurn(
+        JSON.stringify({
+          intent: resolvedIntent.intent,
+          informationType: resolvedIntent.informationType,
+          proposedFilters: resolvedIntent.proposedFilters,
+          confidence: resolvedIntent.confidence ?? 1,
+          rationale: resolvedIntent.rationale,
+        }),
+      ),
+    },
+  ];
+}
+
+function createMultiTurnCase(input: {
+  name: string;
+  message: string;
+  previousMessage: string;
+  previousIntent: HistoryResolvedIntent;
+  expected: MeasuredCaseExpectation;
+}): MultiTurnDatasetCase {
+  return {
+    name: input.name,
+    message: input.message,
+    history: createConversationHistory(input.previousMessage, input.previousIntent),
+    expected: {
+      allowedActionTypes: ["open_url"],
+      ...input.expected,
+    },
+  };
 }
 
 const fullCommandCases: DatasetCase[] = [
@@ -1747,6 +1798,349 @@ const repeatedCommandCasesGenerated: DatasetCase[] = fullCommandCases
     name: `repetição adicional ${index + 1} - ${testCase.name}`,
   }));
 
+const multiturnCases: MultiTurnDatasetCase[] = [
+  ...[
+    {
+      previousMessage: "Mostre funcionários por município",
+      informationType: "funcionarios_por_municipio",
+    },
+    {
+      previousMessage: "Mostre estabelecimentos por município",
+      informationType: "estabelecimentos_por_municipio",
+    },
+    {
+      previousMessage: "Mostre funcionários ao longo do tempo",
+      informationType: "funcionarios_ao_longo_do_tempo",
+    },
+    {
+      previousMessage: "Mostre saldo de funcionários ao longo do tempo",
+      informationType: "saldo_funcionarios_ao_longo_do_tempo",
+    },
+  ].flatMap(({ previousMessage, informationType }) => [
+    createMultiTurnCase({
+      name: `${informationType} -> agora em Poços de Caldas`,
+      message: "Agora em Poços de Caldas",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters: {},
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { municipio: "Poços de Caldas" },
+      },
+    }),
+    createMultiTurnCase({
+      name: `${informationType} -> agora em Pouso Alegre`,
+      message: "Agora em Pouso Alegre",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters: {},
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { municipio: "Pouso Alegre" },
+      },
+    }),
+    createMultiTurnCase({
+      name: `${informationType} -> agora em Divinópolis`,
+      message: "Agora em Divinópolis",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters: {},
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { municipio: "Divinópolis" },
+      },
+    }),
+  ]),
+  ...[
+    {
+      previousMessage: "Mostre estabelecimentos de alimentação por município",
+      informationType: "estabelecimentos_por_municipio",
+      proposedFilters: { classificacao: "alimentação" },
+    },
+    {
+      previousMessage: "Mostre estabelecimentos de hospedagem por município",
+      informationType: "estabelecimentos_por_municipio",
+      proposedFilters: { classificacao: "hospedagem" },
+    },
+    {
+      previousMessage: "Mostre funcionários de transportes por município",
+      informationType: "funcionarios_por_municipio",
+      proposedFilters: { classificacao: "transportes" },
+    },
+    {
+      previousMessage: "Mostre funcionários de alimentação ao longo do tempo",
+      informationType: "funcionarios_ao_longo_do_tempo",
+      proposedFilters: { classificacao: "alimentação" },
+    },
+    {
+      previousMessage: "Mostre saldo de funcionários de hospedagem ao longo do tempo",
+      informationType: "saldo_funcionarios_ao_longo_do_tempo",
+      proposedFilters: { classificacao: "hospedagem" },
+    },
+  ].flatMap(({ previousMessage, informationType, proposedFilters }) => [
+    createMultiTurnCase({
+      name: `${informationType} com classificação -> agora em Poços de Caldas`,
+      message: "Agora em Poços de Caldas",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters,
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { municipio: "Poços de Caldas" },
+        allowAdditionalFilters: true,
+      },
+    }),
+    createMultiTurnCase({
+      name: `${informationType} com classificação -> agora em Pouso Alegre`,
+      message: "Agora em Pouso Alegre",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters,
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { municipio: "Pouso Alegre" },
+        allowAdditionalFilters: true,
+      },
+    }),
+    createMultiTurnCase({
+      name: `${informationType} com classificação -> agora em Divinópolis`,
+      message: "Agora em Divinópolis",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters,
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { municipio: "Divinópolis" },
+        allowAdditionalFilters: true,
+      },
+    }),
+  ]),
+  ...[
+    {
+      previousMessage: "Mostre funcionários por município em Poços de Caldas",
+      informationType: "funcionarios_por_municipio",
+      proposedFilters: { municipio: "Poços de Caldas" },
+    },
+    {
+      previousMessage: "Mostre funcionários por município em Pouso Alegre",
+      informationType: "funcionarios_por_municipio",
+      proposedFilters: { municipio: "Pouso Alegre" },
+    },
+    {
+      previousMessage: "Mostre estabelecimentos por município em Divinópolis",
+      informationType: "estabelecimentos_por_municipio",
+      proposedFilters: { municipio: "Divinópolis" },
+    },
+    {
+      previousMessage: "Mostre funcionários em Poços de Caldas ao longo do tempo",
+      informationType: "funcionarios_ao_longo_do_tempo",
+      proposedFilters: { municipio: "Poços de Caldas" },
+    },
+    {
+      previousMessage: "Mostre saldo de funcionários em Pouso Alegre ao longo do tempo",
+      informationType: "saldo_funcionarios_ao_longo_do_tempo",
+      proposedFilters: { municipio: "Pouso Alegre" },
+    },
+  ].flatMap(({ previousMessage, informationType, proposedFilters }) => [
+    createMultiTurnCase({
+      name: `${informationType} com município -> agora de alimentação`,
+      message: "Agora de alimentação",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters,
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { classificacao: "alimentação" },
+        allowAdditionalFilters: true,
+      },
+    }),
+    createMultiTurnCase({
+      name: `${informationType} com município -> agora de hospedagem`,
+      message: "Agora de hospedagem",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters,
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { classificacao: "hospedagem" },
+        allowAdditionalFilters: true,
+      },
+    }),
+    createMultiTurnCase({
+      name: `${informationType} com município -> agora de transportes`,
+      message: "Agora de transportes",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters,
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { classificacao: "transportes" },
+        allowAdditionalFilters: true,
+      },
+    }),
+  ]),
+  ...[
+    {
+      previousMessage: "Mostre funcionários por município",
+      informationType: "funcionarios_por_municipio",
+    },
+    {
+      previousMessage: "Mostre estabelecimentos por município",
+      informationType: "estabelecimentos_por_municipio",
+    },
+    {
+      previousMessage: "Mostre funcionários ao longo do tempo",
+      informationType: "funcionarios_ao_longo_do_tempo",
+    },
+    {
+      previousMessage: "Mostre saldo de funcionários ao longo do tempo",
+      informationType: "saldo_funcionarios_ao_longo_do_tempo",
+    },
+  ].flatMap(({ previousMessage, informationType }) => [
+    createMultiTurnCase({
+      name: `${informationType} sem filtros -> agora de alimentação`,
+      message: "Agora de alimentação",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters: {},
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { classificacao: "alimentação" },
+      },
+    }),
+    createMultiTurnCase({
+      name: `${informationType} sem filtros -> agora de hospedagem`,
+      message: "Agora de hospedagem",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters: {},
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { classificacao: "hospedagem" },
+      },
+    }),
+    createMultiTurnCase({
+      name: `${informationType} sem filtros -> agora de transportes`,
+      message: "Agora de transportes",
+      previousMessage,
+      previousIntent: {
+        intent: "show",
+        informationType,
+        proposedFilters: {},
+      },
+      expected: {
+        expectedInformationType: informationType,
+        expectedFilters: { classificacao: "transportes" },
+      },
+    }),
+  ]),
+  createMultiTurnCase({
+    name: "estabelecimentos hospedagem em Poços -> agora em Pouso Alegre",
+    message: "Agora em Pouso Alegre",
+    previousMessage: "Mostre estabelecimentos de hospedagem em Poços de Caldas",
+    previousIntent: {
+      intent: "show",
+      informationType: "estabelecimentos_por_municipio",
+      proposedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Poços de Caldas",
+      },
+    },
+    expected: {
+      expectedInformationType: "estabelecimentos_por_municipio",
+      expectedFilters: { municipio: "Pouso Alegre" },
+      allowAdditionalFilters: true,
+    },
+  }),
+  createMultiTurnCase({
+    name: "funcionários alimentação em Divinópolis -> agora de hospedagem",
+    message: "Agora de hospedagem",
+    previousMessage: "Mostre funcionários de alimentação em Divinópolis",
+    previousIntent: {
+      intent: "show",
+      informationType: "funcionarios_por_municipio",
+      proposedFilters: {
+        classificacao: "alimentação",
+        municipio: "Divinópolis",
+      },
+    },
+    expected: {
+      expectedInformationType: "funcionarios_por_municipio",
+      expectedFilters: { classificacao: "hospedagem" },
+      allowAdditionalFilters: true,
+    },
+  }),
+  createMultiTurnCase({
+    name: "funcionários ao longo do tempo em Poços com hospedagem -> agora em Divinópolis",
+    message: "Agora em Divinópolis",
+    previousMessage: "Mostre funcionários de hospedagem em Poços de Caldas ao longo do tempo",
+    previousIntent: {
+      intent: "show",
+      informationType: "funcionarios_ao_longo_do_tempo",
+      proposedFilters: {
+        classificacao: "hospedagem",
+        municipio: "Poços de Caldas",
+      },
+    },
+    expected: {
+      expectedInformationType: "funcionarios_ao_longo_do_tempo",
+      expectedFilters: { municipio: "Divinópolis" },
+      allowAdditionalFilters: true,
+    },
+  }),
+  createMultiTurnCase({
+    name: "saldo em Pouso com transportes -> agora de alimentação",
+    message: "Agora de alimentação",
+    previousMessage: "Mostre saldo de funcionários de transportes em Pouso Alegre ao longo do tempo",
+    previousIntent: {
+      intent: "show",
+      informationType: "saldo_funcionarios_ao_longo_do_tempo",
+      proposedFilters: {
+        classificacao: "transportes",
+        municipio: "Pouso Alegre",
+      },
+    },
+    expected: {
+      expectedInformationType: "saldo_funcionarios_ao_longo_do_tempo",
+      expectedFilters: { classificacao: "alimentação" },
+      allowAdditionalFilters: true,
+    },
+  }),
+];
+
 const contextualCasesExpanded = [...contextualCases, ...contextualCasesGenerated];
 const initialOrientationCasesExpanded = [...initialOrientationCases, ...initialOrientationCasesGenerated];
 const curiosityCasesExpanded = [...curiosityCases, ...curiosityCasesGenerated];
@@ -1765,6 +2159,7 @@ assertMinimumDatasetCases("contextuais", contextualCasesExpanded);
 assertMinimumDatasetCases("orientacao_inicial", initialOrientationCasesExpanded);
 assertMinimumDatasetCases("curiosidades", curiosityCasesExpanded);
 assertMinimumDatasetCases("fora_de_escopo", outOfScopeCasesExpanded);
+assertMinimumDatasetCases("multiturno", multiturnCases);
 assertMinimumDatasetCases("repeticao", repeatedCommandCasesExpanded);
 
 const selectedFullCommandCases = selectCasesByPercentage("comandos_completos", fullCommandCases);
@@ -1772,9 +2167,8 @@ const selectedContextualCases = selectCasesByPercentage("contextuais", contextua
 const selectedInitialOrientationCases = selectCasesByPercentage("orientacao_inicial", initialOrientationCasesExpanded);
 const selectedCuriosityCases = selectCasesByPercentage("curiosidades", curiosityCasesExpanded);
 const selectedOutOfScopeCases = selectCasesByPercentage("fora_de_escopo", outOfScopeCasesExpanded);
+const selectedMultiturnCases = selectCasesByPercentage("multiturno", multiturnCases);
 const selectedRepeatedCommandCases = selectCasesByPercentage("repeticao", repeatedCommandCasesExpanded);
-// Multiturno permanece integral por ser um cenário encadeado fixo.
-const shouldRunMultiturn = shouldRunDataset("multiturno") && !caseFilter;
 
 describeRealLlm("resolveDashboardAction (avaliação com LLM real)", () => {
   const collectedResults: MeasuredCaseResult[] = [];
@@ -1807,30 +2201,12 @@ describeRealLlm("resolveDashboardAction (avaliação com LLM real)", () => {
     return results;
   }
 
-  function buildConversationHistory(
-    previousMessage: string,
-    previousResult: MeasuredCaseResult,
-  ): ConversationTurn[] {
-    const history: ConversationTurn[] = [
-      { role: "user", content: previousMessage },
-    ];
-
-    if (previousResult.resolvedIntent) {
-      history.push({
-        role: "assistant",
-        content: summarizeAssistantTurn(JSON.stringify(previousResult.resolvedIntent)),
-      });
-    }
-
-    return history;
-  }
-
   const itFullCommand = selectedFullCommandCases.length > 0 ? it : it.skip;
   const itContextual = selectedContextualCases.length > 0 ? it : it.skip;
   const itInitialOrientation = selectedInitialOrientationCases.length > 0 ? it : it.skip;
   const itCuriosity = selectedCuriosityCases.length > 0 ? it : it.skip;
   const itOutOfScope = selectedOutOfScopeCases.length > 0 ? it : it.skip;
-  const itMultiturn = shouldRunMultiturn ? it : it.skip;
+  const itMultiturn = selectedMultiturnCases.length > 0 ? it : it.skip;
   const itRepeated = selectedRepeatedCommandCases.length > 0 ? it : it.skip;
 
   itFullCommand("mede o dataset de comandos completos", async () => {
@@ -1869,66 +2245,23 @@ describeRealLlm("resolveDashboardAction (avaliação com LLM real)", () => {
   }, datasetTimeout);
 
   itMultiturn("mede cenários de múltiplos turnos com histórico", async () => {
-    const firstScenarioDeps = buildDeps();
-    const firstTurn = await runMeasuredCase({
-      dataset: "multiturno",
-      name: "turno 1 - funcionários por município em Poços de Caldas",
-      message: "Mostre funcionários por município em Poços de Caldas",
-      deps: firstScenarioDeps,
-      expected: {
-        allowedActionTypes: ["open_url"],
-        expectedInformationType: "funcionarios_por_municipio",
-        expectedFilters: { municipio: "Poços de Caldas" },
-      },
-    });
-    collectedResults.push(firstTurn);
+    const results: MeasuredCaseResult[] = [];
 
-    const secondTurn = await runMeasuredCase({
-      dataset: "multiturno",
-      name: "turno 2 - agora de hospedagem",
-      message: "Agora de hospedagem",
-      deps: firstScenarioDeps,
-      history: buildConversationHistory(
-        "Mostre funcionários por município em Poços de Caldas",
-        firstTurn,
-      ),
-      expected: {
-        expectedInformationType: "funcionarios_por_municipio",
-        expectedFilters: { classificacao: "hospedagem" },
-      },
-    });
-    collectedResults.push(secondTurn);
+    for (const testCase of selectedMultiturnCases) {
+      const result = await runMeasuredCase({
+        dataset: "multiturno",
+        name: testCase.name,
+        message: testCase.message,
+        deps: buildDeps(),
+        history: testCase.history,
+        expected: testCase.expected,
+      });
+      results.push(result);
+      collectedResults.push(result);
+    }
 
-    const thirdScenarioDeps = buildDeps();
-    const thirdTurn = await runMeasuredCase({
-      dataset: "multiturno",
-      name: "turno 1 - estabelecimentos por município",
-      message: "Mostre estabelecimentos por município",
-      deps: thirdScenarioDeps,
-      expected: {
-        allowedActionTypes: ["open_url"],
-        expectedInformationType: "estabelecimentos_por_municipio",
-      },
-    });
-    collectedResults.push(thirdTurn);
-
-    const fourthTurn = await runMeasuredCase({
-      dataset: "multiturno",
-      name: "turno 2 - agora em Pouso Alegre",
-      message: "Agora em Pouso Alegre",
-      deps: thirdScenarioDeps,
-      history: buildConversationHistory(
-        "Mostre estabelecimentos por município",
-        thirdTurn,
-      ),
-      expected: {
-        expectedInformationType: "estabelecimentos_por_municipio",
-        expectedFilters: { municipio: "Pouso Alegre" },
-      },
-    });
-    collectedResults.push(fourthTurn);
-
-    expect([firstTurn, secondTurn, thirdTurn, fourthTurn]).toHaveLength(4);
+    expect(results).toHaveLength(selectedMultiturnCases.length);
+    expect(results.every((result) => result.elapsedMs >= 0)).toBe(true);
   }, datasetTimeout);
 
   itRepeated("mede repetição dos comandos principais", async () => {
