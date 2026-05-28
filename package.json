@@ -8,6 +8,7 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r build",
     "clean:artifacts": "node tools/clean-artifacts.mjs",
+    "consolidate:results:csv": "node tools/consolidate-results-csv.mjs",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "test-real-llm:evaluation": "bash -lc 'set -a; source .env; set +a; pnpm -C libs/application test-real-llm:evaluation'",

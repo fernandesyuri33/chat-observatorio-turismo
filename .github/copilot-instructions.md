@@ -312,6 +312,7 @@ pnpm -C libs/domain test          # Run tests for a specific library
 pnpm -C libs/application test-real-llm # Run resolveDashboardAction tests against real Ollama LLM
 pnpm test-real-llm:evaluation      # Run optional real-LLM evaluation datasets and write artifacts/real-llm-results.json (loads .env from repo root) <!-- Updated: enforce root entrypoint for evaluation env loading -->
 pnpm test-real-llm:evaluation-quick # Run a quick subset (10%) of each real-LLM evaluation dataset using the same evaluation suite <!-- Updated: added quick evaluation command -->
+pnpm consolidate:results:csv       # Consolidate artifacts real-LLM JSON snapshots into CSV summary tables <!-- Updated: added CSV consolidation utility command -->
 ```
 
 ### Running tests with the stub adapter
