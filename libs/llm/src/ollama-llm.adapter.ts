@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { z } from "zod";
 import type { LlmPort, ConversationTurn, StructuredSchema } from "./llm.port.js";
 import {
   logLlmInit,
@@ -24,6 +23,8 @@ export interface OllamaLlmAdapterConfig {
   temperature?: number;
   /** Máximo de tentativas em falhas transitórias (padrão: 3) */
   maxRetries?: number;
+  /** Timeout máximo por tentativa em ms (padrão e máximo: 8000) */
+  requestTimeoutMs?: number;
 }
 
 // ── Normalização de aliases de campo ────────────────────────────
@@ -49,6 +50,7 @@ export class OllamaLlmAdapter implements LlmPort {
   private readonly model: string;
   private readonly temperature: number;
   private readonly maxRetries: number;
+  private readonly requestTimeoutMs: number;
 
   constructor(config: OllamaLlmAdapterConfig = {}) {
     const baseURL =
@@ -68,6 +70,8 @@ export class OllamaLlmAdapter implements LlmPort {
 
     this.temperature = config.temperature ?? 0;
     this.maxRetries = config.maxRetries ?? 3;
+    const configuredTimeoutMs = config.requestTimeoutMs ?? 8000;
+    this.requestTimeoutMs = Math.min(Math.max(configuredTimeoutMs, 1), 8000);
 
     this.client = new OpenAI({ baseURL, apiKey });
 
@@ -104,12 +108,19 @@ export class OllamaLlmAdapter implements LlmPort {
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       let raw = "";
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => {
+        abortController.abort();
+      }, this.requestTimeoutMs);
+
       try {
         const completion = await this.client.chat.completions.create({
           model: this.model,
           temperature: this.temperature,
           response_format: { type: "json_object" },
           messages,
+        }, {
+          signal: abortController.signal,
         });
 
         raw = completion.choices[0]?.message?.content ?? "";
@@ -125,13 +136,23 @@ export class OllamaLlmAdapter implements LlmPort {
 
         return parsed;
       } catch (error) {
-        lastError = error;
-        if (raw) {
-          logLlmParseError(attempt, this.maxRetries, raw, error);
+        if (abortController.signal.aborted) {
+          lastError = new Error(
+            `LLM request timed out after ${this.requestTimeoutMs}ms (attempt ${attempt}/${this.maxRetries})`,
+            { cause: error },
+          );
         } else {
-          logLlmRequestError(attempt, this.maxRetries, error);
+          lastError = error;
         }
-        logLlmRetry(attempt, this.maxRetries, error);
+
+        if (raw) {
+          logLlmParseError(attempt, this.maxRetries, raw, lastError);
+        } else {
+          logLlmRequestError(attempt, this.maxRetries, lastError);
+        }
+        logLlmRetry(attempt, this.maxRetries, lastError);
+      } finally {
+        clearTimeout(timeoutId);
       }
     }
 
