@@ -9,8 +9,8 @@ const RESULTS_OUTPUT_PATH = join(ARTIFACTS_DIR, "test-results-summary.csv");
 const MODEL_TABLES_DIR = join(ARTIFACTS_DIR, "test-results-by-model");
 
 const TEST_TYPE_BY_FOLDER = {
-  "1-41-testes-base": "base",
-  "2-141-testes-expandidos": "expandido",
+  "testes-base": "base",
+  "testes-expandidos": "expandido",
 };
 
 function toCsvValue(value) {
@@ -115,6 +115,21 @@ function formatSecondsFromMs(valueInMs) {
   return (valueInMs / 1000).toFixed(2);
 }
 
+function calculateMedian(values) {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  const sortedValues = [...values].sort((left, right) => left - right);
+  const middleIndex = Math.floor(sortedValues.length / 2);
+
+  if (sortedValues.length % 2 === 0) {
+    return (sortedValues[middleIndex - 1] + sortedValues[middleIndex]) / 2;
+  }
+
+  return sortedValues[middleIndex];
+}
+
 function toSafeFileSegment(value) {
   return value
     .normalize("NFKD")
@@ -200,6 +215,9 @@ function consolidate() {
       const passedCases = entry.summary.passedCases;
       const failedCases = entry.summary.failedCases;
       const totalsAreConsistent = passedCases + failedCases === totalCases;
+      const elapsedValues = entry.results
+        .map((result) => result?.elapsedMs)
+        .filter((elapsedMs) => Number.isFinite(elapsedMs));
 
       if (!totalsAreConsistent) {
         console.warn(
@@ -221,6 +239,7 @@ function consolidate() {
         casos_incorretos: failedCases,
         taxa_acerto: formatPercent(passedCases, totalCases),
         tempo_medio_por_caso_s: formatSecondsFromMs(entry.summary.averageElapsedMs),
+        tempo_mediano_p50_s: formatSecondsFromMs(calculateMedian(elapsedValues)),
         tempo_minimo_s: formatSecondsFromMs(entry.summary.minElapsedMs),
         tempo_maximo_s: formatSecondsFromMs(entry.summary.maxElapsedMs),
         tempo_total_s: formatSecondsFromMs(totalElapsedMs),
@@ -240,6 +259,7 @@ function consolidate() {
     "casos_incorretos",
     "taxa_acerto",
     "tempo_medio_por_caso_s",
+    "tempo_mediano_p50_s",
     "tempo_minimo_s",
     "tempo_maximo_s",
     "tempo_total_s",
