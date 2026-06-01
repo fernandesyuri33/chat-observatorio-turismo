@@ -39,15 +39,15 @@ services:
     # A imagem ja possui entrypoint `ollama`; aqui passamos apenas o subcomando.
     command: ["pull", "${OLLAMA_MODEL:-gemma3:4b}"]
 
-  # API Fastify (porta 3001) com Ollama real como padrao.
+  # API Fastify com Ollama real como padrao.
   api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
     ports:
-      - "3001:3001"
+      - "${PORT_API:-3001}:${PORT_API:-3001}"
     environment:
-      PORT: "3001"
+      PORT_API: "${PORT_API:-3001}"
       HOST: "0.0.0.0"
       # Configuracao do adaptador Ollama (OpenAI-compatible API).
       OLLAMA_BASE_URL: "http://ollama:11434/v1"
@@ -63,16 +63,17 @@ services:
       ollama-init:
         condition: service_completed_successfully
 
-  # Frontend React/Vite servido por Nginx na porta 3000.
+  # Frontend React/Vite servido por Nginx na porta 80, mapeada para PORT_WEB.
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
-        # URL da API injetada no build do Vite.
-        VITE_API_URL: http://localhost:3001
+        # URL da API injetada no build do Vite (browser acessa pelo host).
+        VITE_API_URL: "http://localhost:${PORT_API:-3001}"
+        VITE_LOOKER_EMBED_URL: "${VITE_LOOKER_EMBED_URL}"
     ports:
-      - "3000:80"
+      - "${PORT_WEB:-3000}:80"
     # Garante que a API seja iniciada antes do frontend.
     depends_on:
       api:

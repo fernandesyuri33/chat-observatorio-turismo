@@ -1,4 +1,10 @@
-import "dotenv/config";
+import { config as loadDotenv } from "dotenv";
+import { fileURLToPath } from "url";
+import { resolve, dirname } from "path";
+
+// Carrega .env da raiz do monorepo independente do cwd de execução
+loadDotenv({ path: resolve(dirname(fileURLToPath(import.meta.url)), "../../../.env") });
+
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { Redis } from "ioredis";
@@ -74,7 +80,7 @@ app.get("/health", async () => ({ status: "ok" }));
 await app.register(rotas);
 
 // ── Inicia servidor ─────────────────────────────────────────────
-const port = Number(process.env["PORT"] ?? 3001);
+const port = Number(process.env["PORT_API"] ?? 3001);
 const host = process.env["HOST"] ?? "0.0.0.0";
 
 app.listen({ port, host });
