@@ -262,7 +262,7 @@ export function summarizeMeasuredResults(
   const elapsedValues = results.map((result) => result.elapsedMs);
 
   return {
-    model: process.env["OLLAMA_MODEL"] ?? "gemma3:4b",
+    model: process.env["OLLAMA_MODEL"] ?? "ministral-3:3b-instruct-2512-q4_K_M",
     totalCases: results.length,
     passedCases: results.filter((result) => result.passed).length,
     failedCases: results.filter((result) => !result.passed).length,

@@ -25,6 +25,9 @@ ARG VITE_LOOKER_EMBED_URL
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_LOOKER_EMBED_URL=$VITE_LOOKER_EMBED_URL
 
+# Compila libs compartilhadas para disponibilizar os artefatos usados pelo tsc do web.
+RUN pnpm -C libs/domain build && pnpm -C libs/contracts build
+
 # Gera os arquivos estáticos em apps/web/dist.
 RUN pnpm -C apps/web build
 

@@ -15,7 +15,7 @@ import {
 export interface OllamaLlmAdapterConfig {
   /** URL base do Ollama (padrão: env OLLAMA_BASE_URL ou http://localhost:11434/v1) */
   baseURL?: string;
-  /** Identificador do modelo (padrão: env OLLAMA_MODEL ou gemma3:4b) */
+  /** Identificador do modelo (padrão: env OLLAMA_MODEL ou ministral-3:3b-instruct-2512-q4_K_M) */
   model?: string;
   /** Chave de API (padrão: env OLLAMA_API_KEY ou "ollama") */
   apiKey?: string;
@@ -61,7 +61,7 @@ export class OllamaLlmAdapter implements LlmPort {
     this.model =
       config.model ??
       process.env["OLLAMA_MODEL"] ??
-      "gemma3:4b";
+      "ministral-3:3b-instruct-2512-q4_K_M";
 
     const apiKey =
       config.apiKey ??
