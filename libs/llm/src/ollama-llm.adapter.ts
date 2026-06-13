@@ -23,7 +23,7 @@ export interface OllamaLlmAdapterConfig {
   temperature?: number;
   /** Máximo de tentativas em falhas transitórias (padrão: 3) */
   maxRetries?: number;
-  /** Timeout máximo por tentativa em ms (padrão e máximo: 8000) */
+  /** Timeout máximo por tentativa em ms (padrão e máximo: 60000) */
   requestTimeoutMs?: number;
 }
 
@@ -70,8 +70,8 @@ export class OllamaLlmAdapter implements LlmPort {
 
     this.temperature = config.temperature ?? 0;
     this.maxRetries = config.maxRetries ?? 3;
-    const configuredTimeoutMs = config.requestTimeoutMs ?? 8000;
-    this.requestTimeoutMs = Math.min(Math.max(configuredTimeoutMs, 1), 8000);
+    const configuredTimeoutMs = config.requestTimeoutMs ?? 60000;
+    this.requestTimeoutMs = Math.min(Math.max(configuredTimeoutMs, 1), 60000);
 
     this.client = new OpenAI({ baseURL, apiKey });
 
