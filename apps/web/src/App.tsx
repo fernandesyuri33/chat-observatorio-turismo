@@ -221,7 +221,7 @@ export function App() {
     <div className="app">
       <header className="hero">
         <div>
-          <p className="eyebrow">Observatório Regional do Turismo Caminhos Gerais</p>
+          <p className="eyebrow">Observatório do Turismo do Sul de Minas</p>
           <h1>Dashboard conversacional</h1>
         </div>
       </header>
