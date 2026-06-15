@@ -1,190 +1,168 @@
-# conversational-looker-dashboard
+# Interface Conversacional para Dashboard de Turismo
 
-Monorepo com pnpm workspaces para uma webapp conversacional que controla filtros de um relatorio do Looker Studio via iframe.
+Monorepo com pnpm workspaces para uma webapp conversacional que interpreta mensagens em linguagem natural e retorna uma ação estruturada para controlar um dashboard (Looker Studio).
 
-## Stack
-- `apps/web`: React + Vite + TypeScript
-- `apps/api`: Fastify + TypeScript
-- `libs/domain`: modelos de dominio (acoes e intents)
-- `libs/contracts`: contratos HTTP compartilhados (request/response)
-- `libs/application`, `libs/policy`, `libs/llm`, `libs/providers`: orquestracao e adaptadores
+Este README é um guia geral de onboarding rápido. A documentação de aprofundamento fica na pasta docs.
+
+## Visão rápida
+
+- apps/web: interface React + Vite.
+- apps/api: API Fastify que recebe mensagem e devolve action.
+- libs/domain: schemas e tipos de domínio.
+- libs/contracts: contrato HTTP compartilhado de integração.
+- libs/application, libs/policy, libs/llm, libs/providers: pipeline de decisão e adaptadores.
+
 ## Requisitos locais
+
 - Node.js 20+
 - pnpm 9+
-- Redis 7+ (para cache de historico de conversas)
-- Docker + Docker Compose (recomendado para Ollama e Redis)
+- Redis 7+
+- Ollama local ou via Docker Compose
+- Docker + Docker Compose (recomendado)
 
-## Setup
+## Quickstart
 
-1. Instalar dependencias
-```
+1. Instale dependências:
+
+```bash
 pnpm i
 ```
 
-2. Rodar Redis e Ollama
-Para desenvolvimento local, use Docker Compose:
-```
-docker compose up redis
-docker compose up ollama  # ou rode Ollama localmente (veja seção abaixo)
-```
+2. Configure ambiente na raiz do monorepo:
 
-Ou, para subir tudo junto (API, web, Redis, Ollama):
-```
-docker compose up --build
-```
+- .env.example -> .env
 
-3. Configurar variaveis de ambiente
-- `apps/web/.env` (base do embed do Looker Studio)
-- `apps/api/.env` (endpoint do Ollama e Redis)
+Variáveis importantes na API:
 
-Arquivos de exemplo:
-- `apps/web/.env.example`
-- `apps/api/.env.example`
-
-Variaveis obrigatorias para desenvolvimento:
-```
+```env
 REDIS_URL=redis://localhost:6379
 OLLAMA_BASE_URL=http://localhost:11434/v1
 OLLAMA_MODEL=ministral-3:3b-instruct-2512-q4_K_M
 ```
 
-4. Rodar em dev
+3. Suba dependências locais (Redis e Ollama) usando uma das opções abaixo:
+
+Opção A: sem Docker (serviços instalados localmente)
+
+- inicie Redis e Ollama no host;
+- faça o pull do modelo manualmente:
+
+```bash
+ollama pull ministral-3:3b-instruct-2512-q4_K_M
 ```
+
+Opção B: com Docker Compose
+
+- para subir Redis + Ollama apenas:
+
+```bash
+docker compose up redis ollama ollama-init
+```
+
+4. Rode web + api em modo desenvolvimento:
+
+```bash
 pnpm dev
 ```
 
-Isso sobe:
+Ambiente esperado:
+
 - Web: http://localhost:3000
 - API: http://localhost:3001
 
-## Rodando com Docker Compose
+## Opção rápida com Compose completo
 
-O projeto possui um `Dockerfile` por app:
-- `apps/api/Dockerfile`
-- `apps/web/Dockerfile`
+Para subir tudo por container (web, api, redis, ollama):
 
-Arquivos de Compose:
-- `docker-compose.yml`: compose base, compativel com CPU
-- `docker-compose.gpu.yml`: override opcional para hosts com GPU NVIDIA
-
-### Subir tudo com Docker Compose
-```
+```bash
 docker compose up --build
 ```
 
-Isso sobe:
-- Web: http://localhost:3000
-- API: http://localhost:3001
-- Ollama API: http://localhost:11434
+Nesse fluxo completo, o `ollama-init` executa automaticamente e faz o pull do modelo configurado em `OLLAMA_MODEL`.
 
-No `docker-compose.yml`, a API sobe com Ollama por padrao (`OllamaLlmAdapter`) e Redis para persistencia de historico de conversas.
+Para detalhes de operação com Docker/Ollama (GPU, logs e troubleshooting), veja: docs/operacao-docker-ollama.md.
 
-### Usar GPU com Ollama
-Para hosts com GPU NVIDIA, drivers instalados e `nvidia-container-toolkit` configurado, use o override de GPU:
+## Como a API responde (alto nível)
 
-```
-docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
-```
+Fluxo resumido:
 
-Se a maquina nao tiver GPU NVIDIA pronta para containers, use apenas o compose base. Assim o Ollama continua funcionando em CPU.
+1. Recebe mensagem do usuário em POST /mensagem.
+2. Classifica estado do pedido e extrai recortes/filtros.
+3. Normaliza e decide a resposta.
+4. Retorna sempre uma action válida (exemplo: open_url ou explain_only).
 
-### Pull do modelo automatico
-O compose possui um servico `ollama-init` que faz `ollama pull` automaticamente usando a mesma variavel `OLLAMA_MODEL` da API.
+Em caso de baixa confiança ou falha de processamento, a API responde com fallback explain_only.
 
-Com isso:
-- o `ollama` sobe e fica `healthy`
-- o `ollama-init` baixa o modelo e encerra com sucesso
-- a API so inicia depois que esse bootstrap termina
+## Contrato HTTP principal
 
-A API usa a rede interna do Compose em `http://ollama:11434/v1`.
+Endpoint:
 
-Por padrao, o modelo usado e `ministral-3:3b-instruct-2512-q4_K_M`.
-Para sobrescrever sem editar o compose:
+- POST /mensagem
 
-```
-OLLAMA_MODEL=llama3.1:8b docker compose up --build
-```
+Request:
 
-### Rodar apenas Redis com Docker (dev)
-Para desenvolvimento local em modo standalone (sem API e web em containers):
-```
-docker compose up redis
-```
-
-Para verificar conexao:
-```
-redis-cli ping
-```
-
-Responde `PONG` se estiver rodando.
-
-### Comandos uteis
-```
-docker compose up -d --build
-docker compose up redis
-docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d --build
-docker compose logs -f api
-docker compose logs -f web
-docker compose down
-```
-
-## Endpoints
-Implementação da rota HTTP da API: `apps/api/src/rotas.ts`.
-
-### POST /mensagem
-Request body:
 ```json
 {
-  "message": "Quero visitas em Sao Paulo em 2024"
+  "message": "Quero visitas em Poços de Caldas em 2024"
 }
 ```
 
-Header opcional:
+Header opcional para contexto conversacional:
+
 ```http
 x-conversation-id: <uuid>
 ```
 
-Response body (exemplo):
+Response (exemplo):
+
 ```json
 {
   "action": {
     "type": "open_url",
     "url": "https://datastudio.google.com/embed/reporting/70b05460-31ac-47ad-87e0-d7201ca27609/page/p_3niel4jewd?params=%7B%22ds18.municipio%22%3A%22Sao%20Paulo%22%2C%22ds18.classificacao%22%3A%22Hospedagem%22%7D",
-    "title": "Looker: Funcionários por município"
+    "title": "Looker: Funcionários por município",
+    "message": "Encontrei o recorte de funcionários por município com filtro para Poços de Caldas."
+  },
+  "rationale": {
+    "stage1": {
+      "rationale": "A mensagem pede diretamente uma visualização de dados com recorte suficiente.",
+      "classification": "complete_show",
+      "confidence": 0.94
+    },
+    "stage2": {
+      "rationale": "O melhor recorte identificado foi funcionários por município com filtro de município.",
+      "informationType": "funcionarios_por_municipio",
+      "filters": {
+        "municipio": "Poços de Caldas"
+      },
+      "confidence": 0.91
+    }
   }
 }
 ```
 
-Response body (fallback):
-```json
-{
-  "action": {
-    "type": "explain_only",
-    "message": "Nao consegui identificar um recorte analitico claro para aplicar no dashboard.",
-    "suggestions": [
-      "Comparar estabelecimentos entre municipios",
-      "Visualizar a quantidade de funcionarios por municipio",
-      "Acompanhar a evolucao de funcionarios ao longo do tempo"
-    ]
-  }
-}
-```
+Implementação da rota: apps/api/src/rotas.ts.
+Contrato compartilhado: libs/contracts.
 
-## Scripts
-- `pnpm dev`: executa `api` e `web` em paralelo
-- `pnpm build`: build de `api` e `web`
-- `pnpm typecheck`: compila todos os pacotes do workspace (apps e libs)
-- `pnpm lint`: roda ESLint em todos os pacotes do workspace
-- `pnpm test`: roda Vitest em todos os pacotes do workspace
+## Scripts principais
 
-## Testes
-- `libs/domain`, `libs/contracts` e `libs/application` possuem testes Vitest para schemas e pipeline.
+- pnpm dev: sobe apps/api e apps/web em paralelo.
+- pnpm build: build do workspace.
+- pnpm typecheck: checagem de tipos no workspace.
+- pnpm lint: lint no workspace.
+- pnpm test: testes no workspace.
 
-### Convenção de linguagem nos testes
-- Títulos de `describe` e `it` devem ser escritos em português (pt-BR).
-- Mensagens de erro/retorno usadas em cenários de teste devem permanecer em português quando forem user-facing.
-- Identificadores técnicos (nomes de funções, tipos, chaves de payload) permanecem em inglês quando fizerem parte da API/código.
+## Mapa de documentação (deep dive)
 
-## Pacote de contratos
-- O contrato HTTP de `POST /mensagem` fica em `libs/contracts` e é exportado por `@conversational/contracts`.
-- Objetivo: permitir publicar e reutilizar os tipos/schemas de integração da API em outros projetos.
+- Operação Docker e Ollama: docs/operacao-docker-ollama.md
+- Visão de arquitetura: docs/arquitetura.md
+- Visão geral da solução: docs/arquitetura/visao-geral.md
+- Organização em camadas: docs/arquitetura/organizacao-em-camadas.md
+- Sequência de processamento da mensagem: docs/arquitetura/sequencia-processamento-mensagem.md
+- Resumo geral: docs/resumo.md
+
+## Para contribuição
+
+- Prefira manter este README enxuto e orientado a onboarding.
+- Coloque detalhes operacionais e explicações aprofundadas na pasta docs.
+- Mantenha request/response alinhados com os contratos em libs/contracts.

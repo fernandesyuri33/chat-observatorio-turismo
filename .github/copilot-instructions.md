@@ -256,7 +256,7 @@ Policy normalization is strict by default: unknown filter keys are removed befor
 | Env var | Default | Description |
 |---|---|---|
 | `OLLAMA_BASE_URL` | `http://localhost:11434/v1` | Ollama OpenAI-compatible endpoint |
-| `OLLAMA_MODEL` | `llama3.1:8b` | Model identifier |
+| `OLLAMA_MODEL` | `ministral-3:3b-instruct-2512-q4_K_M` | Model identifier |
 | `OLLAMA_API_KEY` | `ollama` | API key (Ollama default) |
 | `REDIS_URL` | `redis://localhost:6379` | Redis connection string used by the API conversation history service | <!-- Updated: added Redis environment variable --> |
 
